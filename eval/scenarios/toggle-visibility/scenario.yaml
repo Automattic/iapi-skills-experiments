@@ -18,3 +18,8 @@ specific_rubric:
     description: "Uses data-wp-bind--hidden, data-wp-class, or equivalent to control panel visibility"
   - id: ssr-hidden-state
     description: "Server-rendered HTML reflects the initial hidden state of the panel"
+
+e2e:
+  pluginSlug: toggle-panel
+  blockName: iapi/toggle-panel
+  testSlug: test-toggle

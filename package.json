@@ -6,11 +6,16 @@
   "scripts": {
     "eval": "node eval/run-eval.mjs all",
     "eval:format": "node eval/run-eval.mjs format",
-    "eval:llm": "node eval/run-eval.mjs llm"
+    "eval:llm": "node eval/run-eval.mjs llm",
+    "eval:e2e": "node eval/run-eval.mjs e2e"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "openai": "^4.85.0",
     "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@wordpress/env": "^10.0.0",
+    "@playwright/test": "^1.40.0"
   }
 }

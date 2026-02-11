@@ -1,12 +1,12 @@
 student:
-  provider: anthropic
-  model: claude-haiku-4-5-20251001
+  provider: openai
+  model: gpt-4o-mini
   temperature: 0
   maxTokens: 8192
 
 judge:
-  provider: anthropic
-  model: claude-sonnet-4-5-20250929
+  provider: openai
+  model: gpt-4o
   temperature: 0
   maxTokens: 4096
 
