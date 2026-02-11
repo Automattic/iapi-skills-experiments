@@ -1,0 +1,16 @@
+{
+  "name": "iapi-skills-experiments",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "eval": "node eval/run-eval.mjs all",
+    "eval:format": "node eval/run-eval.mjs format",
+    "eval:llm": "node eval/run-eval.mjs llm"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "openai": "^4.85.0",
+    "yaml": "^2.7.0"
+  }
+}
