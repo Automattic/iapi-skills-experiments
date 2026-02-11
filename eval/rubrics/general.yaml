@@ -1,0 +1,25 @@
+description: >
+  Shared best-practices rubric for WordPress Interactivity API code.
+  These criteria apply to every scenario.
+
+criteria:
+  - id: generators-not-async
+    description: "Uses generator functions (function*) for async actions, not async/await"
+
+  - id: server-state
+    description: "Uses wp_interactivity_state() in PHP to initialize server-side state"
+
+  - id: interactive-root
+    description: "Includes data-wp-interactive directive on the root element with a namespace"
+
+  - id: namespace-consistency
+    description: "Namespace in store() matches the namespace in data-wp-interactive and directives"
+
+  - id: view-script-module
+    description: "Uses viewScriptModule (not viewScript) in block.json"
+
+  - id: imports-interactivity
+    description: "JavaScript imports from @wordpress/interactivity"
+
+  - id: supports-interactivity
+    description: "block.json includes supports.interactivity set to true"

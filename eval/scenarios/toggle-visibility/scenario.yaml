@@ -1,0 +1,20 @@
+name: toggle-visibility
+description: Create a toggle panel that shows and hides content.
+
+prompt: |
+  Create a WordPress block plugin called "toggle-panel". The block should:
+  1. Have a button that toggles the visibility of a content panel
+  2. The panel starts hidden by default
+  3. Clicking the button shows/hides the panel
+
+specific_rubric:
+  - id: boolean-state
+    description: "Defines a boolean visibility state (e.g., isOpen) in both PHP and JavaScript"
+  - id: toggle-action
+    description: "Has a toggle action that flips the boolean state"
+  - id: click-directive
+    description: "Uses data-wp-on--click on the toggle button"
+  - id: visibility-directive
+    description: "Uses data-wp-bind--hidden, data-wp-class, or equivalent to control panel visibility"
+  - id: ssr-hidden-state
+    description: "Server-rendered HTML reflects the initial hidden state of the panel"
