@@ -1,0 +1,14 @@
+.DS_Store
+dist/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.env
+.env.*
+
+# Eval: generated plugin files and caches
+eval/wp-env/plugins/
+eval/wp-env/.wp-env.json
+eval/.cache/

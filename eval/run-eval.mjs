@@ -4,12 +4,13 @@
  * Main eval orchestrator.
  *
  * Usage:
- *   node eval/run-eval.mjs [format|llm|all] [--scenarios=counter-block]
+ *   node eval/run-eval.mjs [format|llm|e2e|all] [--scenarios=counter-block]
  *
  * Subcommands:
  *   format   — Format validation only (existing harness)
  *   llm      — LLM evaluation only (student + judge)
- *   all      — Both stages (default)
+ *   e2e      — E2E testing only (requires cached LLM results + Docker)
+ *   all      — All three stages (default)
  *
  * Options:
  *   --scenarios=name1,name2   Run only specified scenarios
@@ -38,10 +39,42 @@ import { createProvider } from "./lib/providers/index.mjs";
 import { loadSkillContext } from "./lib/skill-loader.mjs";
 import { loadScenario, listScenarios } from "./lib/scenario-loader.mjs";
 import { evaluate } from "./lib/judge.mjs";
-import { reportFormatStage, reportLLMStage } from "./lib/reporter.mjs";
+import {
+  reportFormatStage,
+  reportLLMStage,
+  reportE2EStage,
+} from "./lib/reporter.mjs";
+import { extractCode } from "./lib/code-extractor.mjs";
+import { buildPlugin, cleanPlugins } from "./lib/plugin-builder.mjs";
+import {
+  writeWpEnvConfig,
+  startEnv,
+  createTestPost,
+  stopEnv,
+  cleanConfig,
+} from "./lib/wp-env-manager.mjs";
+import { runTests } from "./lib/playwright-runner.mjs";
 
 const EVAL_DIR = path.dirname(new URL(import.meta.url).pathname);
 const REPO_ROOT = path.join(EVAL_DIR, "..");
+const CACHE_DIR = path.join(EVAL_DIR, ".cache");
+const LLM_CACHE_PATH = path.join(CACHE_DIR, "llm-results.json");
+
+// ---------------------------------------------------------------------------
+// Cache helpers
+// ---------------------------------------------------------------------------
+
+function saveLLMCache(results) {
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
+  fs.writeFileSync(LLM_CACHE_PATH, JSON.stringify(results, null, 2));
+}
+
+function loadLLMCache() {
+  if (!fs.existsSync(LLM_CACHE_PATH)) {
+    return null;
+  }
+  return JSON.parse(fs.readFileSync(LLM_CACHE_PATH, "utf8"));
+}
 
 // ---------------------------------------------------------------------------
 // Stage 1: Format validation
@@ -129,7 +162,139 @@ async function runLLMEvaluation(config) {
     });
   }
 
+  // Cache results for standalone e2e runs.
+  saveLLMCache(results);
+
   return results;
+}
+
+// ---------------------------------------------------------------------------
+// Stage 3: E2E testing
+// ---------------------------------------------------------------------------
+
+function runE2ETests(scenarioResults) {
+  process.stdout.write("\nStage 3: E2E Testing\n\n");
+
+  const e2eResults = [];
+  const pluginPaths = [];
+  const testPostConfigs = [];
+  const scenariosToTest = [];
+
+  // Phase 1: Extract code and build plugins.
+  for (const sr of scenarioResults) {
+    const scenario = loadScenario(sr.scenario);
+    const e2eConfig = scenario.e2e;
+
+    if (!e2eConfig) {
+      e2eResults.push({
+        scenario: sr.scenario,
+        status: "SKIP",
+        reason: "No e2e config in scenario.yaml",
+      });
+      continue;
+    }
+
+    // Extract code from LLM output.
+    let extracted;
+    try {
+      extracted = extractCode(sr.generatedCode);
+    } catch (err) {
+      e2eResults.push({
+        scenario: sr.scenario,
+        status: "SKIP",
+        reason: `Code extraction failed: ${err.message}`,
+      });
+      continue;
+    }
+
+    // Validate block.json is valid JSON.
+    try {
+      JSON.parse(extracted.blockJson);
+    } catch {
+      e2eResults.push({
+        scenario: sr.scenario,
+        status: "ERROR",
+        reason: "block.json is not valid JSON",
+      });
+      continue;
+    }
+
+    // Build plugin.
+    let pluginPath;
+    try {
+      pluginPath = buildPlugin({
+        pluginSlug: e2eConfig.pluginSlug,
+        blockName: e2eConfig.blockName,
+        blockJson: extracted.blockJson,
+        renderPhp: extracted.renderPhp,
+        viewJs: extracted.viewJs,
+      });
+    } catch (err) {
+      e2eResults.push({
+        scenario: sr.scenario,
+        status: "ERROR",
+        reason: `Plugin build failed: ${err.message}`,
+      });
+      continue;
+    }
+
+    pluginPaths.push(pluginPath);
+    scenariosToTest.push(sr.scenario);
+
+    // Generate block markup for the test post.
+    const blockMarkup = `<!-- wp:${e2eConfig.blockName} /-->`;
+    testPostConfigs.push({
+      slug: e2eConfig.testSlug,
+      title: `Test: ${sr.scenario}`,
+      blockMarkup,
+    });
+  }
+
+  if (scenariosToTest.length === 0) {
+    process.stdout.write("  No scenarios eligible for E2E testing.\n");
+    return e2eResults;
+  }
+
+  // Phase 2: Start wp-env with all plugins.
+  writeWpEnvConfig(pluginPaths);
+
+  try {
+    startEnv();
+  } catch (err) {
+    process.stdout.write(`  WARNING: ${err.message}\n`);
+    process.stdout.write("  Skipping E2E stage.\n");
+    // Mark all pending scenarios as skipped.
+    for (const name of scenariosToTest) {
+      e2eResults.push({
+        scenario: name,
+        status: "SKIP",
+        reason: err.message,
+      });
+    }
+    return e2eResults;
+  }
+
+  try {
+    // Phase 3: Create test posts.
+    for (const postConfig of testPostConfigs) {
+      createTestPost(postConfig);
+    }
+
+    // Phase 4: Run Playwright tests.
+    process.stdout.write("\n  Running Playwright tests...\n");
+    const playwrightResults = runTests(scenariosToTest);
+
+    for (const result of playwrightResults.scenarios) {
+      e2eResults.push(result);
+    }
+  } finally {
+    // Phase 5: Cleanup.
+    stopEnv();
+    cleanPlugins();
+    cleanConfig();
+  }
+
+  return e2eResults;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,7 +306,7 @@ async function main() {
 
   // Determine subcommand.
   const subcommand = process.argv[2] || "all";
-  const validCommands = ["format", "llm", "all"];
+  const validCommands = ["format", "llm", "e2e", "all"];
   const command = validCommands.includes(subcommand) ? subcommand : "all";
 
   process.stdout.write("=== IAPI Skill Evaluation ===\n");
@@ -159,9 +324,11 @@ async function main() {
   }
 
   // Stage 2: LLM evaluation.
+  let scenarioResults = null;
+
   if (command === "llm" || command === "all") {
     const studentLabel = `${config.student.provider}/${config.student.model}`;
-    const scenarioResults = await runLLMEvaluation(config);
+    scenarioResults = await runLLMEvaluation(config);
 
     reportLLMStage({ studentLabel, scenarios: scenarioResults });
 
@@ -170,6 +337,44 @@ async function main() {
       s.results.some((r) => !r.pass)
     );
     if (hasFailures) {
+      exitCode = 1;
+    }
+  }
+
+  // Stage 3: E2E testing.
+  if (command === "e2e" || command === "all") {
+    // For standalone e2e, load from cache.
+    if (!scenarioResults) {
+      const cached = loadLLMCache();
+      if (!cached) {
+        throw new Error(
+          "No cached LLM results found. Run `npm run eval:llm` first."
+        );
+      }
+
+      // Filter to selected scenarios if specified.
+      const selectedNames = config.scenarios;
+      if (selectedNames && selectedNames.length > 0) {
+        scenarioResults = cached.filter((r) =>
+          selectedNames.includes(r.scenario)
+        );
+      } else {
+        scenarioResults = cached;
+      }
+    }
+
+    try {
+      const e2eResults = runE2ETests(scenarioResults);
+      reportE2EStage({ scenarios: e2eResults });
+
+      const hasFails = e2eResults.some(
+        (r) => r.status === "ERROR" || (r.failed && r.failed > 0)
+      );
+      if (hasFails) {
+        exitCode = 1;
+      }
+    } catch (err) {
+      process.stdout.write(`\n  E2E stage error: ${err.message}\n`);
       exitCode = 1;
     }
   }

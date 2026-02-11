@@ -17,3 +17,8 @@ specific_rubric:
     description: "Uses data-wp-text or equivalent to display the counter value reactively"
   - id: ssr-initial-value
     description: "Server-rendered HTML includes the initial counter value (5)"
+
+e2e:
+  pluginSlug: interactive-counter
+  blockName: iapi/interactive-counter
+  testSlug: test-counter
