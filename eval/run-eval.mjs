@@ -15,8 +15,24 @@
  *   --scenarios=name1,name2   Run only specified scenarios
  */
 
+import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
+
+// Load .env file from repo root if it exists.
+const envPath = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname),
+  "..",
+  ".env"
+);
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+    const match = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (match && !(match[1] in process.env)) {
+      process.env[match[1]] = match[2].replace(/^["']|["']$/g, "");
+    }
+  }
+}
 import { loadConfig } from "./lib/config.mjs";
 import { createProvider } from "./lib/providers/index.mjs";
 import { loadSkillContext } from "./lib/skill-loader.mjs";
