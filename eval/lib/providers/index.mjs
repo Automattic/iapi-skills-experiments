@@ -5,10 +5,12 @@
  */
 
 import { AnthropicProvider } from "./anthropic.mjs";
+import { GeminiProvider } from "./gemini.mjs";
 import { OpenAIProvider } from "./openai.mjs";
 
 const PROVIDERS = {
   anthropic: AnthropicProvider,
+  gemini: GeminiProvider,
   openai: OpenAIProvider,
 };
 
