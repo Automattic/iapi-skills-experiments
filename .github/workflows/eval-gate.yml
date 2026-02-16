@@ -23,27 +23,15 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - id: format
-        run: |
-          set +e
-          output=$(npm run eval:format 2>&1)
-          exitcode=$?
-          echo "output<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$output" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-          echo "exitcode=$exitcode" >> "$GITHUB_OUTPUT"
-          exit $exitcode
-        continue-on-error: true
-    outputs:
-      result: ${{ steps.format.outputs.output }}
-      exitcode: ${{ steps.format.outputs.exitcode }}
+      - run: npm run eval:format
 
   llm:
     name: "Stage 2: LLM Evaluation"
     needs: format
+    if: always() && needs.format.result != 'cancelled'
     runs-on: ubuntu-latest
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,30 +39,18 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - id: llm
-        run: |
-          set +e
-          output=$(npm run eval:llm 2>&1)
-          exitcode=$?
-          echo "output<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$output" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-          echo "exitcode=$exitcode" >> "$GITHUB_OUTPUT"
-          exit $exitcode
-        continue-on-error: true
+      - run: npm run eval:llm
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: llm-results
           path: eval/.cache/llm-results.json
           retention-days: 3
-    outputs:
-      result: ${{ steps.llm.outputs.output }}
-      exitcode: ${{ steps.llm.outputs.exitcode }}
 
   e2e:
     name: "Stage 3: E2E Testing"
     needs: llm
+    if: always() && needs.llm.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,20 +64,7 @@ jobs:
         with:
           name: llm-results
           path: eval/.cache
-      - id: e2e
-        run: |
-          set +e
-          output=$(npm run eval:e2e 2>&1)
-          exitcode=$?
-          echo "output<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$output" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-          echo "exitcode=$exitcode" >> "$GITHUB_OUTPUT"
-          exit $exitcode
-        continue-on-error: true
-    outputs:
-      result: ${{ steps.e2e.outputs.output }}
-      exitcode: ${{ steps.e2e.outputs.exitcode }}
+      - run: npm run eval:e2e
 
   report:
     name: Post Results
@@ -112,56 +75,29 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
-            const icon = (code) => code === '0' ? ':white_check_mark:' : ':x:';
+            const icon = (result) => {
+              if (result === 'success') return ':white_check_mark: Pass';
+              if (result === 'failure') return ':x: Fail';
+              if (result === 'skipped') return ':fast_forward: Skipped';
+              return ':grey_question: Unknown';
+            };
 
-            const format = {
-              exitcode: '${{ needs.format.outputs.exitcode }}',
-              result: `${{ needs.format.outputs.result }}`,
-            };
-            const llm = {
-              exitcode: '${{ needs.llm.outputs.exitcode }}',
-              result: `${{ needs.llm.outputs.result }}`,
-            };
-            const e2e = {
-              exitcode: '${{ needs.e2e.outputs.exitcode }}',
-              result: `${{ needs.e2e.outputs.result }}`,
-            };
+            const format = '${{ needs.format.result }}';
+            const llm = '${{ needs.llm.result }}';
+            const e2e = '${{ needs.e2e.result }}';
 
             const body = [
               `## Eval Results`,
               ``,
               `| Stage | Status |`,
               `|-------|--------|`,
-              `| Format Validation | ${icon(format.exitcode)} |`,
-              `| LLM Evaluation | ${icon(llm.exitcode)} |`,
-              `| E2E Testing | ${icon(e2e.exitcode)} |`,
+              `| Format Validation | ${icon(format)} |`,
+              `| LLM Evaluation | ${icon(llm)} |`,
+              `| E2E Testing | ${icon(e2e)} |`,
               ``,
-              `<details><summary>Format Validation Output</summary>`,
-              ``,
-              '```',
-              format.result || 'No output',
-              '```',
-              `</details>`,
-              ``,
-              `<details><summary>LLM Evaluation Output</summary>`,
-              ``,
-              '```',
-              llm.result || 'No output',
-              '```',
-              `</details>`,
-              ``,
-              `<details><summary>E2E Testing Output</summary>`,
-              ``,
-              '```',
-              e2e.result || 'No output',
-              '```',
-              `</details>`,
-              ``,
-              `---`,
-              `*Run: [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})*`,
+              `See [run logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for full output.`,
             ].join('\n');
 
-            // Upsert: find existing bot comment and update, or create new
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -195,9 +131,12 @@ jobs:
     steps:
       - name: Check for failures
         run: |
-          if [ "${{ needs.format.outputs.exitcode }}" != "0" ] || \
-             [ "${{ needs.llm.outputs.exitcode }}" != "0" ] || \
-             [ "${{ needs.e2e.outputs.exitcode }}" != "0" ]; then
+          echo "Format: ${{ needs.format.result }}"
+          echo "LLM: ${{ needs.llm.result }}"
+          echo "E2E: ${{ needs.e2e.result }}"
+          if [ "${{ needs.format.result }}" != "success" ] || \
+             [ "${{ needs.llm.result }}" != "success" ] || \
+             [ "${{ needs.e2e.result }}" != "success" ]; then
             echo "::error::One or more eval stages failed"
             exit 1
           fi
