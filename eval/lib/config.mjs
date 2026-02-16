@@ -33,6 +33,12 @@ export function loadConfig(argv = process.argv.slice(2)) {
   const raw = fs.readFileSync(CONFIG_PATH, "utf8");
   const config = parseYaml(raw);
 
+  // Normalize singular `student:` → `students:[]` for backward compat.
+  if (config.student && !config.students) {
+    config.students = [config.student];
+    delete config.student;
+  }
+
   const cliArgs = parseCLIArgs(argv);
 
   // Override scenarios from CLI.

@@ -109,7 +109,6 @@ function runFormatValidation() {
 // ---------------------------------------------------------------------------
 
 async function runLLMEvaluation(config) {
-  const student = createProvider(config.student);
   const judge = createProvider(config.judge);
 
   // Determine which scenarios to run.
@@ -131,50 +130,59 @@ async function runLLMEvaluation(config) {
   // Load skill context once (shared across scenarios).
   const skillContext = loadSkillContext(config.skill, REPO_ROOT);
 
-  const results = [];
+  const studentResults = [];
 
-  for (const scenarioName of selectedNames) {
-    const scenario = loadScenario(scenarioName);
+  for (const studentConfig of config.students) {
+    const studentLabel = `${studentConfig.provider}/${studentConfig.model}`;
+    const student = createProvider(studentConfig);
 
-    process.stdout.write(`  Running: ${scenarioName}...`);
+    process.stdout.write(`\n  Student: ${studentLabel}\n`);
 
-    // Call student LLM with skill context as system prompt.
-    const generatedCode = await student.complete({
-      system: skillContext,
-      user: scenario.prompt,
-    });
+    const scenarios = [];
 
-    // Call judge LLM to evaluate the generated code.
-    const judgeResult = await evaluate({
-      judge,
-      prompt: scenario.prompt,
-      generatedCode,
-      rubric: scenario.rubric,
-    });
+    for (const scenarioName of selectedNames) {
+      const scenario = loadScenario(scenarioName);
 
-    const failCount = judgeResult.results.filter((r) => !r.pass).length;
-    process.stdout.write(` ${failCount === 0 ? "PASS" : "FAIL"}\n`);
+      process.stdout.write(`    Running: ${scenarioName}...`);
 
-    results.push({
-      scenario: scenarioName,
-      results: judgeResult.results,
-      generatedCode,
-    });
+      // Call student LLM with skill context as system prompt.
+      const generatedCode = await student.complete({
+        system: skillContext,
+        user: scenario.prompt,
+      });
+
+      // Call judge LLM to evaluate the generated code.
+      const judgeResult = await evaluate({
+        judge,
+        prompt: scenario.prompt,
+        generatedCode,
+        rubric: scenario.rubric,
+      });
+
+      const failCount = judgeResult.results.filter((r) => !r.pass).length;
+      process.stdout.write(` ${failCount === 0 ? "PASS" : "FAIL"}\n`);
+
+      scenarios.push({
+        scenario: scenarioName,
+        results: judgeResult.results,
+        generatedCode,
+      });
+    }
+
+    studentResults.push({ student: studentLabel, scenarios });
   }
 
   // Cache results for standalone e2e runs.
-  saveLLMCache(results);
+  saveLLMCache(studentResults);
 
-  return results;
+  return studentResults;
 }
 
 // ---------------------------------------------------------------------------
 // Stage 3: E2E testing
 // ---------------------------------------------------------------------------
 
-function runE2ETests(scenarioResults) {
-  process.stdout.write("\nStage 3: E2E Testing\n\n");
-
+function runE2ETestsForStudent(scenarioResults) {
   const e2eResults = [];
   const pluginPaths = [];
   const testPostConfigs = [];
@@ -251,7 +259,7 @@ function runE2ETests(scenarioResults) {
   }
 
   if (scenariosToTest.length === 0) {
-    process.stdout.write("  No scenarios eligible for E2E testing.\n");
+    process.stdout.write("    No scenarios eligible for E2E testing.\n");
     return e2eResults;
   }
 
@@ -261,9 +269,8 @@ function runE2ETests(scenarioResults) {
   try {
     startEnv();
   } catch (err) {
-    process.stdout.write(`  WARNING: ${err.message}\n`);
-    process.stdout.write("  Skipping E2E stage.\n");
-    // Mark all pending scenarios as skipped.
+    process.stdout.write(`    WARNING: ${err.message}\n`);
+    process.stdout.write("    Skipping E2E for this student.\n");
     for (const name of scenariosToTest) {
       e2eResults.push({
         scenario: name,
@@ -281,7 +288,7 @@ function runE2ETests(scenarioResults) {
     }
 
     // Phase 4: Run Playwright tests.
-    process.stdout.write("\n  Running Playwright tests...\n");
+    process.stdout.write("\n    Running Playwright tests...\n");
     const playwrightResults = runTests(scenariosToTest);
 
     for (const result of playwrightResults.scenarios) {
@@ -295,6 +302,20 @@ function runE2ETests(scenarioResults) {
   }
 
   return e2eResults;
+}
+
+function runE2ETests(studentResults) {
+  process.stdout.write("\nStage 3: E2E Testing\n");
+
+  const allStudentE2E = [];
+
+  for (const { student, scenarios } of studentResults) {
+    process.stdout.write(`\n  Student: ${student}\n`);
+    const e2eResults = runE2ETestsForStudent(scenarios);
+    allStudentE2E.push({ student, scenarios: e2eResults });
+  }
+
+  return allStudentE2E;
 }
 
 // ---------------------------------------------------------------------------
@@ -324,17 +345,16 @@ async function main() {
   }
 
   // Stage 2: LLM evaluation.
-  let scenarioResults = null;
+  let studentResults = null;
 
   if (command === "llm" || command === "all") {
-    const studentLabel = `${config.student.provider}/${config.student.model}`;
-    scenarioResults = await runLLMEvaluation(config);
+    studentResults = await runLLMEvaluation(config);
 
-    reportLLMStage({ studentLabel, scenarios: scenarioResults });
+    reportLLMStage({ students: studentResults });
 
-    // Check for failures.
-    const hasFailures = scenarioResults.some((s) =>
-      s.results.some((r) => !r.pass)
+    // Check for failures across all students.
+    const hasFailures = studentResults.some((entry) =>
+      entry.scenarios.some((s) => s.results.some((r) => !r.pass))
     );
     if (hasFailures) {
       exitCode = 1;
@@ -344,7 +364,7 @@ async function main() {
   // Stage 3: E2E testing.
   if (command === "e2e" || command === "all") {
     // For standalone e2e, load from cache.
-    if (!scenarioResults) {
+    if (!studentResults) {
       const cached = loadLLMCache();
       if (!cached) {
         throw new Error(
@@ -355,20 +375,25 @@ async function main() {
       // Filter to selected scenarios if specified.
       const selectedNames = config.scenarios;
       if (selectedNames && selectedNames.length > 0) {
-        scenarioResults = cached.filter((r) =>
-          selectedNames.includes(r.scenario)
-        );
+        studentResults = cached.map((entry) => ({
+          ...entry,
+          scenarios: entry.scenarios.filter((r) =>
+            selectedNames.includes(r.scenario)
+          ),
+        }));
       } else {
-        scenarioResults = cached;
+        studentResults = cached;
       }
     }
 
     try {
-      const e2eResults = runE2ETests(scenarioResults);
-      reportE2EStage({ scenarios: e2eResults });
+      const e2eResults = runE2ETests(studentResults);
+      reportE2EStage({ students: e2eResults });
 
-      const hasFails = e2eResults.some(
-        (r) => r.status === "ERROR" || (r.failed && r.failed > 0)
+      const hasFails = e2eResults.some((entry) =>
+        entry.scenarios.some(
+          (r) => r.status === "ERROR" || (r.failed && r.failed > 0)
+        )
       );
       if (hasFails) {
         exitCode = 1;
