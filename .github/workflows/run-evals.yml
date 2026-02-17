@@ -2,7 +2,7 @@ name: Run Evals
 
 on:
   schedule:
-    - cron: "0 8 * * 1" # Monday 8AM UTC
+    - cron: "0 8 * * *" # Daily 8AM UTC
   push:
     branches:
       - trunk
