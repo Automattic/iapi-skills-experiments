@@ -46,7 +46,7 @@ The issue body contains a link to the failed Actions run and which stages failed
 
 **Download the `llm-results` artifact** from the failed run using the `download_workflow_run_artifact` tool. It contains `eval-summary.json` with structured failure data:
 - Per-student, per-scenario pass/fail status
-- Failed criteria with judge reasoning
+- Failed criteria with judge reasoning (each failure includes an `id` that maps to `eval/rubrics/general.yaml`)
 - Skipped students with reasons
 
 Use this structured data instead of parsing log output. Only fall back to reading job logs if the artifact is missing.
@@ -65,6 +65,18 @@ For the specific failing scenarios, also read:
 
 ## Step 3: Diagnose Root Cause
 
+Before diagnosing, verify the failure is real:
+- Read the judge's `reasoning` for each failed criterion in `eval-summary.json`.
+- Check whether the scenario actually exercises the failing criterion. For example,
+  if `generators-not-async` failed on a counter block with no async operations,
+  the student's synchronous plain functions may be correct — the issue is a judge
+  misfire or ambiguous rubric, not a skill gap.
+- A criterion that doesn't apply to the scenario should be investigated as
+  category 4 (overly strict rubric) or 6 (judge calibration), not 1–3.
+- **Never broaden a rule to cover cases it wasn't meant for.** If a criterion says
+  "async actions should use generators," do NOT change the skill to say "all actions
+  should use generators."
+
 Determine which category the failure falls into:
 
 1. **Missing information** — The skill doesn't mention an API or pattern the scenario requires
@@ -72,6 +84,7 @@ Determine which category the failure falls into:
 3. **Wrong pattern** — The skill recommends a pattern that doesn't match current iAPI behavior
 4. **Overly strict rubric** — The rubric criteria don't account for valid alternative approaches
 5. **Test environment issue** — The E2E test itself has a bug or the wp-env setup is wrong
+6. **Judge calibration** — The judge LLM misapplied a criterion to code that doesn't exercise it
 
 ## Step 4: Post Analysis Comment
 
@@ -102,6 +115,7 @@ Based on your diagnosis, create a draft PR with targeted changes:
 - For **wrong pattern**: update the skill to use the correct pattern, with a note about what changed
 - For **overly strict rubric**: update the scenario rubric to accept valid alternatives
 - For **test environment issue**: fix the e2e spec or wp-env configuration
+- For **judge calibration**: clarify the rubric description in `eval/rubrics/general.yaml` to make scope explicit, or add counterexamples to the scenario rubric
 
 Keep changes minimal and focused. Don't rewrite entire files — make the smallest change that fixes the regression.
 

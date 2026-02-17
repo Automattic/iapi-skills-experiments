@@ -99,7 +99,7 @@ function buildLLMSummaryStudents(studentResults) {
       const criteriaFail = s.results.filter((r) => !r.pass).length;
       const failures = s.results
         .filter((r) => !r.pass)
-        .map((r) => ({ criterion: r.criterion, reasoning: r.reasoning }));
+        .map((r) => ({ id: r.id, criterion: r.criterion, reasoning: r.reasoning }));
       return {
         scenario: s.scenario,
         status: criteriaFail === 0 ? "pass" : "fail",

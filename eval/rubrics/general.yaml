@@ -4,7 +4,11 @@ description: >
 
 criteria:
   - id: generators-not-async
-    description: "Uses generator functions (function*) for async actions, not async/await"
+    description: >
+      Async actions use generator functions (function*) with yield instead of
+      async/await. Synchronous actions remain plain functions — do not use
+      function* on actions that have no async work. Pass if there are no async
+      actions in the code.
 
   - id: server-state
     description: "Uses wp_interactivity_state() in PHP to initialize server-side state"
