@@ -59,6 +59,7 @@ const EVAL_DIR = path.dirname(new URL(import.meta.url).pathname);
 const REPO_ROOT = path.join(EVAL_DIR, "..");
 const CACHE_DIR = path.join(EVAL_DIR, ".cache");
 const LLM_CACHE_PATH = path.join(CACHE_DIR, "llm-results.json");
+const SUMMARY_PATH = path.join(CACHE_DIR, "eval-summary.json");
 
 // ---------------------------------------------------------------------------
 // Cache helpers
@@ -74,6 +75,63 @@ function loadLLMCache() {
     return null;
   }
   return JSON.parse(fs.readFileSync(LLM_CACHE_PATH, "utf8"));
+}
+
+// ---------------------------------------------------------------------------
+// Summary helpers
+// ---------------------------------------------------------------------------
+
+function getGitCommit() {
+  try {
+    return execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function buildLLMSummaryStudents(studentResults) {
+  return studentResults.map((entry) => {
+    if (entry.skipped) {
+      return { student: entry.student, status: "skip", reason: entry.reason, scenarios: [] };
+    }
+    const scenarios = entry.scenarios.map((s) => {
+      const criteriaPass = s.results.filter((r) => r.pass).length;
+      const criteriaFail = s.results.filter((r) => !r.pass).length;
+      const failures = s.results
+        .filter((r) => !r.pass)
+        .map((r) => ({ criterion: r.criterion, reasoning: r.reasoning }));
+      return {
+        scenario: s.scenario,
+        status: criteriaFail === 0 ? "pass" : "fail",
+        criteriaPass,
+        criteriaFail,
+        failures,
+      };
+    });
+    const studentFailed = scenarios.some((s) => s.status === "fail");
+    return { student: entry.student, status: studentFailed ? "fail" : "pass", scenarios };
+  });
+}
+
+function buildE2ESummaryStudents(e2eResults) {
+  return e2eResults.map((entry) => {
+    if (entry.skipped) {
+      return { student: entry.student, status: "skip", reason: entry.reason, scenarios: [] };
+    }
+    const scenarios = entry.scenarios.map((s) => ({
+      scenario: s.scenario,
+      status: (s.status || (s.failed > 0 ? "fail" : "pass")).toLowerCase(),
+      passed: s.passed || 0,
+      failed: s.failed || 0,
+      reason: s.reason || null,
+    }));
+    return { student: entry.student, scenarios };
+  });
+}
+
+function writeSummary(summary) {
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
+  fs.writeFileSync(SUMMARY_PATH, JSON.stringify(summary, null, 2));
 }
 
 // ---------------------------------------------------------------------------
@@ -134,7 +192,16 @@ async function runLLMEvaluation(config) {
 
   for (const studentConfig of config.students) {
     const studentLabel = `${studentConfig.provider}/${studentConfig.model}`;
-    const student = createProvider(studentConfig);
+
+    let student;
+    try {
+      student = createProvider(studentConfig);
+    } catch (err) {
+      process.stdout.write(`\n  Student: ${studentLabel}\n`);
+      process.stdout.write(`    SKIP: ${err.message}\n`);
+      studentResults.push({ student: studentLabel, skipped: true, reason: err.message, scenarios: [] });
+      continue;
+    }
 
     process.stdout.write(`\n  Student: ${studentLabel}\n`);
 
@@ -309,8 +376,16 @@ function runE2ETests(studentResults) {
 
   const allStudentE2E = [];
 
-  for (const { student, scenarios } of studentResults) {
+  for (const entry of studentResults) {
+    const { student, scenarios } = entry;
     process.stdout.write(`\n  Student: ${student}\n`);
+
+    if (entry.skipped || scenarios.length === 0) {
+      process.stdout.write(`    SKIP: No LLM results available\n`);
+      allStudentE2E.push({ student, skipped: true, reason: entry.reason || "No LLM results", scenarios: [] });
+      continue;
+    }
+
     const e2eResults = runE2ETestsForStudent(scenarios);
     allStudentE2E.push({ student, scenarios: e2eResults });
   }
@@ -333,11 +408,22 @@ async function main() {
   process.stdout.write("=== IAPI Skill Evaluation ===\n");
 
   let exitCode = 0;
+  const summary = {
+    timestamp: new Date().toISOString(),
+    commit: getGitCommit(),
+    stages: {},
+  };
 
   // Stage 1: Format validation.
   if (command === "format" || command === "all") {
     const formatResult = runFormatValidation();
     reportFormatStage(formatResult);
+
+    summary.stages.format = {
+      status: formatResult.ok ? "pass" : "fail",
+      passed: formatResult.passed,
+      failed: formatResult.failed,
+    };
 
     if (!formatResult.ok) {
       exitCode = 1;
@@ -352,13 +438,25 @@ async function main() {
 
     reportLLMStage({ students: studentResults });
 
-    // Check for failures across all students.
+    // If every student was skipped, nothing ran — that's a failure.
+    const allSkipped = studentResults.every((entry) => entry.skipped);
+    if (allSkipped) {
+      process.stdout.write("\n  ERROR: All students were skipped — nothing was evaluated.\n");
+      exitCode = 1;
+    }
+
+    // Check for failures across non-skipped students.
     const hasFailures = studentResults.some((entry) =>
-      entry.scenarios.some((s) => s.results.some((r) => !r.pass))
+      !entry.skipped && entry.scenarios.some((s) => s.results.some((r) => !r.pass))
     );
     if (hasFailures) {
       exitCode = 1;
     }
+
+    summary.stages.llm = {
+      status: (allSkipped || hasFailures) ? "fail" : "pass",
+      students: buildLLMSummaryStudents(studentResults),
+    };
   }
 
   // Stage 3: E2E testing.
@@ -391,19 +489,26 @@ async function main() {
       reportE2EStage({ students: e2eResults });
 
       const hasFails = e2eResults.some((entry) =>
-        entry.scenarios.some(
+        !entry.skipped && entry.scenarios.some(
           (r) => r.status === "ERROR" || (r.failed && r.failed > 0)
         )
       );
       if (hasFails) {
         exitCode = 1;
       }
+
+      summary.stages.e2e = {
+        status: hasFails ? "fail" : "pass",
+        students: buildE2ESummaryStudents(e2eResults),
+      };
     } catch (err) {
       process.stdout.write(`\n  E2E stage error: ${err.message}\n`);
+      summary.stages.e2e = { status: "error", error: err.message };
       exitCode = 1;
     }
   }
 
+  writeSummary(summary);
   process.exit(exitCode);
 }
 

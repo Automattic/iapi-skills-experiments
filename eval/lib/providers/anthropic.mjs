@@ -8,6 +8,9 @@ import { LLMProvider } from "./base.mjs";
 export class AnthropicProvider extends LLMProvider {
   constructor(opts) {
     super(opts);
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY environment variable is required");
+    }
     this.client = new Anthropic();
   }
 

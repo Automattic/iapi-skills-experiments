@@ -42,15 +42,14 @@ You are a skill improvement agent. An eval regression issue has been opened, mea
 
 Read issue #${{ github.event.issue.number }} in ${{ github.repository }}.
 
-The issue body contains:
-- A link to the failed Actions run
-- The commit that triggered the failure
-- Which stages failed (Format Validation, LLM Evaluation, E2E Testing)
+The issue body contains a link to the failed Actions run and which stages failed.
 
-Follow the Actions run link and examine the logs for the failed stages. Look for:
-- Which scenarios failed
-- Which rubric criteria were not met
-- Any error messages or unexpected output
+**Download the `llm-results` artifact** from the failed run using the `download_workflow_run_artifact` tool. It contains `eval-summary.json` with structured failure data:
+- Per-student, per-scenario pass/fail status
+- Failed criteria with judge reasoning
+- Skipped students with reasons
+
+Use this structured data instead of parsing log output. Only fall back to reading job logs if the artifact is missing.
 
 ## Step 2: Read the Current Skill
 

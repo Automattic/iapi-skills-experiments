@@ -8,6 +8,9 @@ import { LLMProvider } from "./base.mjs";
 export class OpenAIProvider extends LLMProvider {
   constructor(opts) {
     super(opts);
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY environment variable is required");
+    }
     this.client = new OpenAI();
   }
 

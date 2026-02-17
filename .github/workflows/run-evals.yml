@@ -46,7 +46,9 @@ jobs:
         if: always()
         with:
           name: llm-results
-          path: eval/.cache/llm-results.json
+          path: |
+            eval/.cache/llm-results.json
+            eval/.cache/eval-summary.json
           retention-days: 7
 
   e2e:
@@ -97,7 +99,7 @@ jobs:
               `**Branch:** ${context.ref}`,
               `**Failed stages:** ${failedJobs.join(', ')}`,
               ``,
-              `Review the run logs for details on which scenarios or criteria failed.`,
+              `Download the \`llm-results\` artifact from this run for structured failure data (\`eval-summary.json\`).`,
             ].join('\n');
 
             await github.rest.issues.create({

@@ -28,8 +28,16 @@ export function reportE2EStage({ students }) {
   let totalFail = 0;
   let totalSkip = 0;
 
-  for (const { student, scenarios } of students) {
+  for (const studentEntry of students) {
+    const { student, scenarios } = studentEntry;
     console.log(`  Student: ${student}\n`);
+
+    if (studentEntry.skipped) {
+      totalSkip += 1;
+      console.log(`    SKIP  ${student}  — ${studentEntry.reason}`);
+      console.log("");
+      continue;
+    }
 
     for (const entry of scenarios) {
       if (entry.status === "SKIP") {
@@ -82,8 +90,15 @@ export function reportLLMStage({ students }) {
   let scenariosPassCount = 0;
   let scenariosFailCount = 0;
 
-  for (const { student, scenarios } of students) {
+  for (const entry of students) {
+    const { student, scenarios } = entry;
     console.log(`  Student: ${student}\n`);
+
+    if (entry.skipped) {
+      console.log(`    SKIP  ${student}  — ${entry.reason}`);
+      console.log("");
+      continue;
+    }
 
     for (const { scenario, results } of scenarios) {
       const passed = results.filter((r) => r.pass).length;
