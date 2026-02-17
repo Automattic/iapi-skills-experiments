@@ -29,7 +29,7 @@ safe-outputs:
 
 engine:
   id: claude
-  model: claude-sonnet-4
+  model: claude-sonnet-4-20250514
 
 timeout-minutes: 20
 ---
