@@ -121,13 +121,16 @@ When touching markup directives:
 - prefer stable data attributes that map clearly to store state,
 - ensure server-rendered markup + client hydration align.
 
-#### Async actions (critical)
+#### Actions (critical)
 
-The Interactivity API uses **generator functions** for async actions. Never use `async/await`:
+The Interactivity API uses **generator functions** for all actions. Never use `async/await`:
 
 ```javascript
-// CORRECT: generator function
+// CORRECT: generator function (for both sync and async actions)
 actions: {
+  *increment() {
+    state.count += 1;
+  },
   *fetchData() {
     state.isLoading = true;
     const response = yield fetch( '/wp-json/wp/v2/posts' );
@@ -137,8 +140,11 @@ actions: {
   },
 }
 
-// WRONG: async/await — loses reactive scope
+// WRONG: regular function or async/await — loses reactive scope
 actions: {
+  increment() { // DO NOT DO THIS
+    state.count += 1;
+  },
   async fetchData() { // DO NOT DO THIS
     const response = await fetch( '/wp-json/wp/v2/posts' );
   },
@@ -147,18 +153,17 @@ actions: {
 
 #### Synchronous event access (WordPress 6.8+)
 
-Actions that need `event.preventDefault()` or `event.stopPropagation()` must use `withSyncEvent()`:
+Actions that need `event.preventDefault()` or `event.stopPropagation()` must use `withSyncEvent()` with generator functions:
 
 ```javascript
 import { store, withSyncEvent } from '@wordpress/interactivity';
 
 store( 'myPlugin', {
   actions: {
-    handleSubmit: withSyncEvent( ( event ) => {
+    *handleSubmit: withSyncEvent( function* ( event ) {
       event.preventDefault();
       // handle form submission
     } ),
-    // Also works with generator functions:
     *handleClick: withSyncEvent( function* ( event ) {
       event.preventDefault();
       yield someAsyncWork();

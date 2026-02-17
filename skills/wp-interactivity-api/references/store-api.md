@@ -19,14 +19,14 @@ const { state, actions } = store( 'myPlugin', {
     },
   },
   actions: {
-    toggle() {
+    *toggle() {
       state.isOpen = !state.isOpen;
     },
-    updateItem() {
+    *updateItem() {
       const context = getContext();
       context.selected = true;
     },
-    // Async action — MUST use generator function
+    // Async action
     *fetchData() {
       const response = yield fetch( '/api/data' );
       const data = yield response.json();
@@ -134,11 +134,10 @@ import { store, withSyncEvent } from '@wordpress/interactivity';
 
 store( 'myPlugin', {
   actions: {
-    handleSubmit: withSyncEvent( ( event ) => {
+    *handleSubmit: withSyncEvent( function* ( event ) {
       event.preventDefault();
       // handle form
     } ),
-    // Also works with generator functions:
     *handleClick: withSyncEvent( function* ( event ) {
       event.preventDefault();
       yield someAsyncWork();
@@ -176,13 +175,16 @@ actions: {
 
 These hooks are imported from `@wordpress/interactivity` and can only be used inside `wp-run` callbacks.
 
-## Async actions — generator functions
+## Actions — generator functions
 
-The Interactivity API uses generator functions instead of `async/await` to maintain proper scope tracking.
+The Interactivity API uses generator functions for all actions instead of regular functions or `async/await` to maintain proper scope tracking.
 
 ```javascript
-// CORRECT
+// CORRECT — all actions use generator functions
 actions: {
+  *increment() {
+    state.count += 1;
+  },
   *fetchData() {
     state.isLoading = true;
     const response = yield fetch( '/api/data' );
@@ -194,13 +196,16 @@ actions: {
 
 // WRONG — loses reactive scope
 actions: {
+  increment() { // DO NOT DO THIS
+    state.count += 1;
+  },
   async fetchData() { // DO NOT DO THIS
     const response = await fetch( '/api/data' );
   },
 }
 ```
 
-### TypeScript types for async actions (WP 6.9+)
+### TypeScript types for actions (WP 6.9+)
 
 ```typescript
 import { store, type AsyncAction, type TypeYield } from '@wordpress/interactivity';
