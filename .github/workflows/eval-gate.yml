@@ -5,6 +5,8 @@ on:
     paths:
       - "skills/**"
       - "shared/**"
+      - "eval/scenarios/**"
+      - "eval/rubrics/**"
 
 permissions:
   contents: read
