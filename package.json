@@ -1,0 +1,23 @@
+{
+  "name": "iapi-skills-experiments",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "npx playwright install chromium",
+    "eval": "node eval/run-eval.mjs all",
+    "eval:format": "node eval/run-eval.mjs format",
+    "eval:llm": "node eval/run-eval.mjs llm",
+    "eval:e2e": "node eval/run-eval.mjs e2e"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@google/generative-ai": "^0.24.1",
+    "openai": "^4.85.0",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@wordpress/env": "^10.0.0"
+  }
+}

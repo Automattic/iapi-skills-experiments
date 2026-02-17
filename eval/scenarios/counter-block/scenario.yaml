@@ -1,0 +1,24 @@
+name: counter-block
+description: Create an interactive counter block.
+
+prompt: |
+  Create a WordPress block plugin called "interactive-counter". The block should:
+  1. Display a counter value (starting at 5)
+  2. Have "Increment" and "Decrement" buttons that change the counter value
+
+specific_rubric:
+  - id: counter-state
+    description: "Defines counter state in both PHP (wp_interactivity_state) and JavaScript (store)"
+  - id: increment-decrement-actions
+    description: "Has increment and decrement actions that modify the counter state"
+  - id: click-directives
+    description: "Uses data-wp-on--click on both increment and decrement buttons"
+  - id: reactive-display
+    description: "Uses data-wp-text or equivalent to display the counter value reactively"
+  - id: ssr-initial-value
+    description: "Server-rendered HTML includes the initial counter value (5)"
+
+e2e:
+  pluginSlug: interactive-counter
+  blockName: iapi/interactive-counter
+  testSlug: test-counter
