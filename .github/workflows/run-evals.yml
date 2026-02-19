@@ -91,14 +91,41 @@ jobs:
               }
             }
 
-            const title = `[eval-regression] ${failedJobs.join(', ')} failed on ${context.sha.slice(0, 7)}`;
+            const failedStages = failedJobs.join(', ');
+
+            // Check for an existing open eval-regression issue with the same failing stages.
+            const { data: openIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'eval-regression',
+              state: 'open',
+              per_page: 20,
+            });
+
+            const duplicate = openIssues.find(issue =>
+              issue.title.includes(failedStages)
+            );
+
+            if (duplicate) {
+              // Append a comment with the new run info instead of opening a duplicate.
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: duplicate.number,
+                body: `**Still failing** on ${context.sha.slice(0, 7)} — [run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              });
+              core.info(`Duplicate detected — commented on #${duplicate.number}`);
+              return;
+            }
+
+            const title = `[eval-regression] ${failedStages} failed on ${context.sha.slice(0, 7)}`;
             const body = [
               `## Eval Regression`,
               ``,
               `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               `**Commit:** ${context.sha}`,
               `**Branch:** ${context.ref}`,
-              `**Failed stages:** ${failedJobs.join(', ')}`,
+              `**Failed stages:** ${failedStages}`,
               ``,
               `Download the \`llm-results\` artifact from this run for structured failure data (\`eval-summary.json\`).`,
             ].join('\n');
