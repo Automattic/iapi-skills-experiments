@@ -84,6 +84,33 @@ wp_interactivity_state( 'myPlugin', array(
 ));
 ```
 
+**For block plugins**, call `wp_interactivity_state()` in one of these locations:
+
+1. **Dynamic blocks**: In the render callback function:
+
+```php
+function render_my_block( $attributes, $content ) {
+  wp_interactivity_state( 'myPlugin', array(
+    'isOpen' => false,
+    'count'  => 0,
+  ));
+
+  return $content;
+}
+```
+
+2. **Static blocks**: In plugin initialization (before block rendering):
+
+```php
+add_action( 'wp_enqueue_scripts', function() {
+  if ( has_block( 'myPlugin/toggle-panel' ) ) {
+    wp_interactivity_state( 'myPlugin', array(
+      'isOpen' => false,
+    ));
+  }
+});
+```
+
 For local context, use `wp_interactivity_data_wp_context()`:
 
 ```php
