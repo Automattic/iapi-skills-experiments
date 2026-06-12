@@ -13,3 +13,6 @@ pnpm-debug.log*
 eval/wp-env/plugins/
 eval/wp-env/.wp-env.json
 eval/.cache/
+
+# Radical Pipelines: personal convention overrides
+.rp.local.md
