@@ -117,3 +117,43 @@ The Topic 1–2 evidence settles this without further research:
 *Judge/improver:* the judge **never sees the skill** — its system prompt is built only from rubric files plus the scenario's acceptance criteria, with an explicit instruction not to consult skill docs (so skill layout cannot affect judging). The improver does load the skill via the same loader, but only in self-improvement mode, which stays dormant (R4).
 
 **Decision (analyst), pending one follow-up:** keep `skills/wordpress-development/SKILL.md` as the generic single-entry-point router (R5). Fold the testing-project SKILL.md **body** into the topic entry doc at `references/interactivity-api.md` (superseding the stub at the same path the router already links), and place the five copied refs in a topic subfolder `references/interactivity-api/{directives,store,server-rendering,client-navigation,typescript}.md`, with the entry doc linking all five so the loader reaches them transitively. The frontmatter of the copied SKILL.md is dropped (the router keeps its own); the trigger language can inform the router's read-when line. Follow-up needed before fixing the link-rewrite rules: whether `loadSkill` resolves relative links against the linking file's directory or the skill root (determines how the copied `[references/X.md]` links — including inter-ref links — must be rewritten).
+
+**Follow-up findings (researcher, exact loader semantics):**
+
+- Relative links resolve against the **linking file's directory**, not the skill root (`skill-loader.ts:40`: `resolve(dirname(file), href)`), then must pass the `isInside(skillDir, …)` guard.
+- A link whose target doesn't exist is **skipped silently** (`skill-loader.ts:28-29` `existsSync`/`isFile` guards; the only throw is a missing root `SKILL.md`). A typo'd link means that reference is silently absent from the agent's prompt while the run still "succeeds" — a real footgun. Scenario validation (`enumerate.ts:65,70`) only checks that `skills/<id>/SKILL.md` and `rubrics/<id>.md` exist, never the reference structure.
+- **The five ref files contain zero markdown links.** They mention each other only as backtick code spans (4 spots: `directives.md:105`, `store.md:77,145,264`), which the loader never follows — cosmetic, and still read naturally as sibling basenames; leave as-is. All real ref-following links live in the testing-project SKILL.md: 9 occurrences, all of the form `[references/X.md](references/X.md)`.
+- Blob headers use the path relative to the skills root (e.g. `=== wordpress-development/references/interactivity-api/store.md ===`); deeper nesting only changes the header cosmetically.
+- The only naming constraint anywhere: the entry file must be exactly `SKILL.md` at the skill root. References may have any name and depth.
+
+**Final decision (analyst) — skill layout and link-rewrite rules:**
+
+- Layout: `skills/wordpress-development/SKILL.md` (router, kept generic) → `references/interactivity-api.md` (entry doc = testing-project SKILL.md body, frontmatter dropped) → `references/interactivity-api/{directives,store,server-rendering,client-navigation,typescript}.md` (five refs copied verbatim).
+- Rewrites: the router keeps linking `references/interactivity-api.md` (already does). In the entry doc, rewrite its 9 copied links from `[references/X.md](references/X.md)` to `[interactivity-api/X.md](interactivity-api/X.md)` (they resolve relative to `references/`). **That is the only link rewrite in the whole skill**; the five refs are copied with no edits.
+- **Plan must include a blob verification step** (because broken links fail silent): statically invoke `loadSkill` (or equivalently check for the six `=== … ===` headers in its output) to confirm the entry doc and all five refs are reached from `SKILL.md`. This is a static node call, not an eval run — R12-safe.
+
+### Topic 5 — Cleanup details and supporting files (analyst, verified by local greps)
+
+**Greps over the worktree** (excluding `eval/`, `.pipelines/`, lockfile): references to the old harness (`run-eval`, `eval.config`, `eval/` paths) exist only in `.env.example`, `.gitignore`, `package.json`, and the four workflows — all files already being rewritten or deleted. References to skillpack/local-development exist only in the skillpack scripts and the doc themselves. **No hidden coupling anywhere.**
+
+**Decisions (analyst):**
+
+- **Deletion set** (spec's explicit list plus verified orphans):
+  - `eval/` entirely (R7); the six workflow files (R8); `shared/` entirely (R9 — the two skillpack scripts are its only contents); `docs/` entirely (R9 — `local-development.md` is its only content).
+  - `.github/aw/actions-lock.json` and `.github/agents/agentic-workflows.agent.md` — gh-aw support files that exist solely for the removed agentic workflows (orphaned under R8/R11's intent).
+  - `.gitattributes` — its only rule (`.github/workflows/*.lock.yml linguist-generated merge=ours`) targets the removed lock files.
+  - Net effect: `.github/` ends up with no files at all (git drops empty dirs), which satisfies AC4.
+- **`.gitignore`:** remove the old eval block (`eval/wp-env/plugins/`, `eval/wp-env/.wp-env.json`, `eval/.cache/`); add the Skillsmith/e2e entries `.skillsmith/`, `test-results/`, `playwright-report/`, `.auth/`, `artifacts/`, `.wp-env.json`. Existing generic entries (incl. `.env*` handling and `.rp.local.md`) stay.
+- **`.env.example`:** rewritten for Skillsmith — header noting Skillsmith auto-loads `.env` from the invocation dir (shell env wins); `ANTHROPIC_API_KEY` (anthropic-api provider; also the fallback auth for the default `claude-code` agents when no Claude Code login exists), `OPENAI_API_KEY` (openai-api + codex), `GOOGLE_GENERATIVE_AI_API_KEY` (gemini-api); a note that the default config uses only `claude-code`-provider agents, so a logged-in Claude Code install needs no keys at all.
+- **`README.md`:** rewritten to describe the repo (single `wordpress-development` skill + Skillsmith-based evals): skill structure pointer, prerequisites (Node ≥ 20.17, Docker for wp-env, `npm install` with its Playwright-Chromium postinstall), env setup pointer to `.env.example`, how to run — single scenario `npx skillsmith <scenario-dir>` (equivalently `npm run skillsmith -- <scenario-dir>`) vs full matrix `npm run skillsmith`, where reports land (`.skillsmith/<runId>/`), and the agent cap: **agents must never run the full matrix; at most one scenario × one testing agent; full runs are the owner's manual step** (R12).
+- **R12 agent-guidance home:** `.rp.md` (the conventions file agents read at workflow start; no repo CLAUDE.md/AGENTS.md exists) gets a short "Running evals" rule with the same cap, alongside the README note.
+- `.claude/settings.local.json`'s stale `eval*` permission entries are personal-settings noise, untouched (out of scope).
+
+## Design summary (for the design-doc-writer)
+
+1. **Dependency:** `"@automattic/skillsmith": "github:Automattic/skillsmith#6bd90c34d88b815fdf4fd661dc8c51288111444c"` as a devDependency (no tags exist; swap to a semver range when npm publication lands). Runs TS from source via bundled tsx; no build step; public repo, no auth.
+2. **Layout:** testing-project files land at repo root (`skillsmith.config.ts`, `playwright.config.ts`, `global-setup.mjs`, `tsconfig.json`) and `eval/{prompts,rubrics,scenarios,utils}`; Skillsmith's default paths match this repo, so no `paths` override. Copy source: a clone of `Automattic/skillsmith` checked out at the **same pinned SHA** as the dependency (`6bd90c3…`), keeping the copied config coherent with the installed package version.
+3. **Only two functional adaptations to the copied eval setup:** `skills: [wp-interactivity-api]` → `wordpress-development` in all 11 `scenario.yaml`s; `verify-e2e.ts` type import `"skillsmith"` → `"@automattic/skillsmith"`. Everything else verbatim (rubric filename, prompts, `_candidates.yaml`).
+4. **Skill merge:** router `SKILL.md` kept; entry doc `references/interactivity-api.md` = testing-project SKILL.md body with its 9 ref links rewritten to `interactivity-api/X.md`; five refs verbatim under `references/interactivity-api/`. Verify the loader blob reaches all six docs (links fail silent).
+5. **Smoke run (AC1/R12):** `npx skillsmith <one-scenario-dir>` with the copied config (single test agent `haiku`, judge `opus`, both `claude-code` provider) — naturally 1×1; needs Claude Code auth, Docker, Chromium.
+6. **Cleanup:** spec's R7–R9 set plus orphans (`.github/aw/`, `.github/agents/agentic-workflows.agent.md`, `.gitattributes`, `.gitignore` eval block); `package.json` and `.env.example` rewritten; README rewritten; R12 cap recorded in `.rp.md` + README.
