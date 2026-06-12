@@ -49,8 +49,8 @@ Search the `WordPress/gutenberg` repository for recently merged pull requests th
 
 Read the skill and reference files in this repository:
 
-- `skills/wp-interactivity-api/SKILL.md`
-- `skills/wp-interactivity-api/references/*.md`
+- `skills/wordpress-development/SKILL.md`
+- `skills/wordpress-development/references/*.md`
 
 Identify what our skills currently document about the Interactivity API.
 

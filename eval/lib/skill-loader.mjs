@@ -11,7 +11,7 @@ import path from "node:path";
 /**
  * Load skill context for a given skill name.
  *
- * @param {string} skillName - e.g. "wp-interactivity-api"
+ * @param {string} skillName - e.g. "wordpress-development"
  * @param {string} [repoRoot] - Repository root path.
  * @returns {string} Concatenated skill context.
  */

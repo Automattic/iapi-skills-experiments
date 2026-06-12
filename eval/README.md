@@ -62,7 +62,7 @@ student:
 judge:
   provider: openai
   model: gpt-4o
-skill: wp-interactivity-api
+skill: wordpress-development
 ```
 
 API keys are read from a `.env` file at the repo root (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`).
