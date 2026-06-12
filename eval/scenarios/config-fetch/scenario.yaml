@@ -1,7 +1,7 @@
 name: config-fetch
 description: Build a block that fetches a post via REST using config-supplied URL and nonce.
 skills:
-  - wp-interactivity-api
+  - wordpress-development
 
 prompt: |
   I want an interactive block for WordPress that loads a post from the
@@ -35,4 +35,4 @@ acceptance:
   - The server-rendered HTML for the paragraph contains the initial placeholder text "(no post loaded yet)" so the block reads correctly before JS runs
 
 rubrics:
-  - wp-interactivity-api-best-practices
+  - wordpress-development-best-practices

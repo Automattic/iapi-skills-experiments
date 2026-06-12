@@ -1,7 +1,7 @@
 name: derived-double
 description: Build a counter that displays its doubled value via a derived getter.
 skills:
-  - wp-interactivity-api
+  - wordpress-development
 
 prompt: |
   I want an interactive block for WordPress that shows two numbers side by
@@ -23,4 +23,4 @@ acceptance:
   - Server-rendered HTML includes the initial values (1 for the counter and 2 for the doubled value) so both read correctly before JavaScript hydrates.
 
 rubrics:
-  - wp-interactivity-api-best-practices
+  - wordpress-development-best-practices

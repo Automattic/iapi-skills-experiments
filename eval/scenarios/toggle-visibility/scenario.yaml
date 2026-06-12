@@ -1,7 +1,7 @@
 name: toggle-visibility
 description: Build an interactive expandable note with a show/hide toggle.
 skills:
-  - wp-interactivity-api
+  - wordpress-development
 
 prompt: |
   I want an interactive block for WordPress for an expandable note.
@@ -20,4 +20,4 @@ acceptance:
   - 'Server-rendered HTML reflects the initial closed state: the paragraph carries the hidden attribute and the button has aria-expanded="false"'
 
 rubrics:
-  - wp-interactivity-api-best-practices
+  - wordpress-development-best-practices

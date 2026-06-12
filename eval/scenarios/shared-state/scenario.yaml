@@ -1,7 +1,7 @@
 name: shared-state
 description: Build a counter block whose state is shared across all instances on the page via global state.
 skills:
-  - wp-interactivity-api
+  - wordpress-development
 
 prompt: |
   I'd like an interactive block for WordPress that shows a shared tally
@@ -20,4 +20,4 @@ acceptance:
   - The increment action mutates the shared `state.*` counter property (not a `context.*` property)
 
 rubrics:
-  - wp-interactivity-api-best-practices
+  - wordpress-development-best-practices

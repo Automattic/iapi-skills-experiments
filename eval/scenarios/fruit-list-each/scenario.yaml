@@ -1,7 +1,7 @@
 name: fruit-list-each
 description: Build a fruit list rendered server-side via data-wp-each, with an Add button that appends.
 skills:
-  - wp-interactivity-api
+  - wordpress-development
 
 prompt: |
   I'd like an interactive block for WordPress that shows a list of fruits.
@@ -21,4 +21,4 @@ acceptance:
   - The "Add Mango" action mutates the existing fruits array in place via `.push("Mango")` (or equivalent in-place mutation) rather than reassigning the fruits array to a new one, so `data-wp-each` reactivity picks up the new item
 
 rubrics:
-  - wp-interactivity-api-best-practices
+  - wordpress-development-best-practices
