@@ -1,5 +1,5 @@
 {
-	"extends": "../tsconfig.json",
+	"extends": "./node_modules/@automattic/skillsmith/tsconfig.json",
 	"compilerOptions": {
 		"types": ["node"]
 	},
