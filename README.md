@@ -53,10 +53,10 @@ All run output lands under `.skillsmith/<runId>/`:
 
 ## Agent cap (R12)
 
-**Agents must never run the full eval matrix.** Any agent-driven Skillsmith invocation is limited to **at most one scenario against one testing agent** — always pass a single scenario directory as a positional argument:
+**Agents must never run the full eval matrix; an agent runs at most one scenario against one testing agent, and the full matrix is the owner's manual step.** Always pass a single scenario directory as a positional argument so the run stays capped:
 
 ```sh
 npx skillsmith <one-scenario-dir>
 ```
 
-The full `scenarios × testing-agents` matrix is the **owner's manual step** after setup, not an agent task.
+Running `npm run skillsmith` with no argument executes the entire `scenarios × testing-agents` matrix. That is expensive and is reserved for the owner to run by hand after setup — it is never an agent task.
