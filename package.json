@@ -5,19 +5,16 @@
   "type": "module",
   "scripts": {
     "postinstall": "npx playwright install chromium",
-    "eval": "node eval/run-eval.mjs all",
-    "eval:format": "node eval/run-eval.mjs format",
-    "eval:llm": "node eval/run-eval.mjs llm",
-    "eval:e2e": "node eval/run-eval.mjs e2e"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
-    "@google/generative-ai": "^0.24.1",
-    "openai": "^4.85.0",
-    "yaml": "^2.9.0"
+    "skillsmith": "skillsmith",
+    "test:e2e": "playwright test",
+    "env:start": "wp-env start",
+    "env:stop": "wp-env stop"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
-    "@wordpress/env": "^10.0.0"
+    "@automattic/skillsmith": "github:Automattic/skillsmith#6bd90c34d88b815fdf4fd661dc8c51288111444c",
+    "@playwright/test": "^1.59.1",
+    "@wordpress/env": "^11.4.0",
+    "@wordpress/e2e-test-utils-playwright": "^1.44.0",
+    "@wordpress/scripts": "^32.2.0"
   }
 }
