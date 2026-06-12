@@ -38,4 +38,4 @@ acceptance:
   - The three drawer links are real anchors (`<a href="#home">`, `<a href="#about">`, `<a href="#contact">`) rendered server-side, not built or injected by `view.js`
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices

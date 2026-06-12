@@ -19,4 +19,4 @@ acceptance:
   - The wrapper element rendered by `render.php` carries `data-wp-init="callbacks.<name>"` referencing that init callback so the runtime invokes it on hydration.
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices

@@ -20,4 +20,4 @@ acceptance:
   - 'Server-rendered HTML reflects the initial closed state: the paragraph carries the hidden attribute and the button has aria-expanded="false"'
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices

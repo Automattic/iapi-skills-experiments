@@ -13,4 +13,4 @@ acceptance:
   - Server-rendered HTML includes the initial counter value (5)
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices

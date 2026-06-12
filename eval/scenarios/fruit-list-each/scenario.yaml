@@ -21,4 +21,4 @@ acceptance:
   - The "Add Mango" action mutates the existing fruits array in place via `.push("Mango")` (or equivalent in-place mutation) rather than reassigning the fruits array to a new one, so `data-wp-each` reactivity picks up the new item
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices

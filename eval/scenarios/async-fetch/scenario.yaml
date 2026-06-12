@@ -26,4 +26,4 @@ acceptance:
   - Server-rendered HTML for the paragraph reflects the initial empty value (the joke state/context is seeded empty on the server via `wp_interactivity_state()` or `wp_interactivity_data_wp_context()`).
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices

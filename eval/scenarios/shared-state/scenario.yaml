@@ -20,4 +20,4 @@ acceptance:
   - The increment action mutates the shared `state.*` counter property (not a `context.*` property)
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices

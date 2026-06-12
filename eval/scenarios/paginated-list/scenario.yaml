@@ -39,4 +39,4 @@ acceptance:
   - "`block.json`'s `supports.interactivity` registers the block's view module for router-driven loading — either the boolean `true` shorthand or the explicit object form `{ \"interactive\": true, \"clientNavigation\": true }` (the bare `{ \"clientNavigation\": true }` without `interactive: true` does NOT enable client-side navigation for a block that drives the router)"
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices

@@ -35,4 +35,4 @@ acceptance:
   - The server-rendered HTML for the paragraph contains the initial placeholder text "(no post loaded yet)" so the block reads correctly before JS runs
 
 rubrics:
-  - wordpress-development-best-practices
+  - wp-interactivity-api-best-practices
