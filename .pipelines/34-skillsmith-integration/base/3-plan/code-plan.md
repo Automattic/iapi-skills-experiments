@@ -187,13 +187,18 @@ Note for downstream reasoning (no action here): `verify-e2e.ts` computes `PROJEC
 
 **Changes.**
 1. In `verify-e2e.ts`, change the type import source from `"skillsmith"` (the unscoped name, which only resolved under the testing-project's `file:..` alias) to `"@automattic/skillsmith"`. (`skillsmith.config.ts` already imports the scoped name; `scaffold-plugin.ts` and `wp-cli.mjs` import nothing from Skillsmith — leave them.)
-2. In `tsconfig.json`, change the `extends` target from `"../tsconfig.json"` (a dangling reference once the file lands at this repo's root) to `"@automattic/skillsmith/tsconfig.json"`. The git install ships the Skillsmith root tsconfig (no `files` field, so the whole repo is packed), and TypeScript resolves a package-relative `extends` from `node_modules`. **Leave the rest of `tsconfig.json` verbatim** (`compilerOptions.types: ["node"]` and `include: ["skillsmith.config.ts", "playwright.config.ts"]`).
+2. In `tsconfig.json`, change the `extends` target from `"../tsconfig.json"` (a dangling reference once the file lands at this repo's root) to the **relative path** `"./node_modules/@automattic/skillsmith/tsconfig.json"`. **Leave the rest of `tsconfig.json` verbatim** (`compilerOptions.types: ["node"]` and `include: ["skillsmith.config.ts", "playwright.config.ts"]`).
 
-**Depends on.** Task 5 (for `verify-e2e.ts`), Task 2 (for `tsconfig.json`).
+   **Deviation from the design's literal text — and why.** Design §6 item 3 specifies the bare-specifier form `"@automattic/skillsmith/tsconfig.json"`. That form does **not** resolve: Skillsmith's `package.json` declares an `exports` map exposing only the root entry (`"exports": { ".": "./src/index.ts" }`), and TypeScript honors `exports` when resolving a bare-specifier `extends` from `node_modules` — so `tsc` fails with `error TS6053: File '@automattic/skillsmith/tsconfig.json' not found.` (reproduced with the exact git dependency installed and TypeScript 6.0.3). A **relative** `extends` is a plain file lookup that bypasses `exports`, so `"./node_modules/@automattic/skillsmith/tsconfig.json"` reaches the very file the design intended; `tsc --showConfig` then resolves the full inherited Skillsmith root config (strict mode, `module: esnext`, `moduleResolution: bundler`, etc.) with the local `types: ["node"]` overlay applied. This change preserves the design's intent (inherit the Skillsmith root tsconfig), authors no new file, and alters only the specifier form.
+
+**Depends on.** Task 5 (for `verify-e2e.ts`), Task 2 (for `tsconfig.json`). The tsconfig **resolution check** in the acceptance is runnable only after Task 14's `npm install` (the package must be on disk under `node_modules/`).
 
 **Traces to.** Design §6 items 2 & 3. Enables AC1 (correct resolution) and keeps the config honest under `tsc`/editors.
 
-**Acceptance.** `verify-e2e.ts` imports its Skillsmith types from `"@automattic/skillsmith"` and contains no `from "skillsmith"`. `tsconfig.json`'s `extends` is `"@automattic/skillsmith/tsconfig.json"`; its `compilerOptions.types` and `include` are unchanged.
+**Acceptance.**
+- `verify-e2e.ts` imports its Skillsmith types from `"@automattic/skillsmith"` and contains no `from "skillsmith"`.
+- `tsconfig.json`'s `extends` is `"./node_modules/@automattic/skillsmith/tsconfig.json"`; its `compilerOptions.types` and `include` are unchanged.
+- **Resolution check (after Task 14's install).** The `extends` actually resolves — confirmed by a one-off TypeScript invocation that exits 0, e.g. `npx -p typescript tsc --showConfig` from the repo root. This must use `npx -p typescript tsc` (which fetches the real TypeScript compiler), **not** bare `npx tsc`: neither the repo's devDependencies nor Skillsmith's runtime dependencies install `tsc` (`@wordpress/scripts` compiles TS via Babel and does not depend on `typescript`), so bare `npx tsc` would fetch the unrelated `tsc` stub package. (Because the file's `extends` is the only thing being validated here, the check may equivalently live in Task 14's confirmation or Task 17's audit — but it must run, since Task 7's string check alone would let a non-resolving `extends` ship silently.)
 
 ---
 
@@ -378,12 +383,12 @@ It must contain **no** references to the removed harness, the removed workflows,
 **Files.** A throwaway verification script (e.g. `/tmp/verify-blob.mjs`) — **not committed**. No repo files change.
 
 **Changes.**
-1. Statically invoke Skillsmith's skill loader against the merged skill — **a static Node call, not an eval run** (R12-safe). Concretely, import `loadSkill` from the installed package and call it for `skillId = "wordpress-development"` with the skills root `skills/`:
+1. Statically invoke Skillsmith's skill loader against the merged skill — **a static Node call, not an eval run** (R12-safe). `loadSkill` is **not** re-exported from the package root (`src/index.ts` exports `defineConfig`, `run`, `DEFAULT_PATHS`, and types only), and a bare subpath specifier such as `@automattic/skillsmith/src/scenarios/skill-loader.ts` is blocked by the same `exports` encapsulation as Task 7's B1 (`ERR_PACKAGE_PATH_NOT_EXPORTED`). The form that works — verified end-to-end in the sandbox — is a **relative file-path import** run under `tsx` (file-path imports bypass `exports`), and `loadSkill` is **synchronous** (returns `string`, so there is no `await`):
    ```js
-   import { loadSkill } from "@automattic/skillsmith"; // or the loader's actual export path
-   const blob = await loadSkill("wordpress-development", "skills");
+   import { loadSkill } from "./node_modules/@automattic/skillsmith/src/scenarios/skill-loader.ts";
+   const blob = loadSkill("wordpress-development", "skills");
    ```
-   If `loadSkill` is not re-exported from the package root, import it from its module path inside the installed package (the design references `src/scenarios/skill-loader.ts`); the code-writer resolves the exact import against the installed `node_modules/@automattic/skillsmith`. Use `tsx` to run the script if the loader is TypeScript-only.
+   Run the script with `tsx` (the loader is TypeScript-only). The relative path above is the form to use; the code-writer resolves it against the installed `node_modules/@automattic/skillsmith`.
 2. **Assert** the blob **contains the `=== … ===` section headers for the entry doc and all five references** reached from `SKILL.md`:
    - `=== wordpress-development/references/interactivity-api.md ===`
    - `=== wordpress-development/references/interactivity-api/directives.md ===`
@@ -443,7 +448,7 @@ It must contain **no** references to the removed harness, the removed workflows,
 
 **Changes.** Run tree searches / file checks and confirm:
 
-- **AC3.** No bespoke-harness remnants: no `eval/lib/`, `eval/harness/`, `run-eval.mjs`, `eval.config.yaml`, old `counter-block`/`toggle-visibility` *bespoke* scenario folders, `eval*` npm scripts, or unused LLM SDK deps (`@anthropic-ai/sdk`, `@google/generative-ai`, `openai`, top-level `yaml`). (The copied `eval/scenarios/toggle-visibility/` from Batch B is the new, valid scenario — not a remnant.)
+- **AC3.** No bespoke-harness remnants: no `eval/lib/`, `eval/harness/`, `run-eval.mjs`, `eval.config.yaml`, `eval*` npm scripts, or unused LLM SDK deps (`@anthropic-ai/sdk`, `@google/generative-ai`, `openai`, top-level `yaml`). For the old bespoke scenario folders, check **by directory existence**, not by raw grep: confirm there is **no `eval/scenarios/counter-block/` directory** and that `eval/scenarios/toggle-visibility/` is the new copied scenario (its files byte-match the testing-project source), not a bespoke remnant. **Carve-out — do not grep for the bare string `counter-block` and do not "fix" what it matches:** at the pinned SHA the copied `eval/scenarios/counter/scenario.yaml` carries `name: counter-block` (the one scenario whose `name:` differs from its directory). That field is **copied content, expected, and must not be edited** (Task 4 copies it verbatim; design §6 leaves `name:` fields unchanged). A raw `counter-block` grep will match this file post-Batch-B; that match is correct, not a remnant. (The same applies to any `name:`/directory mismatch — the directory-existence check is the spec-faithful one, matching the spec's "scenario folders" wording.)
 - **AC4.** `find .github -type f` lists none of `eval-gate.yml`, `run-evals.yml`, `skill-improver.*`, `upstream-sync.*` — in fact `.github/` has no files.
 - **AC5.** `shared/scripts/skillpack-build.mjs`, `shared/scripts/skillpack-install.mjs`, and `docs/local-development.md` are gone (and `shared/`, `docs/` are gone).
 - **AC6.** `skills/wordpress-development/SKILL.md` still presents the single-entry-point structure with topic references; its Interactivity API content matches the substance of the testing-project's `wp-interactivity-api` skill (entry body + five reference topics). (Already hard-gated by Task 15's blob check.)
