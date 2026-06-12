@@ -14,7 +14,7 @@ judge:
   temperature: 0
   maxTokens: 4096
 
-skill: wp-interactivity-api
+skill: wordpress-development
 
 # Leave empty to run all scenarios found in eval/scenarios/
 scenarios: []

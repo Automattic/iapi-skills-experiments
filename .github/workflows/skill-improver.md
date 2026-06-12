@@ -55,8 +55,8 @@ Use this structured data instead of parsing log output. Only fall back to readin
 
 Read the skill files to understand what guidance the agent currently has:
 
-- `skills/wp-interactivity-api/SKILL.md` — the main skill document
-- `skills/wp-interactivity-api/references/*.md` — reference materials
+- `skills/wordpress-development/SKILL.md` — the main skill document
+- `skills/wordpress-development/references/*.md` — reference materials
 - `eval/rubrics/general.yaml` — evaluation criteria
 
 For the specific failing scenarios, also read:

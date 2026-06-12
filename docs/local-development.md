@@ -20,10 +20,10 @@ This creates packaged copies under `dist/` with the correct directory structure 
 
 ```
 dist/
-  codex/.codex/skills/wp-interactivity-api/SKILL.md
-  vscode/.github/skills/wp-interactivity-api/SKILL.md
-  claude/.claude/skills/wp-interactivity-api/SKILL.md
-  cursor/.cursor/skills/wp-interactivity-api/SKILL.md
+  codex/.codex/skills/wordpress-development/SKILL.md
+  vscode/.github/skills/wordpress-development/SKILL.md
+  claude/.claude/skills/wordpress-development/SKILL.md
+  cursor/.cursor/skills/wordpress-development/SKILL.md
 ```
 
 You can build for a specific target or skill:
@@ -33,7 +33,7 @@ You can build for a specific target or skill:
 node shared/scripts/skillpack-build.mjs --clean --targets=claude
 
 # Only build a specific skill
-node shared/scripts/skillpack-build.mjs --clean --skills=wp-interactivity-api
+node shared/scripts/skillpack-build.mjs --clean --skills=wordpress-development
 ```
 
 ### Step 2: Install
@@ -57,13 +57,13 @@ node shared/scripts/skillpack-install.mjs --dest=../my-wp-project --targets=clau
 1. **Clone this repo** next to your WordPress project:
    ```
    ~/code/
-     iapi-skills-experiments/   <-- this repo
+     wordpress-skill-experiments/   <-- this repo
      my-wp-project/             <-- your WordPress project
    ```
 
 2. **Build and install** into your project:
    ```bash
-   cd iapi-skills-experiments
+   cd wordpress-skill-experiments
    node shared/scripts/skillpack-build.mjs --clean --targets=claude
    node shared/scripts/skillpack-install.mjs --dest=../my-wp-project --targets=claude
    ```
@@ -81,15 +81,15 @@ For tools that support symlinks (Claude Code, Cursor, OpenCode), you can skip th
 ```bash
 # Claude Code (project-level)
 mkdir -p ../my-wp-project/.claude/skills
-ln -s "$(pwd)/skills/wp-interactivity-api" ../my-wp-project/.claude/skills/wp-interactivity-api
+ln -s "$(pwd)/skills/wordpress-development" ../my-wp-project/.claude/skills/wordpress-development
 
 # Claude Code (global)
 mkdir -p ~/.claude/skills
-ln -s "$(pwd)/skills/wp-interactivity-api" ~/.claude/skills/wp-interactivity-api
+ln -s "$(pwd)/skills/wordpress-development" ~/.claude/skills/wordpress-development
 
 # Cursor (project-level)
 mkdir -p ../my-wp-project/.cursor/skills
-ln -s "$(pwd)/skills/wp-interactivity-api" ../my-wp-project/.cursor/skills/wp-interactivity-api
+ln -s "$(pwd)/skills/wordpress-development" ../my-wp-project/.cursor/skills/wordpress-development
 ```
 
 **Caveats:**
