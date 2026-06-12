@@ -23,14 +23,14 @@ Skillsmith auto-loads `.env` from the directory you invoke it in (using Node's b
 ### Single scenario (the normal dev workflow)
 
 ```sh
-npx skillsmith eval/scenarios/<scenario-dir>
+npx skillsmith <scenario-dir>
 # equivalently
-npm run skillsmith -- eval/scenarios/<scenario-dir>
+npm run skillsmith -- <scenario-dir>
 ```
 
-For example:
+Scenario names are the bare directory names under `eval/scenarios/` (e.g. `counter`, `async-fetch`). For example:
 ```sh
-npx skillsmith eval/scenarios/counter
+npx skillsmith counter
 ```
 
 This runs one scenario against the single configured testing agent and writes results under `.skillsmith/<runId>/`.
@@ -56,7 +56,7 @@ All run output lands under `.skillsmith/<runId>/`:
 **Agents must never run the full eval matrix.** Any agent-driven Skillsmith invocation is limited to **at most one scenario against one testing agent** — always pass a single scenario directory as a positional argument:
 
 ```sh
-npx skillsmith eval/scenarios/<one-scenario-dir>
+npx skillsmith <one-scenario-dir>
 ```
 
 The full `scenarios × testing-agents` matrix is the **owner's manual step** after setup, not an agent task.
