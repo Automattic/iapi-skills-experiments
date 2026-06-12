@@ -1,7 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "@playwright/test";
-import config from "./skillsmith.config";
 
 const STORAGE_STATE_PATH = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
@@ -15,12 +14,20 @@ const WP_ENV_PORT = process.env.WP_ENV_PORT ?? "8987";
 process.env.WP_BASE_URL ??= `http://localhost:${WP_ENV_PORT}`;
 process.env.STORAGE_STATE_PATH ??= STORAGE_STATE_PATH;
 
+// Agent IDs to create Playwright projects for. One project per testing agent
+// mirrors skillsmith.config.ts roles.test.agents so failing specs can be
+// attributed back to the agent via projectName.
+// Importing skillsmith.config here would pull in @automattic/skillsmith (raw TS)
+// which Playwright's esbuild cannot load from node_modules, so we declare the
+// list directly. Keep in sync with skillsmith.config.ts roles.test.agents.
+const TESTING_AGENTS = (process.env.SKILLSMITH_TESTING_AGENTS ?? "haiku").split(",").filter(Boolean);
+
 export default defineConfig({
 	testDir: "./eval/scenarios",
 	testMatch: "**/e2e.spec.mjs",
 	globalSetup: "./global-setup.mjs",
 	reporter: [["list"], ["json"]],
-	projects: config.roles.test.agents.map((agentId) => ({
+	projects: TESTING_AGENTS.map((agentId) => ({
 		name: agentId,
 		metadata: { agentId },
 	})),
