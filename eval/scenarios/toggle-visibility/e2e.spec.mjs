@@ -1,41 +1,54 @@
-// @ts-check
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@wordpress/e2e-test-utils-playwright";
+import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
 
 /**
  * E2E tests for the toggle-visibility scenario.
  */
 
-const POST_URL = "/test-toggle/";
+test.describe("toggle-visibility scenario", () => {
+	let post;
+	test.beforeAll(async ({ requestUtils }, workerInfo) => {
+		deactivateAllPlugins();
+		await requestUtils.activatePlugin(
+			`plugin-toggle-visibility-${workerInfo.project.metadata.agentId}`,
+		);
+		post = await requestUtils.createPost({
+			content: "<!-- wp:wp-skill/testing-block /-->",
+			status: "publish",
+		});
+	});
 
-test.describe("toggle-panel block", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto(POST_URL);
-    await page.waitForSelector("[data-wp-interactive]");
-  });
+	test.beforeEach(async ({ page }) => {
+		await page.goto(`/?p=${post.id}`);
+	});
 
-  test("panel is hidden by default", async ({ page }) => {
-    const panel = page.locator("[data-wp-bind--hidden]");
-    await expect(panel).toBeHidden();
-  });
+	test.afterAll(async ({ requestUtils }) => {
+		deactivateAllPlugins();
+		await requestUtils.deleteAllPosts();
+	});
 
-  test("clicking the toggle button shows the panel", async ({ page }) => {
-    const panel = page.locator("[data-wp-bind--hidden]");
-    const toggleBtn = page.getByRole("button", { name: /toggle/i });
+	test("paragraph is hidden initially with aria-expanded='false'", async ({
+		page,
+	}) => {
+		const toggle = page.locator("button[aria-expanded]").first();
+		await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
-    await toggleBtn.click();
-    await expect(panel).toBeVisible();
-  });
+		const paragraph = page.locator("[data-wp-interactive] p").first();
+		await expect(paragraph).toBeHidden();
+	});
 
-  test("clicking the toggle button twice hides the panel again", async ({
-    page,
-  }) => {
-    const panel = page.locator("[data-wp-bind--hidden]");
-    const toggleBtn = page.getByRole("button", { name: /toggle/i });
+	test("clicking the button reveals the paragraph and flips aria-expanded", async ({
+		page,
+	}) => {
+		const toggle = page.locator("button[aria-expanded]").first();
+		const paragraph = page.locator("[data-wp-interactive] p").first();
 
-    await toggleBtn.click();
-    await expect(panel).toBeVisible();
+		await toggle.click();
+		await expect(toggle).toHaveAttribute("aria-expanded", "true");
+		await expect(paragraph).toBeVisible();
 
-    await toggleBtn.click();
-    await expect(panel).toBeHidden();
-  });
+		await toggle.click();
+		await expect(toggle).toHaveAttribute("aria-expanded", "false");
+		await expect(paragraph).toBeHidden();
+	});
 });

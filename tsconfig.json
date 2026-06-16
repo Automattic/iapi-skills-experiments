@@ -1,0 +1,7 @@
+{
+	"extends": "./node_modules/@automattic/skillsmith/tsconfig.json",
+	"compilerOptions": {
+		"types": ["node"]
+	},
+	"include": ["skillsmith.config.ts", "playwright.config.ts"]
+}

@@ -1,5 +1,4 @@
 .DS_Store
-dist/
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -9,10 +8,12 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
-# Eval: generated plugin files and caches
-eval/wp-env/plugins/
-eval/wp-env/.wp-env.json
-eval/.cache/
+# Skillsmith / e2e generated outputs
+.skillsmith/
+test-results/
+playwright-report/
+.auth/
+.wp-env.json
 
 # Radical Pipelines: personal convention overrides
 .rp.local.md
