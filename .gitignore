@@ -1,5 +1,4 @@
 .DS_Store
-dist/
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -14,7 +13,6 @@ pnpm-debug.log*
 test-results/
 playwright-report/
 .auth/
-artifacts/
 .wp-env.json
 
 # Radical Pipelines: personal convention overrides
