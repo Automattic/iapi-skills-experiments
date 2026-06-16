@@ -24,7 +24,7 @@ export default defineConfig({
 		},
 		opus: {
 			provider: "claude-code",
-			model: "claude-opus-4-7",
+			model: "claude-opus-4-8",
 			effort: "xhigh",
 		},
 	},
