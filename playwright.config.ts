@@ -25,7 +25,7 @@ const TESTING_AGENTS = (process.env.SKILLSMITH_TESTING_AGENTS ?? "haiku").split(
 export default defineConfig({
 	testDir: "./eval/scenarios",
 	testMatch: "**/e2e.spec.mjs",
-	globalSetup: "./global-setup.mjs",
+	globalSetup: "./eval/utils/global-setup.mjs",
 	reporter: [["list"], ["json"]],
 	projects: TESTING_AGENTS.map((agentId) => ({
 		name: agentId,
