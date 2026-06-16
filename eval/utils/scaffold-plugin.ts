@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const BLOCK_NAME = "skillsmith/testing-block";
+const BLOCK_NAME = "wp-skill/testing-block";
 const SLUG_PATTERN = /^[a-z0-9-]+$/;
 
 function pluginSlug(scenarioName: string, agentId: string): string {

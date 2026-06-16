@@ -28,7 +28,7 @@ test.describe("paginated-list scenario", () => {
 		}
 		post = await requestUtils.createPost({
 			title: "Block host",
-			content: "<!-- wp:skillsmith/testing-block /-->",
+			content: "<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});
@@ -64,7 +64,7 @@ test.describe("paginated-list scenario", () => {
 		// accessibility tree on the initial render.)
 		await expect(
 			page
-				.locator(".wp-block-skillsmith-testing-block")
+				.locator(".wp-block-wp-skill-testing-block")
 				.getByRole("link", { name: /^previous$/i }),
 		).toHaveCount(0);
 	});
@@ -81,7 +81,7 @@ test.describe("paginated-list scenario", () => {
 		// with theme-emitted post navigation that might also expose a
 		// "Next" link in some themes.
 		await page
-			.locator(".wp-block-skillsmith-testing-block")
+			.locator(".wp-block-wp-skill-testing-block")
 			.getByRole("link", { name: /^next$/i })
 			.click();
 

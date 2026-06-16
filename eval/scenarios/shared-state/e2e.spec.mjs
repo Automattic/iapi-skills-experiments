@@ -17,7 +17,7 @@ test.describe("shared-state scenario", () => {
 		);
 		post = await requestUtils.createPost({
 			content:
-				"<!-- wp:skillsmith/testing-block /-->\n<!-- wp:skillsmith/testing-block /-->",
+				"<!-- wp:wp-skill/testing-block /-->\n<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});

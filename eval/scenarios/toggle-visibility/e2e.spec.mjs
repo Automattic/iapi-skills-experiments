@@ -13,7 +13,7 @@ test.describe("toggle-visibility scenario", () => {
 			`plugin-toggle-visibility-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
-			content: "<!-- wp:skillsmith/testing-block /-->",
+			content: "<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});

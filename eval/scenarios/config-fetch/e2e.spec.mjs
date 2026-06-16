@@ -17,7 +17,7 @@ test.describe("config-fetch scenario", () => {
 			`plugin-config-fetch-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
-			content: "<!-- wp:skillsmith/testing-block /-->",
+			content: "<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});
@@ -51,7 +51,7 @@ test.describe("config-fetch scenario", () => {
 		await page.getByRole("button", { name: /load post|fetch/i }).click();
 
 		await expect(
-			page.locator(".wp-block-skillsmith-testing-block"),
+			page.locator(".wp-block-wp-skill-testing-block"),
 		).toContainText("Mocked Greeting Title");
 
 		expect(capturedUrl).toBeTruthy();

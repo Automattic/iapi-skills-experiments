@@ -14,7 +14,7 @@ test.describe("counter block scenario", () => {
 			`plugin-counter-block-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
-			content: "<!-- wp:skillsmith/testing-block /-->",
+			content: "<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});

@@ -16,7 +16,7 @@ test.describe("minimal-scaffold scenario", () => {
 			`plugin-minimal-scaffold-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
-			content: "<!-- wp:skillsmith/testing-block /-->",
+			content: "<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});
@@ -35,7 +35,7 @@ test.describe("minimal-scaffold scenario", () => {
 		await page.goto(`/?p=${post.id}`);
 
 		await expect(
-			page.locator(".wp-block-skillsmith-testing-block"),
+			page.locator(".wp-block-wp-skill-testing-block"),
 		).toContainText("Hello from iAPI");
 
 		// Hydration is async — poll for the marker.
@@ -52,7 +52,7 @@ test.describe("minimal-scaffold scenario", () => {
 		await page.goto(`/?p=${post.id}`);
 
 		const wrapper = page
-			.locator(".wp-block-skillsmith-testing-block[data-wp-interactive]")
+			.locator(".wp-block-wp-skill-testing-block[data-wp-interactive]")
 			.first();
 		await expect(wrapper).toBeVisible();
 		const namespace = await wrapper.getAttribute("data-wp-interactive");

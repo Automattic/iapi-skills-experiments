@@ -17,7 +17,7 @@ test.describe("independent-counters scenario", () => {
 		);
 		post = await requestUtils.createPost({
 			content:
-				"<!-- wp:skillsmith/testing-block /-->\n<!-- wp:skillsmith/testing-block /-->",
+				"<!-- wp:wp-skill/testing-block /-->\n<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});
@@ -32,7 +32,7 @@ test.describe("independent-counters scenario", () => {
 	});
 
 	test("renders two instances each starting at 0", async ({ page }) => {
-		const wrappers = page.locator(".wp-block-skillsmith-testing-block");
+		const wrappers = page.locator(".wp-block-wp-skill-testing-block");
 		await expect(wrappers).toHaveCount(2);
 
 		const counters = wrappers.locator("[data-wp-text]");
@@ -43,7 +43,7 @@ test.describe("independent-counters scenario", () => {
 	test("incrementing one instance does not affect the other", async ({
 		page,
 	}) => {
-		const wrappers = page.locator(".wp-block-skillsmith-testing-block");
+		const wrappers = page.locator(".wp-block-wp-skill-testing-block");
 		const counters = wrappers.locator("[data-wp-text]");
 		const buttons = wrappers.getByRole("button", { name: /increment/i });
 

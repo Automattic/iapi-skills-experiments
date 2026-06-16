@@ -15,7 +15,7 @@ test.describe("async-fetch scenario", () => {
 			`plugin-async-fetch-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
-			content: "<!-- wp:skillsmith/testing-block /-->",
+			content: "<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});
@@ -43,7 +43,7 @@ test.describe("async-fetch scenario", () => {
 		await page.getByRole("button", { name: /fetch joke/i }).click();
 
 		await expect(
-			page.locator(".wp-block-skillsmith-testing-block"),
+			page.locator(".wp-block-wp-skill-testing-block"),
 		).toContainText("Why did the chicken cross the road? To yield a Promise.");
 		expect(requestCount).toBe(1);
 	});
@@ -63,13 +63,13 @@ test.describe("async-fetch scenario", () => {
 
 		// Before any click, the joke text must not be present.
 		await expect(
-			page.locator(".wp-block-skillsmith-testing-block"),
+			page.locator(".wp-block-wp-skill-testing-block"),
 		).not.toContainText("Eventually-resolved joke.");
 
 		await page.getByRole("button", { name: /fetch joke/i }).click();
 
 		await expect(
-			page.locator(".wp-block-skillsmith-testing-block"),
+			page.locator(".wp-block-wp-skill-testing-block"),
 		).toContainText("Eventually-resolved joke.");
 	});
 });

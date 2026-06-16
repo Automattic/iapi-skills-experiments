@@ -13,7 +13,7 @@ test.describe("focus-trap-menu scenario", () => {
 			`plugin-focus-trap-menu-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
-			content: "<!-- wp:skillsmith/testing-block /-->",
+			content: "<!-- wp:wp-skill/testing-block /-->",
 			status: "publish",
 		});
 	});
@@ -32,7 +32,7 @@ test.describe("focus-trap-menu scenario", () => {
 	// labelled "Home" / "About" / "Contact". We use the WP-emitted block
 	// class (always derived from the fixed block name) rather than the
 	// agent's chosen `data-wp-interactive` namespace, which is variable.
-	const block = (page) => page.locator(".wp-block-skillsmith-testing-block");
+	const block = (page) => page.locator(".wp-block-wp-skill-testing-block");
 	// `el.hidden` on the closest ancestor of the home link in the block
 	// reflects the iAPI `data-wp-bind--hidden` wiring directly — and is
 	// not silently defeated by user CSS like `display: flex` on the
@@ -40,7 +40,7 @@ test.describe("focus-trap-menu scenario", () => {
 	// be. The scenario tests iAPI wiring; visual styling is not in scope.
 	const isDrawerHidden = (page) =>
 		page.evaluate(() => {
-			const root = document.querySelector(".wp-block-skillsmith-testing-block");
+			const root = document.querySelector(".wp-block-wp-skill-testing-block");
 			const link = root?.querySelector('a[href="#home"]');
 			if (!link) return null;
 			for (
