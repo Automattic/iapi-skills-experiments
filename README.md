@@ -1,6 +1,6 @@
 # wordpress-development skill
 
-A single Claude Code skill for WordPress development, with [Skillsmith](https://github.com/Automattic/skillsmith)-based local evals.
+A single skill for WordPress development, with [Skillsmith](https://github.com/Automattic/skillsmith)-based local evals.
 
 ## Skill structure
 
