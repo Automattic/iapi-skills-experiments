@@ -540,12 +540,11 @@
 
 # === Area: WP-CLI Commands ===
 
-- name: wp-cli-eval-flush-rewrite
-  description: Use WP-CLI to flush rewrite rules and verify a custom post type is registered.
+- name: wp-cli-custom-command
+  description: Register a custom WP-CLI command that produces CLI output.
   difficulty: simple
-  concepts: [wp rewrite flush, wp post-type list, WP-CLI]
+  concepts: [custom WP-CLI command, WP_CLI::add_command, CLI output]
   source: dev.wordpress.org
   source_files:
     - https://developer.wordpress.org/cli/commands/
-    - https://developer.wordpress.org/reference/functions/flush_rewrite_rules/
-  # TODO: prompt + acceptance
+  # Deferred: the custom-command API (WP_CLI::add_command) is documented only off-domain (make.wordpress.org/cli handbook; developer.wordpress.org/cli/ 301-redirects to the command reference), so this is deferred to preserve the suite's never-broken on-domain grounding invariant — the on-domain command reference only yields scenarios that duplicate already-covered features (e.g. cpt-register). Framing-A e2e is empirically feasible via the wpCli(...,{stdio:"pipe"}) stdout channel, so this can be promoted if the custom-command docs land on developer.wordpress.org or handbook grounding is explicitly allowed.
