@@ -25,8 +25,8 @@
 # Record shape mirrors _candidates.yaml. source: dev.wordpress.org distinguishes
 # these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
 # source_files carries developer.wordpress.org URLs (not local paths).
-# Full prompt + acceptance are included for the implemented Plugins and Block
-# Editor scenarios; all other records are lighter stubs.
+# Full prompt + acceptance are included for the implemented Plugins, Block
+# Editor, and REST API scenarios; all other records are lighter stubs.
 
 # === Area: Block Editor ===
 
@@ -394,14 +394,20 @@
 # === Area: REST API ===
 
 - name: rest-api-custom-field-on-post
-  description: Expose a custom field on the Posts REST endpoint using register_rest_field.
+  description: Add a top-level `reading_time` field to the Posts REST response.
   difficulty: simple
-  concepts: [register_rest_field, rest_api_init, get_callback, update_callback]
+  concepts: [register_rest_field, rest_api_init, modifying-responses, get_callback]
   source: dev.wordpress.org
   source_files:
-    - https://developer.wordpress.org/rest-api/extending-the-rest-api/
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/
     - https://developer.wordpress.org/reference/functions/register_rest_field/
-  # TODO: prompt + acceptance
+  prompt: |
+    I want each of my posts to include an extra piece of information when read back through my site's data API. The field should be named `reading_time`, always return the value `5 min`, and appear directly alongside the post's other fields — not buried inside the post's custom-fields or meta section.
+  acceptance:
+    - A new top-level field named `reading_time` is added to the post resource's REST response (not nested under the resource's meta).
+    - The field is registered for the post resource on the REST initialization hook.
+    - Reading a published post through the site's data API returns `reading_time` with the value `5 min`.
+    - The field is exposed on the existing post resource without registering a new route or post meta.
 
 - name: rest-api-authentication-nonce
   description: Use a WP REST API nonce to make authenticated requests from JavaScript.
@@ -411,7 +417,40 @@
   source_files:
     - https://developer.wordpress.org/rest-api/using-the-rest-api/
     - https://developer.wordpress.org/rest-api/key-concepts/
-  # TODO: prompt + acceptance
+  # Deferred: JS-only nonce flow — requires a JS toolchain and browser fetch to exercise; not cleanly assertable in a server-side PHP eval; server-side auth is covered by rest-api-permission-check. Not yet implemented.
+
+# Implemented REST API scenarios — full records
+
+- name: rest-api-route-validation
+  description: Validate a route's `filter` argument so disallowed values are rejected.
+  difficulty: simple
+  concepts: [register_rest_route, route-arguments, validation, enum]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/
+  prompt: |
+    I need a WordPress plugin that exposes a REST route at `/wp-json/example/v1/color`. The route should accept a `filter` query argument that is restricted to a fixed set of allowed color values. A request with an allowed value — for example `/wp-json/example/v1/color?filter=blue` — should succeed with HTTP status `200`. A request with a disallowed value — for example `/wp-json/example/v1/color?filter=purple` — should be rejected with HTTP status `400`. The validation must happen on the server side, so a value outside the allowed set is rejected before the handler runs.
+  acceptance:
+    - A route at `example/v1/color` accepts a `filter` query argument.
+    - A request with `filter=blue` (an allowed value) succeeds with HTTP status 200.
+    - A request with `filter=purple` (a disallowed value) is rejected with HTTP status 400.
+    - The accepted set of values is constrained server-side (a value outside the allowed set is rejected before the handler runs).
+
+- name: rest-api-permission-check
+  description: Gate a route so anonymous callers get 401 and admins get the data.
+  difficulty: simple
+  concepts: [register_rest_route, permission_callback, authentication, rest_authorization_required_code]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/
+    - https://developer.wordpress.org/reference/functions/rest_authorization_required_code/
+  prompt: |
+    I need a WordPress plugin that exposes a route at `/wp-json/example/v1/private` and gates it so only logged-in administrators can access it. An anonymous (logged-out) request to the route must be denied with HTTP status `401`. A logged-in administrator request must succeed and return the body `This is private data.`. The access gate must be enforced by the route's permission check, not by the main handler.
+  acceptance:
+    - A route at `example/v1/private` is gated by a permission check.
+    - An anonymous (logged-out) request to the route is denied with HTTP status 401.
+    - An authenticated administrator request to the route succeeds and returns the body `This is private data.`.
+    - The gate is enforced by the route's permission check (not by the main handler).
 
 # === Area: WP-CLI Commands ===
 
