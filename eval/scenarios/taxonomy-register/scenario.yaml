@@ -1,0 +1,16 @@
+name: taxonomy-register
+description: Register a `genre` taxonomy on posts, exposed via the REST API.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want editors to be able to group and label my posts into a named set of terms — a "genre" classification (use the identifier `genre`) — and I want those genres reachable through my site's data API so other tools can read them.
+
+acceptance:
+  - Registers the taxonomy on the `init` action hook (not before it).
+  - The taxonomy is attached to the `post` object type.
+  - "`public => true` and `show_in_rest => true` are both set."
+  - The taxonomy identifier does not exceed 32 characters and uses only lowercase letters, dashes, and underscores.
+  - "Labels (`name` / `singular_name`) are wrapped in `__()` for translation."
+
+rubrics: []
