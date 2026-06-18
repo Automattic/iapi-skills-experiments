@@ -13,7 +13,7 @@ Each new scenario is a **self-contained directory** `eval/scenarios/<dir>/` cont
 1. **Skillsmith discovers the scenario** by reading the immediate children of `eval/scenarios/` and loading each child's `scenario.yaml`. The directory is the scenario's identity for discovery; the `name` field inside the YAML is the plugin slug used downstream.
 2. **For each (scenario, testing-agent) pair, Skillsmith scaffolds a plugin** via `eval/utils/scaffold-plugin.ts` into the agent's workspace. The scaffold is block-centric: it writes `index.php` (a plugin header plus an `init` hook that registers any block found under `src/blocks` or `build/blocks`), a `package.json`, and a fixed `src/blocks/testing-block/block.json` named `wp-skill/testing-block`. The plugin directory and slug are `plugin-<scenario.name>-<agentId>`.
 3. **The testing agent implements the requested feature** by editing the scaffold. For these four non-block scenarios, the agent adds ordinary PHP (an `add_filter`, an `add_shortcode`, a `register_post_type`, or a `register_rest_route`) to `index.php`. This coexists with the scaffold's block-registration `init` hook without conflict — `index.php` is just PHP, and the extra block registration is harmless. **None of the four scenarios requires the agent to build a block.**
-4. **An LLM judge grades the produced code** against the scenario's `acceptance` list (and any referenced `rubrics`; here, none).
+4. **An LLM judge grades the produced code** against the scenario's `acceptance` list (and any referenced `rubrics`; here every scenario declares `rubrics: []`, so none are referenced — see the schema note in Interfaces and Data Flow for why the key must still be present).
 5. **The e2e harness (`eval/utils/verify-e2e.ts`) runs the Playwright spec** in a `wp-env` runtime: it builds plugins that have a `src/blocks` directory (all of them, since the scaffold always creates one), boots `wp-env` with every produced plugin registered but all deactivated, then runs the scenario's `e2e.spec.mjs`. Each spec activates exactly its own plugin and asserts the runtime behavior.
 
 The prompt for each scenario is phrased by desired outcome in a real user's voice and never names the API/tool/mechanism — deciding the approach is the skill's job. The `acceptance` points describe observable properties of the produced code (judge-verified), and each e2e spec asserts the one runtime-visible outcome that proves the feature works.
@@ -59,8 +59,10 @@ prompt: |
 acceptance:
   - <scenario-unique success point>
   - ...
-# rubrics:              # OMITTED for all four — present only when a scenario references one
+rubrics: []             # empty array — REQUIRED for all four; no shared rubric is referenced
 ```
+
+**The `rubrics` key must be present as an explicit empty array (`rubrics: []`) in all four scenarios.** Skillsmith's discovery validator (`enumerate.ts`'s `isScenarioShape`) checks `Array.isArray(r.rubrics)`, which is `false` for both an omitted key (`undefined`) and a valueless `rubrics:` (parsed as `null`). Either form makes the scenario fail discovery with `"scenario.yaml malformed: expected name/description/skills/prompt/acceptance/rubrics"`, so the scenario is silently skipped and never graded. Only `rubrics: []` passes for a no-rubric scenario (`Array.isArray([])` is `true`). Every existing scenario likewise declares `rubrics:` with at least one entry.
 
 `name` is the plugin slug fragment; the scaffolded plugin directory/slug is `plugin-<name>-<agentId>`, and the e2e spec must activate that exact slug. Note that `name` need not equal the directory name (e.g. the `counter` directory has `name: counter-block`). For this batch we set each scenario's `name` equal to its directory name for clarity (e.g. `filter-body-class`), so the slug is `plugin-filter-body-class-<agentId>`.
 
@@ -153,7 +155,7 @@ Each new scenario directory contains exactly two files, mirroring `eval/scenario
 
 ```
 eval/scenarios/<dir>/
-  scenario.yaml     # name, description, skills:[wordpress-development], prompt, acceptance (no rubrics key)
+  scenario.yaml     # name, description, skills:[wordpress-development], prompt, acceptance, rubrics: [] (explicit empty array)
   e2e.spec.mjs      # Playwright spec: activate plugin-<name>-<agentId>, exercise, assert
 ```
 
@@ -161,7 +163,7 @@ How it plugs into Skillsmith:
 
 - **Discovery:** Skillsmith's `enumerate.ts` reads the immediate children of `eval/scenarios/` and loads `<dir>/scenario.yaml`. Placing the directory directly under `eval/scenarios/` is what makes it discoverable.
 - **Scaffold:** `scaffold-plugin.ts` writes the plugin to `plugin-<name>-<agentId>/` with `index.php` (block-registering `init` hook), `package.json`, and `src/blocks/testing-block/block.json`. The agent adds its feature's PHP to `index.php`.
-- **Judge:** Skillsmith grades the produced code against `acceptance`. Since no scenario sets `rubrics`, only `acceptance` is used.
+- **Judge:** Skillsmith grades the produced code against `acceptance`. Each scenario declares `rubrics: []` (an explicit empty array, required for discovery — see the `scenario.yaml` schema above), so no shared rubric is referenced and only `acceptance` is used.
 - **e2e pickup:** `verify-e2e.ts` derives the spec path from the discovered `dirName` (`eval/scenarios/<dir>/e2e.spec.mjs`), runs `wp-scripts build` (succeeds because the scaffold always creates `src/blocks`), boots `wp-env` with all produced plugins registered-but-deactivated, and runs the spec. The spec activates its own `plugin-<name>-<agentId>` and asserts behavior. Playwright reports map the spec's parent directory back to the scenario and the project name back to the agent.
 
 ## Key Decisions
@@ -196,7 +198,7 @@ How it plugs into Skillsmith:
 
 ### Decision: Add zero new shared rubrics
 
-- **Choice:** Add no files under `eval/rubrics/`; each scenario's `acceptance` list carries all of its checks.
+- **Choice:** Add no files under `eval/rubrics/`; each scenario's `acceptance` list carries all of its checks. "No shared rubric" is expressed in each `scenario.yaml` as an explicit empty array `rubrics: []` (the key is still present and required for discovery — see Interfaces and Data Flow), not by omitting the `rubrics` key.
 - **Alternatives:** (a) One general "WordPress plugin best practices" rubric (escaping, return-not-echo, translation); (b) a narrow "return, don't echo" rubric.
 - **Trade-offs:** Reviewing the four `acceptance` lists, no single rule recurs in the *same form* across all (or even most) scenarios the way iAPI best practices uniformly apply to all 11 iAPI scenarios. The strongest candidate — "return, don't echo" — appears in three scenarios (filter, shortcode, REST) but in materially different forms (return a filtered array, return an HTML string, return response data not `wp_send_json()`), so a single rubric text would fragment into three phrasings and add little over the per-scenario points that already state it precisely. Output escaping is only meaningfully required by the shortcode scenario. A catch-all rubric would risk duplicating per-scenario acceptance points (violating the rubric/acceptance separation rule) or being too vague to help the judge. The spec explicitly allows zero rubrics when no genuinely-shared check emerges.
 - **Traces to:** Requirement 8 (rubric/acceptance separation), Requirement 9 (shared rubrics in scope but only when genuinely cross-cutting), Acceptance Criterion 8.
@@ -226,6 +228,7 @@ All dependencies already exist in the repo; the batch introduces **no new** depe
 ## Failure Modes and Observability
 
 - **Scenario not discovered:** A directory not placed as an immediate child of `eval/scenarios/`, or missing `scenario.yaml`, is silently skipped by `enumerate.ts`. Mitigation: flat layout with the two required files. Observable as the scenario simply not appearing in run output.
+- **Malformed `scenario.yaml` (schema validation):** `enumerate.ts`'s `isScenarioShape` requires `rubrics` to be a present array (`Array.isArray(r.rubrics)`). An omitted key (`undefined`) or a valueless `rubrics:` (parsed as `null`) fails the check and the scenario is rejected with `"scenario.yaml malformed: expected name/description/skills/prompt/acceptance/rubrics"`, never appearing in run output or being graded. Mitigation: every scenario declares `rubrics: []` explicitly. The same `isScenarioShape` check also requires `name`, `description`, `skills`, `prompt`, and `acceptance` to be present and well-typed.
 - **Invalid `name`:** `scaffold-plugin.ts` throws if `name` (or agentId) does not match `/^[a-z0-9-]+$/`. The chosen names all conform.
 - **e2e cannot activate the plugin / wrong slug:** If a spec activates a slug that does not match `plugin-<scenario.name>-<agentId>`, activation fails and the spec errors. Mitigation: specs derive the slug from `scenario.name` and `workerInfo.project.metadata.agentId`, exactly as existing specs do.
 - **e2e assertion drift (CPT/REST):** Mitigated by pinning the identifier/route in the prompt (see Key Decisions); the spec asserts the pinned string.
