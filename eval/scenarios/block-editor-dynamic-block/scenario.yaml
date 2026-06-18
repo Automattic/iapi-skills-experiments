@@ -1,0 +1,16 @@
+name: block-editor-dynamic-block
+description: Render a block's front-end output dynamically in PHP at render time.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want to create a WordPress block whose front-end output is generated dynamically on the server each time the page loads — the output should not be baked into the saved post content but produced fresh in PHP every time. The block should display the exact text "Hello from PHP" on the front end.
+
+acceptance:
+  - The block's front-end output is generated dynamically in PHP at render time (not from a static JS save()).
+  - The render template produces and returns HTML output.
+  - get_block_wrapper_attributes() is called on the block's wrapper element.
+  - The output includes the pinned text (Hello from PHP).
+  - No JavaScript save() function returns non-null content — the block is dynamic.
+
+rubrics: []
