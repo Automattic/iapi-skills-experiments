@@ -1,0 +1,15 @@
+name: common-apis-options
+description: Imperatively store and retrieve a value via the Options API, with a default when unset.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my plugin to save a piece of its own configuration so it persists across requests and I can read it back later. Store the value under the key `my_plugin_setting`, defaulting to `enabled` when it has not been saved yet. I need to imperatively write the value and read it back — not register a setting for the admin UI, just store and retrieve it directly.
+
+acceptance:
+  - A value is stored under the pinned namespaced key.
+  - The stored value is retrieved by reading it back from the same key.
+  - A default value is provided for when the key has not yet been set.
+  - The store and retrieve operations run from a load-time hook.
+
+rubrics: []
