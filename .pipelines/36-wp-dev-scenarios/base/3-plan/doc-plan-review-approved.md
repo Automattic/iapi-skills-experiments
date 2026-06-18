@@ -1,0 +1,20 @@
+# Doc Plan Review
+
+## Verdict: approved
+
+## Summary
+
+The doc plan is a deliberately near-empty plan, and an independent end-to-end sweep of the host project's live documentation confirms that is the correct shape. The code phase adds four self-describing, non-Interactivity-API scenarios under `eval/scenarios/`, each carrying its own `description`/`prompt`/`acceptance` inside `scenario.yaml`. I verified by my own sweep — not by trusting the plan — that no live host doc goes stale when these land: no host doc enumerates scenarios exhaustively, states a scenario count, or asserts "all scenarios target the Interactivity API." The single doc surface that names scenario directories (`README.md` line 31) is the one the plan's only task addresses, and it is itself drift-resistant (`e.g.` framing, no count). The skill (`skills/wordpress-development/`) is correctly never documented or modified, and the plan's "Surfaces deliberately not changed" section records a spec/design-traced rationale for every excluded surface. The one task is fully formed (Goal, Audience, Files, Sections-scope, Depends on, Traces to, Acceptance), explicitly forbids enumerations/counts/`scenario.yaml`-duplication, and requires drawing the example directory name from the filesystem at phase-5 time. No completeness, drift, or alignment defect found.
+
+## Verification performed (independent, not trusting the plan)
+
+- **Enumerated host docs.** The only host documentation files are `README.md`, `eval/prompts/improver.md`, `eval/prompts/testing-agent.md`, `eval/rubrics/wp-interactivity-api-best-practices.md`, `.rp.md` (task-tracking conventions), and the `skills/wordpress-development/` skill content (out of scope). No CHANGELOG, CONTRIBUTING, `docs/` directory, or eval-level README exists.
+- **Scenario-name references.** The only host doc that names scenario directories is `README.md` line 31 (`e.g. counter, async-fetch`), plus the worked `npx skillsmith counter` example beneath it — exactly the lines Task 1 scopes. `package.json` has no description/scenario text; `.env.example` and `skillsmith.config.ts` reference no scenario names. (All other `counter`/`async-fetch` matches are inside `.pipelines/` artifacts or `node_modules`.)
+- **Count / "all Interactivity API" assertions.** Grepping the repo for scenario enumerations, counts, and "all/every scenario … Interactivity" assertions returned hits only inside `.pipelines/` (prior-phase artifacts, not host docs) and `skills/` (out of scope). No host doc outside the skill states a count or claims the suite is Interactivity-API-only.
+- **README "Skill structure" (line 7).** Confirmed it scopes the Interactivity-API "main topic" statement to the *skill* under `skills/wordpress-development/`, which this work does not touch — so it stays accurate. The plan correctly leaves it untouched and explains why.
+- **`README.md` line 31 staleness.** The sentence is illustrative (`e.g.`), not exhaustive, and asserts no topic, so it does not technically go stale. Task 1's refresh to add a non-iAPI example is therefore an optional, drift-resistant improvement; the plan is transparent that it is optional and forbids it from becoming an enumeration.
+- **`eval/scenarios/_candidates.yaml`.** Examined; its own header declares it a backlog of *candidate Interactivity-API scenarios* mined from Gutenberg docs. It describes prospective work, not the live suite, and contains no count or "all scenarios" assertion that the four new non-iAPI scenarios would falsify. It is genuinely not a stale-doc surface.
+
+## Notes (non-blocking)
+
+- The "Surfaces deliberately not changed" sweep does not explicitly list `eval/scenarios/_candidates.yaml`. This is a transparency nit, not a defect: the file is an Interactivity-API candidate backlog (per its own header), not documentation of the live suite, and it carries no count or composition claim that the new scenarios would invalidate. The plan's claim that "no live doc goes stale" remains true. No change required for approval.
