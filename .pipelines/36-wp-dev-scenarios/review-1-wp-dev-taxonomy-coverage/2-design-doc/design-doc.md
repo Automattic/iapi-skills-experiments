@@ -43,6 +43,7 @@ This is the committed reference taxonomy — a **dated point-in-time snapshot (2
 **Snapshot caveats (recorded for drift auditing):**
 - developer.wordpress.org sidebars are JS-rendered and not present in fetched markdown; chapter lists were reconstructed from in-body links and site-scoped search, with landing pages confirmed live.
 - The **Common APIs** handbook is mid-reorganization: some chapters now live at `/apis/<x>/` while a few remain at legacy `/apis/handbook/<x>/` paths. Legacy paths marked below were confirmed live (HTTP 200) as of this snapshot. The Code Reference "grouped API reference" index also uses these legacy paths, corroborating that the legacy structure persists.
+- The **WordPress Playground** handbook is not authored on developer.wordpress.org: the whole `/playground/*` path space 301-redirects to the off-site docs host `https://wordpress.github.io/wordpress-playground/`, with no individually-addressable developer.wordpress.org sub-area pages. It is therefore recorded as a single collapsed row at its landing URL — see the Playground area note below for the verification.
 
 ### Documentation areas (7)
 
@@ -172,12 +173,11 @@ Small and complete (9 leaves). 100% advice/prose → **judge-only by nature**, a
 
 Niche tooling / browser-runtime. A **weak first-area pick** (not a plugin-feature domain).
 
-| Sub-area | URL |
-|---|---|
-| Quick Start Guide | https://developer.wordpress.org/playground/wordpress-playground-resources/ |
-| Blueprints (JSON) | (under playground resources) |
-| Developers (programmatic API) | (under playground resources) |
-| API Reference (Query / Blueprints / JS API) | (under playground resources) |
+| Sub-area | URL | Note |
+|---|---|---|
+| WordPress Playground (Quick Start, Blueprints, Developers, API Reference) | https://developer.wordpress.org/playground/wordpress-playground-resources/ | Single collapsed entry — see note below. |
+
+**Why this area is a single collapsed row (verified this snapshot):** Unlike every other area, the WordPress Playground handbook is not authored on developer.wordpress.org. The entire `/playground/*` path space is a **redirect shim**: the landing URL `https://developer.wordpress.org/playground/wordpress-playground-resources/` returns HTTP 301 to the off-site docs host `https://wordpress.github.io/wordpress-playground/` (the full chain resolves HTTP 200). There are **no individually-addressable developer.wordpress.org sub-area pages** — the sub-topics that the off-site docs organize into separate sub-sites (Quick Start, Blueprints (JSON), Developers (programmatic API), and the API Reference for the Query / Blueprints / JS APIs) all live only on the off-site host, not at distinct developer.wordpress.org URLs. Probing the obvious candidates confirms this: `/playground/blueprints/`, `/playground/developers/`, and `/playground/api-reference/` each 301 back to the same single off-site landing page (dropping the sub-path), while `/playground/api/` and `/playground/quick-start-guide/` 301 to unrelated developer.wordpress.org areas (Secure Custom Fields and Themes, respectively). Because the spec requires a developer.wordpress.org URL on every row (Acceptance Criterion 2) and the only addressable developer.wordpress.org Playground page is the landing URL, this area is recorded as **one collapsed sub-area row at the landing URL**, with the off-site sub-topics named in the row for completeness. This collapse is a documented drift caveat: if developer.wordpress.org later hosts the Playground sub-topics at their own URLs, a future refresh should expand this row. (As a weak first-area pick, this area is not implemented, so the collapse has no downstream scenario impact.)
 
 ### API Reference areas (3)
 
