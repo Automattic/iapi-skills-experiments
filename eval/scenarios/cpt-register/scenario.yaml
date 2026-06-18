@@ -1,0 +1,16 @@
+name: cpt-register
+description: Register a `books` custom post type exposed in the admin and the REST API.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my WordPress plugin to add a new content type for storing book entries, using the identifier `books`. Editors should be able to create and manage these book entries from the WordPress admin, and the entries should be accessible via the WordPress REST API.
+
+acceptance:
+  - register_post_type() is called on the `init` action hook.
+  - The post-type identifier does not begin with `wp_` and does not exceed 20 characters.
+  - The `labels` array includes at least `name` and `singular_name`, with strings wrapped in `__()` for translation.
+  - "`public => true` and `show_in_rest => true` are both set so the CPT is publicly accessible and exposed via the REST API."
+  - A GET request to `/wp-json/wp/v2/books` returns HTTP 200 when the plugin is active.
+
+rubrics: []
