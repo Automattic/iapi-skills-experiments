@@ -1,0 +1,321 @@
+# WordPress-development candidate catalog
+# Snapshot date: 2026-06-18
+#
+# This is the WordPress-development candidate catalog — distinct from the
+# Interactivity-API catalog at eval/scenarios/_candidates.yaml. It covers
+# every one of the 10 top-level developer.wordpress.org areas and records
+# documentation provenance for the six implemented Plugins scenarios.
+#
+# Area → landing URL map (10 top-level areas):
+#
+#   Documentation (7):
+#     Block Editor         https://developer.wordpress.org/block-editor/
+#     Themes               https://developer.wordpress.org/themes/
+#     Plugins              https://developer.wordpress.org/plugins/
+#     Common APIs          https://developer.wordpress.org/apis/
+#     Advanced Admin       https://developer.wordpress.org/advanced-administration/
+#     Coding Standards     https://developer.wordpress.org/coding-standards/
+#     WordPress Playground https://developer.wordpress.org/playground/wordpress-playground-resources/
+#
+#   API Reference (3):
+#     Code Reference       https://developer.wordpress.org/reference/
+#     REST API             https://developer.wordpress.org/rest-api/
+#     WP-CLI Commands      https://developer.wordpress.org/cli/commands/
+#
+# Record shape mirrors _candidates.yaml. source: dev.wordpress.org distinguishes
+# these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
+# source_files carries developer.wordpress.org URLs (not local paths).
+# Full prompt + acceptance are included only for the six implemented Plugins
+# scenarios; all other records are lighter stubs.
+
+# === Area: Block Editor ===
+
+- name: block-api-static-block
+  description: Register a simple static block with block.json, edit.js, save.js, and an icon.
+  difficulty: simple
+  concepts: [registerBlockType, block.json, edit, save]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/getting-started/
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/
+
+- name: block-filter-add-custom-attribute
+  description: Add a custom attribute to an existing core block via the blocks.registerBlockType filter.
+  difficulty: intermediate
+  concepts: [addFilter, blocks.registerBlockType, BlockEdit, BlockSave]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/filters/
+    - https://developer.wordpress.org/block-editor/how-to-guides/
+
+# === Area: Themes ===
+
+- name: theme-json-custom-color-palette
+  description: Define a custom color palette for a block theme via theme.json.
+  difficulty: simple
+  concepts: [theme.json, color, palette, block themes]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/themes/block-themes/
+    - https://developer.wordpress.org/block-editor/reference-guides/theme-json-reference/
+
+- name: classic-theme-enqueue-scripts
+  description: Enqueue a front-end stylesheet and script from a classic theme using wp_enqueue_scripts.
+  difficulty: simple
+  concepts: [wp_enqueue_scripts, wp_enqueue_style, wp_enqueue_script]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/themes/classic-themes/
+    - https://developer.wordpress.org/themes/core-concepts/including-assets/
+
+# === Area: Plugins ===
+
+- name: taxonomy-register
+  description: Register a `genre` taxonomy on posts, exposed via the REST API.
+  difficulty: simple
+  concepts: [register_taxonomy, show_in_rest, init-hook]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/taxonomies/working-with-custom-taxonomies/
+    - https://developer.wordpress.org/reference/functions/register_taxonomy/
+  prompt: |
+    I want editors to be able to group and label my posts into a named set of terms — a "genre" classification (use the identifier `genre`) — and I want those genres reachable through my site's data API so other tools can read them.
+  acceptance:
+    - Registers the taxonomy on the `init` action hook (not before it).
+    - The taxonomy is attached to the `post` object type.
+    - "`public => true` and `show_in_rest => true` are both set."
+    - The taxonomy identifier does not exceed 32 characters and uses only lowercase letters, dashes, and underscores.
+    - "Labels (`name` / `singular_name`) are wrapped in `__()` for translation."
+
+- name: post-meta-rest
+  description: Register a `subtitle` post meta exposed in the REST API.
+  difficulty: simple
+  concepts: [register_post_meta, show_in_rest, init-hook]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/metadata/managing-post-metadata/
+    - https://developer.wordpress.org/reference/functions/register_post_meta/
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/
+  prompt: |
+    I want to store an extra piece of information on each of my posts — a short subtitle, saved under the key `subtitle` — and have it available through my site's data API so other tools can read it back.
+  acceptance:
+    - Registers the post meta on the `init` action hook, targeting the core `post` type.
+    - "`single => true` is set (the value is a single scalar, not an array)."
+    - "`type` is set (e.g. `string`)."
+    - "`show_in_rest => true` is set so the value surfaces in the REST API."
+    - The meta key is public (no leading underscore), so it is exposed rather than protected.
+
+- name: settings-register
+  description: Register a `my_plugin_tagline` setting exposed in the REST API with a default.
+  difficulty: simple
+  concepts: [register_setting, show_in_rest, sanitize_callback]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/settings/settings-api/
+    - https://developer.wordpress.org/plugins/settings/options-api/
+    - https://developer.wordpress.org/reference/functions/register_setting/
+  prompt: |
+    I want a site-wide configurable option my editors can set — a tagline override stored under `my_plugin_tagline`, defaulting to `Hello world` — and I want it available through my site's data API.
+  acceptance:
+    - Registers the setting with `show_in_rest => true` so it is exposed in the REST API.
+    - The setting is registered so that it surfaces in REST — on `init` or `rest_api_init` (NOT only on `admin_init`).
+    - "`type` is set (e.g. `string`)."
+    - A `default` is provided.
+    - A `sanitize_callback` is provided.
+
+- name: cron-event
+  description: Schedule a recurring background task via WP-Cron, cleaned up on deactivation.
+  difficulty: simple
+  concepts: [wp_schedule_event, wp_next_scheduled, register_deactivation_hook]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/cron/
+    - https://developer.wordpress.org/plugins/cron/scheduling-wp-cron-events/
+    - https://developer.wordpress.org/plugins/cron/understanding-wp-cron-scheduling/
+  prompt: |
+    I want my plugin to run a recurring background task automatically — say a periodic cleanup that runs on a regular schedule — without me having to trigger it manually.
+  acceptance:
+    - Schedules the event via `wp_schedule_event()`, guarded by a `wp_next_scheduled()` check so it is not scheduled more than once.
+    - The event is hooked to a named action with a callback that performs the task.
+    - Uses a valid built-in recurrence (`hourly`) — no custom interval (which would require the `cron_schedules` filter).
+    - Unschedules the event on plugin deactivation (`register_deactivation_hook` + `wp_unschedule_event()`, or `wp_clear_scheduled_hook()`).
+
+- name: i18n-textdomain
+  description: Make all user-facing plugin strings translation-ready with a consistent text domain.
+  difficulty: simple
+  concepts: [gettext, text-domain, i18n]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/internationalization/
+    - https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
+    - https://developer.wordpress.org/plugins/internationalization/localization/
+  prompt: |
+    I want all of my plugin's user-facing text to be ready to translate into other languages, so translators can localize it later.
+  acceptance:
+    - "User-facing strings are wrapped in a gettext function (`__()` / `_e()` / `esc_html__()`)."
+    - The text domain is a literal string equal to the plugin slug.
+    - A `Text Domain:` header is present in the plugin header.
+    - No variable or constant is used as the text-domain argument, and no variable is used as the translatable-string argument (both must be literals).
+
+- name: admin-menu-page
+  description: Add a capability-gated admin settings page reachable from the dashboard.
+  difficulty: simple
+  concepts: [add_menu_page, admin_menu, capability]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/administration-menus/
+    - https://developer.wordpress.org/plugins/administration-menus/top-level-menus/
+    - https://developer.wordpress.org/plugins/administration-menus/sub-menus/
+  prompt: |
+    I want my plugin to add its own settings screen reachable from the WordPress dashboard, so administrators have a place to manage it.
+  acceptance:
+    - Registers the page via `add_menu_page()` (or `add_submenu_page()` / `add_options_page()`) on the `admin_menu` action hook.
+    - A `capability` (e.g. `manage_options`) is set to gate access.
+    - A `menu_slug` and a render callback are provided.
+    - The render callback outputs escaped markup, and no output is produced outside the callback.
+
+# Deferred Plugins sub-areas — lighter stubs (no prompt/acceptance yet)
+
+- name: user-role-check
+  description: Check user capabilities before performing an action using current_user_can().
+  difficulty: simple
+  concepts: [current_user_can, capability, user-roles]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/users/
+    - https://developer.wordpress.org/reference/functions/current_user_can/
+  # TODO: prompt + acceptance
+
+- name: http-api-remote-get
+  description: Fetch data from an external JSON API using the WordPress HTTP API.
+  difficulty: simple
+  concepts: [wp_remote_get, wp_retrieve_body, WP_Error]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/http-api/
+    - https://developer.wordpress.org/reference/functions/wp_remote_get/
+  # TODO: prompt + acceptance
+
+- name: ajax-handler
+  description: Register an authenticated admin-ajax handler and call it from JavaScript.
+  difficulty: intermediate
+  concepts: [wp_ajax, check_ajax_referer, wp_send_json_success]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/javascript/
+    - https://developer.wordpress.org/reference/hooks/wp_ajax_action/
+  # TODO: prompt + acceptance
+
+- name: privacy-data-exporter
+  description: Register a personal data exporter for GDPR compliance.
+  difficulty: intermediate
+  concepts: [wp_privacy_personal_data_exporters, register_exporter]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/privacy/
+    - https://developer.wordpress.org/reference/hooks/wp_privacy_personal_data_exporters/
+  # TODO: prompt + acceptance
+
+# === Area: Common APIs ===
+
+- name: transient-cache-remote-data
+  description: Cache a remote API response using the Transients API to avoid repeated HTTP calls.
+  difficulty: simple
+  concepts: [set_transient, get_transient, delete_transient]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/transients/
+    - https://developer.wordpress.org/reference/functions/set_transient/
+  # TODO: prompt + acceptance
+
+- name: options-api-store-retrieve
+  description: Store and retrieve plugin configuration via the Options API.
+  difficulty: simple
+  concepts: [add_option, get_option, update_option, delete_option]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/options/
+    - https://developer.wordpress.org/reference/functions/get_option/
+  # TODO: prompt + acceptance
+
+# === Area: Advanced Administration ===
+
+- name: wp-config-custom-constant
+  description: Define a custom constant in wp-config.php and use it to gate debug output.
+  difficulty: simple
+  concepts: [define, wp-config.php, custom constant]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/advanced-administration/wordpress/
+    - https://developer.wordpress.org/apis/wp-config-php/
+  # TODO: prompt + acceptance
+
+# === Area: Coding Standards ===
+
+- name: php-coding-standards-yoda
+  description: Apply WordPress PHP coding standards — Yoda conditions, brace style, spacing.
+  difficulty: simple
+  concepts: [WPCS, PHP coding standards, Yoda conditions]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/coding-standards/wordpress-coding-standards/php/
+    - https://developer.wordpress.org/coding-standards/wordpress-coding-standards/
+  # TODO: prompt + acceptance
+
+# === Area: WordPress Playground ===
+
+- name: playground-blueprint-plugin-load
+  description: Author a Playground Blueprint JSON that loads a plugin and runs a setup step.
+  difficulty: simple
+  concepts: [blueprint, steps, installPlugin, WordPress Playground]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/playground/wordpress-playground-resources/
+  # TODO: prompt + acceptance
+
+# === Area: Code Reference ===
+
+- name: code-reference-hook-lookup
+  description: Use the Code Reference to find all actions/filters fired during wp_head and document their parameters.
+  difficulty: simple
+  concepts: [hooks, actions, filters, wp_head, Code Reference]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/reference/
+    - https://developer.wordpress.org/reference/hooks/
+    - https://developer.wordpress.org/reference/functions/
+  # TODO: prompt + acceptance
+
+# === Area: REST API ===
+
+- name: rest-api-custom-field-on-post
+  description: Expose a custom field on the Posts REST endpoint using register_rest_field.
+  difficulty: simple
+  concepts: [register_rest_field, rest_api_init, get_callback, update_callback]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/
+    - https://developer.wordpress.org/reference/functions/register_rest_field/
+  # TODO: prompt + acceptance
+
+- name: rest-api-authentication-nonce
+  description: Use a WP REST API nonce to make authenticated requests from JavaScript.
+  difficulty: intermediate
+  concepts: [wp_create_nonce, X-WP-Nonce, rest_url, wp_localize_script]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/rest-api/using-the-rest-api/
+    - https://developer.wordpress.org/rest-api/key-concepts/
+  # TODO: prompt + acceptance
+
+# === Area: WP-CLI Commands ===
+
+- name: wp-cli-eval-flush-rewrite
+  description: Use WP-CLI to flush rewrite rules and verify a custom post type is registered.
+  difficulty: simple
+  concepts: [wp rewrite flush, wp post-type list, WP-CLI]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/cli/commands/
+    - https://developer.wordpress.org/reference/functions/flush_rewrite_rules/
+  # TODO: prompt + acceptance
