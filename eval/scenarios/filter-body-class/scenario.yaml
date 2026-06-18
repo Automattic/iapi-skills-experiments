@@ -1,0 +1,15 @@
+name: filter-body-class
+description: Add a custom CSS class to the front-end body via a filter.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my WordPress plugin to add a custom CSS class called `my-custom-class` to every page's `<body>` element on the front end, so I can target the whole site with a single CSS rule.
+
+acceptance:
+  - Plugin registers a callback via `add_filter('body_class', ...)` that appends a custom CSS class to the array.
+  - The filter callback receives the `$classes` array, appends the custom class, and **returns** the modified array (does not echo or produce direct output).
+  - The callback guards against admin pages — the custom class appears only on front-end pages (not in the WordPress admin).
+  - The custom CSS class appears in the `<body>` element's `class` attribute on the front end.
+
+rubrics: []
