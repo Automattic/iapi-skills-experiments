@@ -43,7 +43,7 @@ For context, each implemented scenario follows the established Skillsmith conven
 
 7. **No duplication with the v1 batch (sub-area level).** No newly implemented scenario duplicates a sub-area already covered by the v1 batch: Hooks/Filters (via `filter-body-class`), Shortcodes (`shortcode-with-attr`), Custom Post Types (`cpt-register`), or custom REST endpoints (`rest-custom-endpoint`). Duplication is judged at the sub-area level, because these topics are dual-documented across multiple handbooks and no top-level area is 100% clean of them.
 
-8. **Documentation-driven, user-voice, tool-agnostic.** Every implemented scenario is grounded in developer.wordpress.org: each acceptance point traces to an official documentation page (cited URL), and each `prompt` reads like a real user's outcome-phrased request that does NOT name the tool, API, function, framework, or technology to use. Deciding the approach is the skill's job.
+8. **Documentation-driven, user-voice, tool-agnostic.** Every implemented scenario is grounded in developer.wordpress.org: the scenario's documentation grounding is recorded in the corresponding **catalog entry's source provenance field** (the `source`/`source_files` precedent from `_candidates.yaml`), citing the official developer.wordpress.org page(s) that ground the scenario's acceptance points. Source URLs are NOT embedded in the `scenario.yaml` acceptance strings — acceptance strings stay clean, human-readable check statements as in the v1 scenarios (consistent with Requirement 9, which bars catalog-only fields from `scenario.yaml`). Each `prompt` reads like a real user's outcome-phrased request that does NOT name the tool, API, function, framework, or technology to use. Deciding the approach is the skill's job.
 
 ### D. Scenario shape and verification
 
@@ -97,7 +97,7 @@ For context, each implemented scenario follows the established Skillsmith conven
    Given each newly implemented scenario, When identifying its sub-area, Then it is none of Hooks/Filters, Shortcodes, Custom Post Types, or custom REST endpoints (the v1 four), evaluated at the sub-area level.
 
 8. **Documentation-traceable, user-voice, tool-agnostic prompts**
-   Given any newly implemented scenario, When reading its `prompt`, Then it is phrased as a user-style request by desired outcome and does not name the tool/API/function/technology to use; And When reviewing its `acceptance` points, Then each is supported by an official developer.wordpress.org documentation page (cited URL).
+   Given any newly implemented scenario, When reading its `prompt`, Then it is phrased as a user-style request by desired outcome and does not name the tool/API/function/technology to use; And When reading its `acceptance` strings in `scenario.yaml`, Then they are clean human-readable check statements containing no embedded source URLs; And When inspecting the scenario's corresponding catalog entry, Then its source provenance field cites the official developer.wordpress.org page(s) that ground the scenario's acceptance points.
 
 9. **Schema conformance**
    Given any newly implemented scenario's `scenario.yaml`, When reading it, Then it has `name` (lowercase-kebab matching `/^[a-z0-9-]+$/` and equal to the directory name), `description`, `skills: [wordpress-development]`, `prompt`, `acceptance`, and `rubrics` present as an array; And it contains no catalog-only fields (`difficulty`, `concepts`, `source`, `source_files`).
