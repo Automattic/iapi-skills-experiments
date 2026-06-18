@@ -1,0 +1,15 @@
+name: rest-api-custom-field-on-post
+description: Add a top-level `reading_time` field to the Posts REST response.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want each of my posts to include an extra piece of information when read back through my site's data API. The field should be named `reading_time`, always return the value `5 min`, and appear directly alongside the post's other fields — not buried inside the post's custom-fields or meta section.
+
+acceptance:
+  - A new top-level field named `reading_time` is added to the post resource's REST response (not nested under the resource's meta).
+  - The field is registered for the post resource on the REST initialization hook.
+  - Reading a published post through the site's data API returns `reading_time` with the value `5 min`.
+  - The field is exposed on the existing post resource without registering a new route or post meta.
+
+rubrics: []
