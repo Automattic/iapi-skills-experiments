@@ -26,7 +26,7 @@
 # these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
 # source_files carries developer.wordpress.org URLs (not local paths).
 # Full prompt + acceptance are included for the implemented Plugins, Block
-# Editor, and REST API scenarios; all other records are lighter stubs.
+# Editor, REST API, and Themes scenarios; all other records are lighter stubs.
 
 # === Area: Block Editor ===
 
@@ -163,15 +163,55 @@
   source_files:
     - https://developer.wordpress.org/themes/block-themes/
     - https://developer.wordpress.org/block-editor/reference-guides/theme-json-reference/
+  # Deferred: theme.json is a theme-root artifact the plugin scaffold cannot ship — theme-artifact-bound, not feasible without a theme-scaffold harness change.
 
-- name: classic-theme-enqueue-scripts
-  description: Enqueue a front-end stylesheet and script from a classic theme using wp_enqueue_scripts.
+# Implemented Themes scenarios — full records
+
+- name: themes-enqueue-assets
+  description: Load a front-end stylesheet and script under a shared handle so WordPress emits their tags.
   difficulty: simple
   concepts: [wp_enqueue_scripts, wp_enqueue_style, wp_enqueue_script]
   source: dev.wordpress.org
   source_files:
-    - https://developer.wordpress.org/themes/classic-themes/
     - https://developer.wordpress.org/themes/core-concepts/including-assets/
+    - https://developer.wordpress.org/themes/classic-themes/
+  prompt: |
+    On my WordPress site's front-end pages, I want an actual stylesheet file and an actual script file to both be loaded — not just declared or reserved — under the shared handle `themes-frontend-assets`, so the browser receives their tags. Both files must have a real source URL so WordPress emits the `<link>` and `<script>` elements on every front-end page.
+  acceptance:
+    - On the front end, a stylesheet is enqueued (not merely registered) under the handle `themes-frontend-assets`, with a real source, so WordPress emits its `<link>` element.
+    - On the front end, a script is enqueued (not merely registered) under the handle `themes-frontend-assets`, with a real source, so WordPress emits its `<script>` element.
+    - Both assets are enqueued from a callback attached to the front-end asset-enqueueing hook (not the admin or login screens).
+    - The enqueues require no theme artifact — they work from the plugin against whatever theme is active.
+
+- name: themes-nav-menu-location
+  description: Register a navigation-menu location with a translatable label on theme setup.
+  difficulty: simple
+  concepts: [register_nav_menus, after_setup_theme, nav-menu-location]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/reference/functions/register_nav_menus/
+  prompt: |
+    I want my plugin to make a navigation-menu location available — a named slot that a theme can assign a menu to — identified by the slug `primary`, with a human-readable, translatable label. The location should be registered early enough to be in place before the theme renders its templates.
+  acceptance:
+    - A navigation-menu location with the pinned slug is registered.
+    - The registration runs on the theme-setup hook (so it is in place before templates render).
+    - The location's label is wrapped for translation.
+    - No theme template or menu-rendering call is required for the registration to be in effect.
+
+- name: themes-sidebar-widget-area
+  description: Register a sidebar / widget area with an id, translatable name, and widget/title wrappers.
+  difficulty: simple
+  concepts: [register_sidebar, widgets_init, widget-area]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/reference/functions/register_sidebar/
+  prompt: |
+    Make available a sidebar / widget area — a region where widgets can be placed — identified by the id `themes-sidebar-1` with the human-readable, translatable name `Theme Sidebar`, and provide markup that wraps each widget and each widget title so the output is properly structured.
+  acceptance:
+    - A sidebar / widget area with the pinned id and human-readable name is registered.
+    - The registration runs on the widgets-initialization hook.
+    - The registration supplies before/after wrappers for each widget and its title.
+    - The widget area's name is wrapped for translation.
 
 # === Area: Plugins ===
 
