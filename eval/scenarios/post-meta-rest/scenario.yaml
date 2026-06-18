@@ -1,0 +1,16 @@
+name: post-meta-rest
+description: Register a `subtitle` post meta exposed in the REST API.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want to store an extra piece of information on each of my posts — a short subtitle, saved under the key `subtitle` — and have it available through my site's data API so other tools can read it back.
+
+acceptance:
+  - Registers the post meta on the `init` action hook, targeting the core `post` type.
+  - "`single => true` is set (the value is a single scalar, not an array)."
+  - "`type` is set (e.g. `string`)."
+  - "`show_in_rest => true` is set so the value surfaces in the REST API."
+  - The meta key is public (no leading underscore), so it is exposed rather than protected.
+
+rubrics: []
