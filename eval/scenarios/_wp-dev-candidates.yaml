@@ -25,8 +25,8 @@
 # Record shape mirrors _candidates.yaml. source: dev.wordpress.org distinguishes
 # these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
 # source_files carries developer.wordpress.org URLs (not local paths).
-# Full prompt + acceptance are included only for the six implemented Plugins
-# scenarios; all other records are lighter stubs.
+# Full prompt + acceptance are included for the implemented Plugins and Block
+# Editor scenarios; all other records are lighter stubs.
 
 # === Area: Block Editor ===
 
@@ -47,6 +47,111 @@
   source_files:
     - https://developer.wordpress.org/block-editor/reference-guides/filters/
     - https://developer.wordpress.org/block-editor/how-to-guides/
+  # Deferred: JS-only addFilter hook — distinct from PHP render_block filter (block-editor-block-filters). Not yet implemented.
+
+# Implemented Block Editor scenarios — full records
+
+- name: block-editor-dynamic-block
+  description: Render a block's front-end output dynamically in PHP at render time.
+  difficulty: simple
+  concepts: [render.php, dynamic-block, server-side-render]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/creating-dynamic-blocks/
+  prompt: |
+    I want to create a WordPress block whose front-end output is generated dynamically on the server each time the page loads — the output should not be baked into the saved post content but produced fresh in PHP every time. The block should display the exact text "Hello from PHP" on the front end.
+  acceptance:
+    - The block's front-end output is generated dynamically in PHP at render time (not from a static JS save()).
+    - The render template produces and returns HTML output.
+    - get_block_wrapper_attributes() is called on the block's wrapper element.
+    - The output includes the pinned text (Hello from PHP).
+    - No JavaScript save() function returns non-null content — the block is dynamic.
+
+- name: block-editor-block-supports
+  description: Expose a built-in color control on the block so a background color reaches the rendered output.
+  difficulty: simple
+  concepts: [block.json, supports, get_block_wrapper_attributes]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
+  prompt: |
+    I want my WordPress block to support background (and/or text) color controls in the editor, so that an editor can pick a color — for example vivid-red — and that color actually shows up on the block on the front end. The block should expose these built-in color options without me having to register any custom attributes for them.
+  acceptance:
+    - The block declares at least one block support (e.g. color background and/or text) so the corresponding editor control appears.
+    - get_block_wrapper_attributes() is called on the wrapper element so support-derived classes reach the rendered output.
+    - No custom attribute registration is used — the support relies on the built-in attribute the support provides.
+
+- name: block-editor-block-styles
+  description: Register a named, selectable visual style for the block under the slug `custom`.
+  difficulty: simple
+  concepts: [register_block_style, block-styles, className]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-styles/
+  prompt: |
+    I want my WordPress block to offer a named visual style that editors can select from the block's style options panel in the editor. Please register a block style under the slug `custom` for my block, so that when an editor picks it the block receives the `is-style-custom` CSS class on the front end. The style should have a human-readable label so editors know what they're choosing.
+  acceptance:
+    - A block style named `custom` is registered for `wp-skill/testing-block` on the `init` hook.
+    - The registered style has a `name` (slug `custom`) and a human-readable `label`.
+    - No CSS file is required — registering the style and emitting the class is the acceptance bar (CSS is optional).
+
+- name: block-editor-block-filters
+  description: Append a fixed string to this block's rendered output on every page load via a render-time filter.
+  difficulty: simple
+  concepts: [render_block, block-filters, add_filter]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/filters/block-filters/
+  prompt: |
+    I want my WordPress block's rendered HTML to always include the exact string "Powered by my plugin" on every page load — appended after the block's output. This should only affect my block and not any other blocks on the page. Please set this up so the string appears automatically whenever the block is rendered on the front end.
+  acceptance:
+    - A render-time filter on the block's output is registered in `index.php`.
+    - The filter callback receives the block's rendered HTML and returns modified HTML (the pinned string appended/prepended/wrapped).
+    - The modification targets only `wp-skill/testing-block` — via the block-specific hook variant or a block-name check in a generic callback (it must not modify all blocks).
+
+- name: block-editor-block-bindings
+  description: Register a custom PHP data source that supplies a value to a block, under a pinned source name.
+  difficulty: simple
+  concepts: [register_block_bindings_source, block-bindings, get_value_callback]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-bindings/
+  prompt: |
+    I want to connect a block's attribute to a value coming from the server using a custom data source registered under the specific name `my-plugin/greeting`. Please set up this custom source so that it supplies a value from PHP to a block, allowing editors to bind block attributes to that server-provided greeting value.
+  acceptance:
+    - A custom block binding source is registered on the `init` hook.
+    - The source name matches `/^[a-z0-9-]+\/[a-z0-9-]+$/` and equals the pinned name (`my-plugin/greeting`).
+    - A value callback (`get_value_callback`) is provided that returns a non-empty string.
+    - The source namespace matches the plugin's namespace.
+
+# Deferred Block Editor sub-areas — lighter stubs (no prompt/acceptance yet)
+
+- name: block-editor-block-variations
+  description: Register a block variation that pre-configures an existing block with custom attributes and a label.
+  difficulty: simple
+  concepts: [registerBlockVariation, block-variations, editor-JS]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/
+  # Deferred: editor-only JS-only registration — no PHP surface to evaluate; requires compiled JS toolchain.
+
+- name: block-editor-inner-blocks
+  description: Build a block that contains child blocks (InnerBlocks) allowing editors to nest content inside it.
+  difficulty: simple
+  concepts: [InnerBlocks, allowed-blocks, parent-child]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/
+  # Deferred: multi-block parent/child coordination requires compiled JS toolchain and complex editor UI testing.
+
+- name: block-editor-block-patterns
+  description: Register a block pattern composed of multiple blocks as a reusable content template.
+  difficulty: simple
+  concepts: [register_block_pattern, block-patterns, pattern-categories]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-patterns/
+  # Deferred: multi-block composition — scenario requires assembling and verifying multiple coordinated blocks.
 
 # === Area: Themes ===
 
