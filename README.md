@@ -33,6 +33,10 @@ Scenario names are the bare directory names under `eval/scenarios/` (e.g. `count
 npx skillsmith counter
 ```
 
+`eval/scenarios/` also holds two leading-underscore (non-directory) candidate catalogs — planning artifacts that scenario discovery skips, not runnable scenarios:
+- `eval/scenarios/_candidates.yaml` — candidate Interactivity-API scenarios.
+- `eval/scenarios/_wp-dev-candidates.yaml` — broader WordPress-development candidates spanning the developer.wordpress.org areas.
+
 This runs one scenario against the single configured testing agent and writes results under `.skillsmith/<runId>/`.
 
 ### Full matrix (owner's manual step only)
