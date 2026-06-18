@@ -1,0 +1,16 @@
+name: settings-register
+description: Register a `my_plugin_tagline` setting exposed in the REST API with a default.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a site-wide configurable option my editors can set — a tagline override stored under `my_plugin_tagline`, defaulting to `Hello world` — and I want it available through my site's data API.
+
+acceptance:
+  - Registers the setting with `show_in_rest => true` so it is exposed in the REST API.
+  - The setting is registered so that it surfaces in REST — on `init` or `rest_api_init` (NOT only on `admin_init`).
+  - "`type` is set (e.g. `string`)."
+  - A `default` is provided.
+  - A `sanitize_callback` is provided.
+
+rubrics: []
