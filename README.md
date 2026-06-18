@@ -28,7 +28,7 @@ npx skillsmith <scenario-dir>
 npm run skillsmith -- <scenario-dir>
 ```
 
-Scenario names are the bare directory names under `eval/scenarios/` (e.g. `counter`, `async-fetch`). For example:
+Scenario names are the bare directory names under `eval/scenarios/` (e.g. `counter`, `cpt-register`). For example:
 ```sh
 npx skillsmith counter
 ```
