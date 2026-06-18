@@ -26,7 +26,7 @@
 # these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
 # source_files carries developer.wordpress.org URLs (not local paths).
 # Full prompt + acceptance are included for the implemented Plugins, Block
-# Editor, REST API, and Themes scenarios; all other records are lighter stubs.
+# Editor, REST API, Themes, and Common APIs scenarios; all other records are lighter stubs.
 
 # === Area: Block Editor ===
 
@@ -363,25 +363,71 @@
 
 # === Area: Common APIs ===
 
-- name: transient-cache-remote-data
-  description: Cache a remote API response using the Transients API to avoid repeated HTTP calls.
+# Implemented Common APIs scenarios — full records
+
+- name: common-apis-options
+  description: Imperatively store and retrieve a value via the Options API, with a default when unset.
+  difficulty: simple
+  concepts: [add_option, update_option, get_option]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/options/
+    - https://developer.wordpress.org/reference/functions/get_option/
+  prompt: |
+    I want my plugin to save a piece of its own configuration so it persists across requests and I can read it back later. Store the value under the key `my_plugin_setting`, defaulting to `enabled` when it has not been saved yet. I need to imperatively write the value and read it back — not register a setting for the admin UI, just store and retrieve it directly.
+  acceptance:
+    - A value is stored under the pinned namespaced key.
+    - The stored value is retrieved by reading it back from the same key.
+    - A default value is provided for when the key has not yet been set.
+    - The store and retrieve operations run from a load-time hook.
+
+- name: common-apis-transients
+  description: Cache a computed value with an expiry and recompute it only after it expires, via the Transients API.
   difficulty: simple
   concepts: [set_transient, get_transient, delete_transient]
   source: dev.wordpress.org
   source_files:
     - https://developer.wordpress.org/apis/transients/
     - https://developer.wordpress.org/reference/functions/set_transient/
-  # TODO: prompt + acceptance
+  prompt: |
+    I want my plugin to cache the result of an expensive computation so it is not recalculated on every page load. Store the result under the key `my_plugin_data` with an expiration time, and when the cache has not yet been set or has expired, recompute the value and store it again. On subsequent loads before the cache expires, the cached value should be returned without recomputation.
+  acceptance:
+    - The transient is checked first; if it has expired or is not yet set, the value is (re)computed.
+    - The computed value is stored with an expiration time.
+    - On subsequent loads before expiry, the cached value is returned without recomputation.
+    - The transient key is a namespaced string literal.
 
-- name: options-api-store-retrieve
-  description: Store and retrieve plugin configuration via the Options API.
+- name: common-apis-rewrite-rule
+  description: Register a custom URL rewrite rule that routes a pretty URL to a plugin-controlled response.
   difficulty: simple
-  concepts: [add_option, get_option, update_option, delete_option]
+  concepts: [add_rewrite_rule, register_activation_hook, template_redirect]
   source: dev.wordpress.org
   source_files:
-    - https://developer.wordpress.org/apis/options/
-    - https://developer.wordpress.org/reference/functions/get_option/
-  # TODO: prompt + acceptance
+    - https://developer.wordpress.org/apis/rewrite/
+  prompt: |
+    When someone visits `/my-custom-page` on my site, I want my plugin to respond with the exact text `Hello from my plugin` — not a 404 and not a themed page, just that response served directly by my plugin. The plugin should also make sure this URL works immediately after it is activated, without requiring me to visit the permalinks settings page.
+  acceptance:
+    - A custom URL path (the pinned path) is handled by a registered rewrite rule.
+    - Navigating to the pinned path returns HTTP status 200 (not a 404).
+    - The response body contains the pinned text token.
+    - The plugin intercepts the request before any theme template loads, outputs its response, and stops further rendering.
+    - The rewrite rules are flushed once when the plugin is activated so the URL is live immediately.
+
+- name: common-apis-http-request
+  description: Make an outbound HTTP request to an external web service and handle errors before using the response.
+  difficulty: simple
+  concepts: [wp_remote_get, wp_remote_retrieve_body, is_wp_error]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/making-http-requests/
+    - https://developer.wordpress.org/reference/functions/wp_remote_get/
+  prompt: |
+    I want my plugin to fetch some data from an external web service and use it, but I need it to handle the case where the request fails gracefully so the plugin doesn't break the site. Make the request from a hook callback, check whether it succeeded before doing anything with the response, and extract the response body to work with.
+  acceptance:
+    - An outbound HTTP GET request is made to an external URL.
+    - The response is checked for an error before its content is used.
+    - The response body is extracted using the WordPress HTTP response-body helper.
+    - The request is made from a hook callback, not at file-load time.
 
 # === Area: Advanced Administration ===
 
