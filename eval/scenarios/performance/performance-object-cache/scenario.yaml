@@ -1,0 +1,16 @@
+name: performance-object-cache
+description: Cache an expensive computed value in memory within the request lifecycle so it is not recomputed on repeated access during the same or subsequent requests.
+skills:
+  - wordpress-development
+
+prompt: |
+  I have an expensive value my plugin computes — it takes noticeable time to build — and I want to make it fast to re-read so it is not recomputed on every request. Please store it in memory so repeated reads within a request (or across requests if a persistent backend is available) return the cached value without recomputing. Use a dedicated namespace for my plugin's cached entries to avoid key collisions with other code.
+
+acceptance:
+  - The value is cached using the WordPress object cache API (`wp_cache_get`, `wp_cache_set`, or `wp_cache_add`) — NOT the transient API (`get_transient`/`set_transient`).
+  - The cache entry uses an explicit, non-default cache group (the `$group` argument is a non-empty string) namespaced to the plugin.
+  - Before recomputing, the cache is checked first; if a cached value is found it is returned without recomputation (the `wp_cache_get` result or found-flag is checked before any expensive work).
+  - On a cache miss the value is computed and then stored in the cache so the next read can return it.
+  - The cache key is a namespaced string literal scoped to the plugin.
+
+rubrics: []

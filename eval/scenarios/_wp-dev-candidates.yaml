@@ -602,6 +602,49 @@
     - Running `wp my-plugin hello` prints the text `Hello from my-plugin` to stdout.
     - The command is only available when the plugin is active.
 
+# === Area: Performance ===
+# folder: eval/scenarios/performance/
+
+# Implemented Performance scenarios — full records
+
+- name: performance-object-cache
+  description: Cache an expensive computed value in memory within the request lifecycle so it is not recomputed on repeated access during the same or subsequent requests.
+  difficulty: simple
+  concepts: [object-cache, wp_cache_get, wp_cache_set, cache-group]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/reference/functions/wp_cache_set/
+    - https://developer.wordpress.org/reference/functions/wp_cache_get/
+    - https://developer.wordpress.org/reference/functions/wp_cache_add/
+  # Harness dependency: none (graded statically by the judge on the produced PHP; no runtime assertion).
+  prompt: |
+    I have an expensive value my plugin computes — it takes noticeable time to build — and I want to make it fast to re-read so it is not recomputed on every request. Please store it in memory so repeated reads within a request (or across requests if a persistent backend is available) return the cached value without recomputing. Use a dedicated namespace for my plugin's cached entries to avoid key collisions with other code.
+  acceptance:
+    - The value is cached using the WordPress object cache API (`wp_cache_get`, `wp_cache_set`, or `wp_cache_add`) — NOT the transient API (`get_transient`/`set_transient`).
+    - The cache entry uses an explicit, non-default cache group (the `$group` argument is a non-empty string) namespaced to the plugin.
+    - Before recomputing, the cache is checked first; if a cached value is found it is returned without recomputation (the `wp_cache_get` result or found-flag is checked before any expensive work).
+    - On a cache miss the value is computed and then stored in the cache so the next read can return it.
+    - The cache key is a namespaced string literal scoped to the plugin.
+
+- name: performance-autoloaded-options
+  description: Store a large, rarely-read setting so it is not loaded into memory on every page request — only fetched on demand.
+  difficulty: simple
+  concepts: [autoloaded-options, add_option, update_option, autoload]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/advanced-administration/performance/optimization/
+    - https://developer.wordpress.org/reference/functions/add_option/
+    - https://developer.wordpress.org/reference/functions/update_option/
+  # Harness dependency: none (graded statically by the judge on the produced PHP; no runtime assertion).
+  # API note: 'yes'/'no' strings for the autoload arg are deprecated as of WP 6.7.0; modern code uses boolean false. Acceptance tolerates legacy 'no' but does not hard-pin it.
+  prompt: |
+    My plugin stores a large chunk of data — think a full configuration payload or a cached report — that is only needed on one rarely-visited admin screen. Right now it seems to slow down every page load even when that screen is not being viewed. I want to persist this data so it survives across requests, but I do NOT want it pulled into memory on every page load — only when that specific screen actually needs it.
+  acceptance:
+    - The option is stored with autoload turned OFF — the autoload argument is explicitly set to `false` (preferred) or the legacy `'no'` string (tolerated); `true` / `'yes'` / omitting the argument is not acceptable.
+    - The option is written via `add_option` (4th argument) or `update_option` (3rd argument) with the autoload argument explicitly provided and set to the not-autoload value.
+    - The value represents a large or rarely-read payload — not a tiny flag read on every request.
+    - The option is retrieved on demand via `get_option` only when needed, not preloaded or enqueued into every request.
+
 # === Agent-Skills Gaps ===
 #
 # Review-triggerable stubs for agent-skills topics with NO scenario and NO
@@ -612,16 +655,6 @@
 #   review-workflow  = audit/classify/verify task; may NOT fit the build-a-plugin shape.
 #   harness-wall     = no PHP-plugin deliverable the current rubrics can grade.
 # Stubs carry NO prompt/acceptance (not implemented scenarios).
-
-- name: performance-object-cache
-  description: Optimize a plugin for performance — autoloaded options, object cache, query optimization.
-  difficulty: simple
-  concepts: [object-cache, autoloaded-options, query-optimization]
-  source: agent-skills
-  source_files:
-    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-performance
-  # agent-skills: wp-performance
-  # Gap (agent-skills/wp-performance): buildable-plugin — performance-as-a-topic is uncovered; primitives partially overlap cron/transients/http but profiling/caching is not graded today.
 
 - name: phpstan-baseline
   description: Configure and run PHPStan static analysis on a plugin and fix the reported type errors.
