@@ -486,7 +486,7 @@
   source: dev.wordpress.org
   source_files:
     - https://developer.wordpress.org/playground/wordpress-playground-resources/
-  # TODO: prompt + acceptance
+  # Deferred: the Blueprint JSON API (steps, installPlugin, login, setSiteOptions, runPHP, ...) is documented only off-domain — the entire developer.wordpress.org/playground/* namespace, including this source_files URL, 301-redirects to wordpress.github.io/wordpress-playground/. The area cannot be grounded on developer.wordpress.org, so it is deferred to preserve the suite's never-broken on-domain grounding invariant (per the WP-CLI precedent). Independent second reason: a Blueprint is a standalone JSON artifact the plugin scaffold (index.php + block.json) cannot ship, and no scenario grades a non-plugin/non-PHP deliverable — the same harness wall as the theme.json deferral.
 
 # === Area: Code Reference ===
 
