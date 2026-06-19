@@ -26,7 +26,7 @@
 # these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
 # source_files carries developer.wordpress.org URLs (not local paths).
 # Full prompt + acceptance are included for the implemented Plugins, Block
-# Editor, REST API, Themes, Common APIs, and Coding Standards scenarios; all other records are lighter stubs.
+# Editor, REST API, Themes, Common APIs, Coding Standards, and WP-CLI Commands scenarios; all other records are lighter stubs.
 
 # === Area: Block Editor ===
 # folder: eval/scenarios/block-editor/
@@ -572,16 +572,25 @@
     - The gate is enforced by the route's permission check (not by the main handler).
 
 # === Area: WP-CLI Commands ===
-# folder: (none — deferred area)
+# folder: eval/scenarios/wp-cli/
+
+# Implemented WP-CLI Commands scenarios — full records
 
 - name: wp-cli-custom-command
-  description: Register a custom WP-CLI command that produces CLI output.
+  description: Register a custom WP-CLI command that prints a pinned message to the terminal.
   difficulty: simple
   concepts: [custom WP-CLI command, WP_CLI::add_command, CLI output]
   source: dev.wordpress.org
   source_files:
     - https://developer.wordpress.org/cli/commands/
-  # Deferred: the custom-command API (WP_CLI::add_command) is documented only off-domain (make.wordpress.org/cli handbook; developer.wordpress.org/cli/ 301-redirects to the command reference), so this is deferred to preserve the suite's never-broken on-domain grounding invariant — the on-domain command reference only yields scenarios that duplicate already-covered features (e.g. cpt-register). Framing-A e2e is empirically feasible via the wpCli(...,{stdio:"pipe"}) stdout channel, so this can be promoted if the custom-command docs land on developer.wordpress.org or handbook grounding is explicitly allowed.
+    - https://make.wordpress.org/cli/handbook/guides/commands-cookbook/
+    - https://make.wordpress.org/cli/handbook/references/internal-api/wp-cli-add-command/
+  prompt: |
+    I want my WordPress plugin to add its own command-line command so I can run it from the terminal when managing the site. The command should be named `my-plugin hello` and, when run, it must print exactly the text `Hello from my-plugin` to the terminal output. The command should only be available when the plugin is active.
+  acceptance:
+    - The plugin registers a custom WP-CLI command accessible as `wp my-plugin hello`.
+    - Running `wp my-plugin hello` prints the text `Hello from my-plugin` to stdout.
+    - The command is only available when the plugin is active.
 
 # === Agent-Skills Gaps ===
 #
