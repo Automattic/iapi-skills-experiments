@@ -26,7 +26,8 @@
 # these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
 # source_files carries developer.wordpress.org URLs (not local paths).
 # Full prompt + acceptance are included for the implemented Plugins, Block
-# Editor, REST API, Themes, Common APIs, Coding Standards, and WP-CLI Commands scenarios; all other records are lighter stubs.
+# Editor, REST API, Themes, Common APIs, Coding Standards, WP-CLI Commands,
+# Advanced Administration, and Code Reference scenarios; all other records are lighter stubs.
 
 # === Area: Block Editor ===
 # folder: eval/scenarios/block-editor/
@@ -434,7 +435,7 @@
     - The request is made from a hook callback, not at file-load time.
 
 # === Area: Advanced Administration ===
-# folder: (none — deferred area)
+# folder: eval/scenarios/advanced-admin/
 
 - name: wp-config-custom-constant
   description: Define a custom constant in wp-config.php and use it to gate debug output.
@@ -444,7 +445,13 @@
   source_files:
     - https://developer.wordpress.org/advanced-administration/wordpress/
     - https://developer.wordpress.org/apis/wp-config-php/
-  # Deferred: every Advanced Administration sub-topic is either a server/site-root config artifact the plugin scaffold (index.php + block.json) cannot ship — notably wp-config.php, which a plugin can only READ constants from, not define (the same harness wall as theme.json / the Playground blueprint) — or plugin security (nonces/sanitization/capability checks) that overlaps existing Plugins/REST coverage (e.g. rest-api-permission-check). On-domain; deferred on harness-wall + overlap grounds (not off-domain).
+  # Harness dependency: the plugin scaffold cannot ship a wp-config.php, so the produced snippet is judge-graded statically — mirrors theme.json/blueprint.
+  prompt: |
+    Define a custom configuration constant in `wp-config.php` and use it in the plugin to gate behavior — for example, enabling extra debug logging only when the constant is set and true. Show both the `wp-config.php` snippet that defines the constant and the plugin code that reads it to decide whether to run the extra behavior.
+  acceptance:
+    - A `wp-config.php` snippet defines the named constant via `define()`, placed above the "stop editing" line.
+    - The plugin reads the constant via `defined()` and/or the constant itself to gate behavior (e.g. enabling extra debug logging only when the constant is set and true).
+    - The value and behavior described in the plugin code match the constant defined in the `wp-config.php` snippet.
 
 # === Area: Coding Standards ===
 # folder: eval/scenarios/coding-standards/
@@ -506,7 +513,7 @@
     - The JSON is well-formed and parseable (valid JSON syntax, no trailing commas, no comments).
 
 # === Area: Code Reference ===
-# folder: (none — deferred area)
+# folder: eval/scenarios/code-reference/
 
 - name: code-reference-hook-lookup
   description: Use the Code Reference to find all actions/filters fired during wp_head and document their parameters.
@@ -517,7 +524,14 @@
     - https://developer.wordpress.org/reference/
     - https://developer.wordpress.org/reference/hooks/
     - https://developer.wordpress.org/reference/functions/
-  # Deferred: the Code Reference is the cross-cutting API reference index (per-symbol pages for functions/hooks/classes) that underlies every other area, not a distinct buildable topic. Any plugin-code scenario reduces to "use a documented symbol" — already covered by the Plugins/Common APIs/REST scenarios, which cite reference/* URLs as source_files — and the only Code-Reference-unique task (looking up / documenting symbols) yields no index.php deliverable to grade. On-domain; deferred as a non-distinct scenario area (not off-domain, not a harness wall).
+  # Harness dependency: documentation report, no plugin deliverable — judge-graded on the produced documentation.
+  prompt: |
+    Using the WordPress reference docs, identify the action and filter hooks that are fired during the `wp_head` lifecycle point and document each hook's name and parameters. For each hook, note whether it is an action or a filter, and list its parameters and their types or signatures as described in the reference.
+  acceptance:
+    - Names the relevant hooks fired during the `wp_head` lifecycle (e.g. `wp_head`, `wp_enqueue_scripts`, `wp_print_styles`, or others documented at developer.wordpress.org/reference/hooks/).
+    - Documents each hook's type — whether it is an action or a filter.
+    - Documents each hook's parameters and their types or signatures as described in the reference.
+    - The documentation is grounded in the WordPress Code Reference (developer.wordpress.org/reference/) rather than invented or inferred without citation.
 
 # === Area: REST API ===
 # folder: eval/scenarios/rest-api/

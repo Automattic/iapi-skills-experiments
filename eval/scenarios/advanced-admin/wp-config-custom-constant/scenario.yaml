@@ -1,0 +1,14 @@
+name: wp-config-custom-constant
+description: Define a custom constant in wp-config.php and use it to gate debug output.
+skills:
+  - wordpress-development
+
+prompt: |
+  Define a custom configuration constant in `wp-config.php` and use it in the plugin to gate behavior — for example, enabling extra debug logging only when the constant is set and true. Show both the `wp-config.php` snippet that defines the constant and the plugin code that reads it to decide whether to run the extra behavior.
+
+acceptance:
+  - A `wp-config.php` snippet defines the named constant via `define()`, placed above the "stop editing" line.
+  - The plugin reads the constant via `defined()` and/or the constant itself to gate behavior (e.g. enabling extra debug logging only when the constant is set and true).
+  - The value and behavior described in the plugin code match the constant defined in the `wp-config.php` snippet.
+
+rubrics: []
