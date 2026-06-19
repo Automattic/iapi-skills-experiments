@@ -32,25 +32,6 @@
 # === Area: Block Editor ===
 # folder: eval/scenarios/block-editor/
 
-- name: block-api-static-block
-  description: Register a simple static block with block.json, edit.js, save.js, and an icon.
-  difficulty: simple
-  concepts: [registerBlockType, block.json, edit, save]
-  source: dev.wordpress.org
-  source_files:
-    - https://developer.wordpress.org/block-editor/getting-started/
-    - https://developer.wordpress.org/block-editor/reference-guides/block-api/
-
-- name: block-filter-add-custom-attribute
-  description: Add a custom attribute to an existing core block via the blocks.registerBlockType filter.
-  difficulty: intermediate
-  concepts: [addFilter, blocks.registerBlockType, BlockEdit, BlockSave]
-  source: dev.wordpress.org
-  source_files:
-    - https://developer.wordpress.org/block-editor/reference-guides/filters/
-    - https://developer.wordpress.org/block-editor/how-to-guides/
-  # Deferred: JS-only addFilter hook — distinct from PHP render_block filter (block-editor-block-filters). Not yet implemented.
-
 # Implemented Block Editor scenarios — full records
 
 - name: block-editor-dynamic-block
@@ -126,7 +107,41 @@
     - A value callback (`get_value_callback`) is provided that returns a non-empty string.
     - The source namespace matches the plugin's namespace.
 
-# Deferred Block Editor sub-areas — lighter stubs (no prompt/acceptance yet)
+- name: block-api-static-block
+  description: Register a simple static block with block.json, edit.js, save.js, and an icon.
+  difficulty: simple
+  concepts: [registerBlockType, block.json, edit, save]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/getting-started/
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/
+  # Harness dependency: static save()/JS build — asserting a specific static save() render is brittle and contradicts the dynamic scaffold; graded statically by the judge on the produced block.json/edit.js/save.js.
+  prompt: |
+    I want to create a WordPress block that bakes its output directly into the saved post content — not generated on the server on every load, but serialized into the page when the editor saves. Please build a static block with a name, a category, an edit function that lets me type content in the editor, and a save function that serializes that content into the post. The block should be registered using block.json.
+  acceptance:
+    - A `block.json` file declares the block's name, title, and category, and references an editor script (editorScript or via the build setup).
+    - An `edit` function renders the block's editing interface in the block editor.
+    - A `save` function returns the serialized markup that is baked into post content — it does not return null (the block is static, not dynamic).
+    - No `render.php` or `render` callback is used — the block's front-end output comes from the `save` function's serialized markup.
+    - The block is registered via `registerBlockType` using the block.json metadata.
+
+- name: block-filter-add-custom-attribute
+  description: Add a custom attribute to an existing core block via the blocks.registerBlockType filter.
+  difficulty: intermediate
+  concepts: [addFilter, blocks.registerBlockType, BlockEdit, BlockSave]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/filters/block-filters/
+    - https://developer.wordpress.org/block-editor/how-to-guides/
+  # Harness dependency: editor-only JS filter (no front-end/REST surface) — addFilter on blocks.registerBlockType runs only in the editor; graded statically by the judge on the produced JS.
+  prompt: |
+    I want to extend an existing WordPress core block — say the core Paragraph block — so that it carries an extra custom attribute of my choosing. I do not want to create a new block; I want to add this attribute to an existing one by hooking into the block registration process in JavaScript. Please add a custom attribute to the core Paragraph block so it is available in the editor alongside the block's built-in attributes.
+  acceptance:
+    - A JavaScript filter is registered on the `blocks.registerBlockType` hook using `addFilter` from `@wordpress/hooks`.
+    - The filter targets a named existing/core block (e.g. `core/paragraph`).
+    - The filter callback merges a new custom attribute into `settings.attributes` without removing the block's existing attributes.
+    - The new attribute is declared with at least a `type` property.
+    - The filter is namespaced (the `addFilter` call includes a unique namespace string) to avoid collisions.
 
 - name: block-editor-block-variations
   description: Register a block variation that pre-configures an existing block with custom attributes and a label.
@@ -135,7 +150,15 @@
   source: dev.wordpress.org
   source_files:
     - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/
-  # Deferred: editor-only JS-only registration — no PHP surface to evaluate; requires compiled JS toolchain.
+  # Harness dependency: editor-only JS variation registration (inserter-only, no front-end/REST surface) — registerBlockVariation runs only in the editor; graded statically by the judge on the produced JS.
+  prompt: |
+    I want to add a pre-configured version of an existing WordPress block to the editor's inserter — a variation that starts with specific attribute values already set, so editors can insert it with one click and get a consistently styled or pre-filled block. Please register a block variation for an existing core block (for example, the core Group block or another suitable block), give it a name and a human-readable label, and pre-set at least one attribute so the variation is meaningfully distinct from the base block.
+  acceptance:
+    - A block variation is registered using `registerBlockVariation` from `@wordpress/blocks`.
+    - The variation targets an existing block by name (e.g. `core/group` or another core block).
+    - The variation has a `name` (unique identifier) and a `title` or `label` (human-readable).
+    - The variation pre-configures at least one attribute via the `attributes` property, making it distinct from the base block.
+    - The variation registration runs from a script enqueued in the editor context.
 
 - name: block-editor-inner-blocks
   description: Build a block that contains child blocks (InnerBlocks) allowing editors to nest content inside it.
@@ -143,17 +166,31 @@
   concepts: [InnerBlocks, allowed-blocks, parent-child]
   source: dev.wordpress.org
   source_files:
+    - https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/nested-blocks-inner-blocks/
     - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/
-  # Deferred: multi-block parent/child coordination requires compiled JS toolchain and complex editor UI testing.
+  # Harness dependency: editor-only InnerBlocks/allowedBlocks (parent-child restriction is inserter-only) — the allowedBlocks restriction is enforced only in the editor inserter and is not front-end observable; graded statically by the judge on the produced JS.
+  prompt: |
+    I want to create a WordPress block that acts as a container — editors can place other blocks inside it, like a layout wrapper or a section block. Please build a block that uses the InnerBlocks component to allow nested child blocks, and restrict the allowed child block types to a specific set (for example, only core Paragraph and core Image blocks). The block should also serialize its nested children correctly when the post is saved.
+  acceptance:
+    - The block's `edit` function renders an `InnerBlocks` component with an `allowedBlocks` prop that restricts which child blocks can be inserted.
+    - The `allowedBlocks` prop lists at least one specific block type (e.g. `core/paragraph`, `core/image`), preventing arbitrary block nesting.
+    - The block's `save` function (or dynamic render) outputs an `InnerBlocks.Content` component so nested children are serialized into post content.
+    - The parent block is registered via `block.json` and `registerBlockType`.
 
 - name: block-editor-block-patterns
-  description: Register a block pattern composed of multiple blocks as a reusable content template.
+  description: Register a block pattern composed of multiple blocks as a reusable content template, under the pinned name `my-plugin/hero`.
   difficulty: simple
   concepts: [register_block_pattern, block-patterns, pattern-categories]
   source: dev.wordpress.org
   source_files:
     - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-patterns/
-  # Deferred: multi-block composition — scenario requires assembling and verifying multiple coordinated blocks.
+  prompt: |
+    I want to make a reusable content template available in the WordPress editor — a pre-built arrangement of blocks that editors can insert with a single click. Please register a block pattern named `my-plugin/hero` with a human-readable title, so it shows up in the pattern inserter and editors can use it to quickly add a hero-style section to their pages.
+  acceptance:
+    - A block pattern is registered on the `init` hook under the pinned name `my-plugin/hero`.
+    - The pattern has a human-readable title.
+    - The pattern content is a non-empty string of block markup.
+    - The registered pattern is listed by name at the block patterns REST endpoint when requested by an authenticated user.
 
 # === Area: Themes ===
 # folder: eval/scenarios/themes/

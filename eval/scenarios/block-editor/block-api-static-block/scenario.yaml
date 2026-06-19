@@ -1,0 +1,16 @@
+name: block-api-static-block
+description: Register a simple static block with block.json, edit.js, save.js, and an icon.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want to create a WordPress block that bakes its output directly into the saved post content — not generated on the server on every load, but serialized into the page when the editor saves. Please build a static block with a name, a category, an edit function that lets me type content in the editor, and a save function that serializes that content into the post. The block should be registered using block.json.
+
+acceptance:
+  - A `block.json` file declares the block's name, title, and category, and references an editor script (editorScript or via the build setup).
+  - An `edit` function renders the block's editing interface in the block editor.
+  - A `save` function returns the serialized markup that is baked into post content — it does not return null (the block is static, not dynamic).
+  - No `render.php` or `render` callback is used — the block's front-end output comes from the `save` function's serialized markup.
+  - The block is registered via `registerBlockType` using the block.json metadata.
+
+rubrics: []

@@ -1,0 +1,16 @@
+name: block-filter-add-custom-attribute
+description: Add a custom attribute to an existing core block via the blocks.registerBlockType filter.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want to extend an existing WordPress core block — say the core Paragraph block — so that it carries an extra custom attribute of my choosing. I do not want to create a new block; I want to add this attribute to an existing one by hooking into the block registration process in JavaScript. Please add a custom attribute to the core Paragraph block so it is available in the editor alongside the block's built-in attributes.
+
+acceptance:
+  - A JavaScript filter is registered on the `blocks.registerBlockType` hook using `addFilter` from `@wordpress/hooks`.
+  - The filter targets a named existing/core block (e.g. `core/paragraph`).
+  - The filter callback merges a new custom attribute into `settings.attributes` without removing the block's existing attributes.
+  - The new attribute is declared with at least a `type` property.
+  - The filter is namespaced (the `addFilter` call includes a unique namespace string) to avoid collisions.
+
+rubrics: []
