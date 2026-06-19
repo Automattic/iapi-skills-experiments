@@ -484,16 +484,26 @@
     - The doc block is a `/** ... */` block placed immediately above the function, with the tag descriptions aligned and formatted per the standard.
 
 # === Area: WordPress Playground ===
-# folder: (none — deferred area)
+# folder: eval/scenarios/playground/
 
 - name: playground-blueprint-plugin-load
-  description: Author a Playground Blueprint JSON that loads a plugin and runs a setup step.
+  description: Author a Playground Blueprint JSON that installs and activates a plugin and applies an initial setup step.
   difficulty: simple
   concepts: [blueprint, steps, installPlugin, WordPress Playground]
   source: dev.wordpress.org
   source_files:
     - https://developer.wordpress.org/playground/wordpress-playground-resources/
-  # Deferred: the Blueprint JSON API (steps, installPlugin, login, setSiteOptions, runPHP, ...) is documented only off-domain — the entire developer.wordpress.org/playground/* namespace, including this source_files URL, 301-redirects to wordpress.github.io/wordpress-playground/. The area cannot be grounded on developer.wordpress.org, so it is deferred to preserve the suite's never-broken on-domain grounding invariant (per the WP-CLI precedent). Independent second reason: a Blueprint is a standalone JSON artifact the plugin scaffold (index.php + block.json) cannot ship, and no scenario grades a non-plugin/non-PHP deliverable — the same harness wall as the theme.json deferral.
+    - https://wordpress.github.io/wordpress-playground/blueprints/
+    - https://wordpress.github.io/wordpress-playground/blueprints/steps/
+  # Harness dependency: no Blueprint runner in the eval harness — graded statically by the judge on the produced JSON.
+  prompt: |
+    I want a one-click way to spin up a fresh WordPress environment with a specific plugin already installed, activated, and ready to use — without having to go through the admin UI. Please give me a WordPress Playground Blueprint JSON that boots a fresh WordPress site with the Contact Form 7 plugin installed and activated, and that also applies at least one initial setup step such as setting the site title or logging me in as an admin, so the environment is immediately usable. The deliverable is the Blueprint JSON itself.
+  acceptance:
+    - The response includes a Blueprint JSON object (or a code block containing one) with a top-level `steps` array.
+    - The `steps` array contains an `installPlugin` step that references the Contact Form 7 plugin (by slug `contact-form-7` or an equivalent zip/resource URL).
+    - The plugin is activated — either via an `installPlugin` step with `activate: true`, or via a separate activation step.
+    - The `steps` array contains at least one additional setup step (such as `setSiteOptions`, `login`, or `runPHP`) matching the initial-setup requirement in the prompt.
+    - The JSON is well-formed and parseable (valid JSON syntax, no trailing commas, no comments).
 
 # === Area: Code Reference ===
 # folder: (none — deferred area)
