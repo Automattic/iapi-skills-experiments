@@ -1,0 +1,16 @@
+name: phpstan-baseline
+description: Set up PHPStan static analysis for a plugin using the WordPress-aware extension/stubs, configure a sensible level, and handle reported type issues by fixing them or generating a baseline.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want to add PHPStan static analysis to my plugin so type errors are caught before they reach production. Please set it up with the WordPress-aware extension so WordPress core functions are understood correctly, configure a sensible analysis level, point it at the plugin's source, and then handle whatever type issues it finds — either fix them in the PHP, or if there are pre-existing issues that are too large to address right now, generate a baseline file so they are grandfathered and future new errors are still caught.
+
+acceptance:
+  - A `phpstan.neon` or `phpstan.neon.dist` configuration file is produced at the project root.
+  - The config declares a `level` key under `parameters` (a numeric PHPStan level).
+  - The config includes the `szepeviktor/phpstan-wordpress` extension — either via an `includes:` entry referencing the extension's neon file or via the `extensions:` key — so WordPress core functions and types are understood.
+  - The config sets `paths` under `parameters` to focus analysis on the plugin's first-party PHP source (not vendor or build directories).
+  - Either the reported type issues are corrected in the PHP source, or a `phpstan-baseline.neon` file is generated and referenced from the config via `includes:` so pre-existing errors are grandfathered and new errors are still caught.
+
+rubrics: []
