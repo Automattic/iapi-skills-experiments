@@ -7,7 +7,7 @@ prompt: |
   I want my plugin to perform a sensitive operation — say, updating a configuration value — only when the current user has the right permission. If the user does not have the required capability, the operation should be silently skipped. Please wire this up in a plugin hook callback so the capability check happens automatically before any sensitive work is done.
 
 acceptance:
-  - `current_user_can('<capability>')` is called before the sensitive operation runs — for example `current_user_can('manage_options')` or another named built-in capability.
+  - "`current_user_can('<capability>')` is called before the sensitive operation runs — for example `current_user_can('manage_options')` or another named built-in capability."
   - The sensitive operation (the action that requires the capability) is skipped entirely when the capability check fails — the hook callback returns early without performing the work.
   - The capability check happens before any sensitive work, not after.
   - The hook callback does not gate a REST route or use a REST-specific permission mechanism — this is a general plugin hook context.
