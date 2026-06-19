@@ -29,6 +29,7 @@
 # Editor, REST API, Themes, Common APIs, and Coding Standards scenarios; all other records are lighter stubs.
 
 # === Area: Block Editor ===
+# folder: eval/scenarios/block-editor/
 
 - name: block-api-static-block
   description: Register a simple static block with block.json, edit.js, save.js, and an icon.
@@ -154,6 +155,7 @@
   # Deferred: multi-block composition — scenario requires assembling and verifying multiple coordinated blocks.
 
 # === Area: Themes ===
+# folder: eval/scenarios/themes/
 
 - name: theme-json-custom-color-palette
   description: Define a custom color palette for a block theme via theme.json.
@@ -214,6 +216,7 @@
     - The widget area's name is wrapped for translation.
 
 # === Area: Plugins ===
+# folder: eval/scenarios/plugins/
 
 - name: taxonomy-register
   description: Register a `genre` taxonomy on posts, exposed via the REST API.
@@ -362,6 +365,7 @@
   # TODO: prompt + acceptance
 
 # === Area: Common APIs ===
+# folder: eval/scenarios/common-apis/
 
 # Implemented Common APIs scenarios — full records
 
@@ -430,6 +434,7 @@
     - The request is made from a hook callback, not at file-load time.
 
 # === Area: Advanced Administration ===
+# folder: (none — deferred area)
 
 - name: wp-config-custom-constant
   description: Define a custom constant in wp-config.php and use it to gate debug output.
@@ -442,6 +447,7 @@
   # Deferred: every Advanced Administration sub-topic is either a server/site-root config artifact the plugin scaffold (index.php + block.json) cannot ship — notably wp-config.php, which a plugin can only READ constants from, not define (the same harness wall as theme.json / the Playground blueprint) — or plugin security (nonces/sanitization/capability checks) that overlaps existing Plugins/REST coverage (e.g. rest-api-permission-check). On-domain; deferred on harness-wall + overlap grounds (not off-domain).
 
 # === Area: Coding Standards ===
+# folder: eval/scenarios/coding-standards/
 
 # Implemented Coding Standards scenarios — full records
 
@@ -478,6 +484,7 @@
     - The doc block is a `/** ... */` block placed immediately above the function, with the tag descriptions aligned and formatted per the standard.
 
 # === Area: WordPress Playground ===
+# folder: (none — deferred area)
 
 - name: playground-blueprint-plugin-load
   description: Author a Playground Blueprint JSON that loads a plugin and runs a setup step.
@@ -489,6 +496,7 @@
   # Deferred: the Blueprint JSON API (steps, installPlugin, login, setSiteOptions, runPHP, ...) is documented only off-domain — the entire developer.wordpress.org/playground/* namespace, including this source_files URL, 301-redirects to wordpress.github.io/wordpress-playground/. The area cannot be grounded on developer.wordpress.org, so it is deferred to preserve the suite's never-broken on-domain grounding invariant (per the WP-CLI precedent). Independent second reason: a Blueprint is a standalone JSON artifact the plugin scaffold (index.php + block.json) cannot ship, and no scenario grades a non-plugin/non-PHP deliverable — the same harness wall as the theme.json deferral.
 
 # === Area: Code Reference ===
+# folder: (none — deferred area)
 
 - name: code-reference-hook-lookup
   description: Use the Code Reference to find all actions/filters fired during wp_head and document their parameters.
@@ -502,6 +510,7 @@
   # Deferred: the Code Reference is the cross-cutting API reference index (per-symbol pages for functions/hooks/classes) that underlies every other area, not a distinct buildable topic. Any plugin-code scenario reduces to "use a documented symbol" — already covered by the Plugins/Common APIs/REST scenarios, which cite reference/* URLs as source_files — and the only Code-Reference-unique task (looking up / documenting symbols) yields no index.php deliverable to grade. On-domain; deferred as a non-distinct scenario area (not off-domain, not a harness wall).
 
 # === Area: REST API ===
+# folder: eval/scenarios/rest-api/
 
 - name: rest-api-custom-field-on-post
   description: Add a top-level `reading_time` field to the Posts REST response.
@@ -563,6 +572,7 @@
     - The gate is enforced by the route's permission check (not by the main handler).
 
 # === Area: WP-CLI Commands ===
+# folder: (none — deferred area)
 
 - name: wp-cli-custom-command
   description: Register a custom WP-CLI command that produces CLI output.
@@ -572,3 +582,104 @@
   source_files:
     - https://developer.wordpress.org/cli/commands/
   # Deferred: the custom-command API (WP_CLI::add_command) is documented only off-domain (make.wordpress.org/cli handbook; developer.wordpress.org/cli/ 301-redirects to the command reference), so this is deferred to preserve the suite's never-broken on-domain grounding invariant — the on-domain command reference only yields scenarios that duplicate already-covered features (e.g. cpt-register). Framing-A e2e is empirically feasible via the wpCli(...,{stdio:"pipe"}) stdout channel, so this can be promoted if the custom-command docs land on developer.wordpress.org or handbook grounding is explicitly allowed.
+
+# === Agent-Skills Gaps ===
+#
+# Review-triggerable stubs for agent-skills topics with NO scenario and NO
+# prior catalog stub. Each maps to one WordPress/agent-skills skill (the
+# `# agent-skills:` comment) and carries a `# Gap (...)` trigger marker whose
+# sub-class records why/how it could become a scenario:
+#   buildable-plugin = fits "build a plugin, grade the code" shape.
+#   review-workflow  = audit/classify/verify task; may NOT fit the build-a-plugin shape.
+#   harness-wall     = no PHP-plugin deliverable the current rubrics can grade.
+# Stubs carry NO prompt/acceptance (not implemented scenarios).
+
+- name: abilities-api-register
+  description: Register an Ability via the Abilities API (PHP register_ability) and expose it over REST.
+  difficulty: simple
+  concepts: [register_ability, abilities-api, rest-exposure]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-api
+  # agent-skills: wp-abilities-api
+  # Gap (agent-skills/wp-abilities-api): buildable-plugin — WP 6.9+ PHP register_ability() + REST exposure; most scenario-shaped gap, fits the plugin scaffold.
+
+- name: performance-object-cache
+  description: Optimize a plugin for performance — autoloaded options, object cache, query optimization.
+  difficulty: simple
+  concepts: [object-cache, autoloaded-options, query-optimization]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-performance
+  # agent-skills: wp-performance
+  # Gap (agent-skills/wp-performance): buildable-plugin — performance-as-a-topic is uncovered; primitives partially overlap cron/transients/http but profiling/caching is not graded today.
+
+- name: abilities-audit-rest-surface
+  description: Audit a plugin's REST surface for Abilities API registrations and report findings.
+  difficulty: simple
+  concepts: [abilities-api, rest-audit, static-analysis]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-audit
+  # agent-skills: wp-abilities-audit
+  # Gap (agent-skills/wp-abilities-audit): review-workflow — audits an existing REST surface; produces a report, not a plugin. May not fit the build-a-plugin-and-grade shape.
+
+- name: abilities-verify-callbacks
+  description: Verify Abilities API registrations and their callback behavior.
+  difficulty: simple
+  concepts: [abilities-api, verification, callback-behavior]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-verify
+  # agent-skills: wp-abilities-verify
+  # Gap (agent-skills/wp-abilities-verify): review-workflow — verifies registrations/callbacks; produces a verification result, not a plugin. May not fit the build-a-plugin-and-grade shape.
+
+- name: phpstan-baseline
+  description: Configure and run PHPStan static analysis on a plugin and fix the reported type errors.
+  difficulty: simple
+  concepts: [phpstan, static-analysis, phpstan.neon]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-phpstan
+  # agent-skills: wp-phpstan
+  # Gap (agent-skills/wp-phpstan): harness-wall — produces a phpstan.neon config + analysis, not a plugin deliverable the current rubrics grade. Distinct from our Coding Standards area (WPCS style/PHPDoc != PHPStan type analysis); no WPCS agent-skill exists.
+
+- name: wordpress-router-classify
+  description: Classify a WordPress codebase and route it to the correct workflow/skill.
+  difficulty: simple
+  concepts: [routing, classification, orchestration]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wordpress-router
+  # agent-skills: wordpress-router
+  # Gap (agent-skills/wordpress-router): review-workflow — meta/orchestration skill; no PHP plugin deliverable. May not fit the build-a-plugin-and-grade shape.
+
+- name: project-triage-report
+  description: Deterministically inspect a WordPress repo and produce a structured triage report.
+  difficulty: simple
+  concepts: [triage, repo-inspection, structured-report]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-project-triage
+  # agent-skills: wp-project-triage
+  # Gap (agent-skills/wp-project-triage): review-workflow — meta/orchestration; produces a report, not a plugin. May not fit the build-a-plugin-and-grade shape.
+
+- name: plugin-directory-review
+  description: Review a plugin against the WordPress.org Plugin Directory guidelines (GPL, naming, trademarks, freemium).
+  difficulty: simple
+  concepts: [plugin-directory-guidelines, compliance-review, gpl]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-plugin-directory-guidelines
+  # agent-skills: wp-plugin-directory-guidelines
+  # Gap (agent-skills/wp-plugin-directory-guidelines): review-workflow — reviews a plugin against 18 directory rules; lint-style, produces findings rather than a plugin.
+
+- name: wpds-component-ui
+  description: Build a UI with WordPress Design System (WPDS) components.
+  difficulty: simple
+  concepts: [wpds, design-system, react-components]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wpds
+  # agent-skills: wpds
+  # Gap (agent-skills/wpds): harness-wall — JS/React component UI; no PHP-plugin deliverable the current rubrics grade.
