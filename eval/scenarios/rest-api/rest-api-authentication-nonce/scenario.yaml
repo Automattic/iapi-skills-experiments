@@ -1,0 +1,15 @@
+name: rest-api-authentication-nonce
+description: Use a WP REST API nonce to make authenticated requests from JavaScript.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my plugin's JavaScript to be able to make authenticated requests to the WordPress REST API from the browser. Please set up the PHP side so it creates a REST nonce and passes it — along with the REST API base URL — to my JavaScript, and show the JavaScript snippet that reads those values and sends the nonce as the `X-WP-Nonce` header on a fetch request to a REST API endpoint.
+
+acceptance:
+  - PHP calls `wp_create_nonce('wp_rest')` to generate the REST nonce.
+  - PHP passes the nonce and the REST base URL (via `rest_url()`) to JavaScript using `wp_localize_script`.
+  - A JavaScript snippet reads the localized nonce value and sends it as the `X-WP-Nonce` header on a `fetch` request to a REST API URL.
+  - The nonce is passed as a request header (not as a query parameter or request body field).
+
+rubrics: []

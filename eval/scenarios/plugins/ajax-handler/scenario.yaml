@@ -1,0 +1,15 @@
+name: ajax-handler
+description: Register an authenticated admin-ajax handler and call it from JavaScript.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my WordPress plugin to handle a request coming from the browser via the admin-ajax endpoint. When an authenticated admin visits the page and a request is sent to the action `my_plugin_ping`, the server should respond with a JSON success response containing a field `pong` set to `true`. The handler must verify the request is legitimate before doing anything else.
+
+acceptance:
+  - Registers a `wp_ajax_my_plugin_ping` hook callback to handle the action for authenticated users.
+  - Calls `check_ajax_referer` (or equivalent nonce verification) before processing the request, so unauthenticated or forged requests are rejected.
+  - Responds with `wp_send_json_success()` — the response body is a JSON object with `"success": true`.
+  - An authenticated admin POST to `/wp-admin/admin-ajax.php?action=my_plugin_ping` returns a JSON body with `"success": true`.
+
+rubrics: []
