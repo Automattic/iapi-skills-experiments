@@ -1,0 +1,25 @@
+name: report
+description: Given a described WordPress repo, produce a structured triage report covering project inventory, health findings, and prioritized next actions.
+skills:
+  - wordpress-development
+
+prompt: |
+  I have a WordPress repository and I need a structured triage report before I start making changes. Here is what the repo looks like:
+
+  - Root contains: `index.php` (plugin main file), `block.json`, `src/edit.js`, `src/save.js`, `composer.json`, `phpunit.xml`, `package.json` (with `@wordpress/scripts` and `@wordpress/blocks`), and a `build/` output directory.
+  - The plugin header in `index.php` declares Plugin Name, Version 1.2.0, Requires at least 6.0, Tested up to 6.5, and Requires PHP 7.4.
+  - There is a `block.json` at the root referencing `"editorScript": "file:./build/index.js"`.
+  - There is no `functions.php`, no `style.css` theme header, and no `theme.json` at the root.
+  - `composer.json` lists `szepeviktor/phpstan-wordpress` under `require-dev`. A `vendor/` directory is present.
+  - `phpunit.xml` is present; no `jest.config.js` or Playwright config found.
+  - No `.wp-env.json` or `wp-env` dependency found in `package.json`.
+
+  Please produce a structured triage report for this repository.
+
+acceptance:
+  - The report includes a project inventory section that names the identified project kind (wp-block-plugin or equivalent) and lists the concrete signals used to reach that conclusion (block.json, @wordpress/scripts, edit.js/save.js, absence of functions.php/theme header).
+  - "The report includes a findings or health section that covers tooling present (PHP: Composer + PHPStan; Node: @wordpress/scripts; Tests: PHPUnit present, wp-env absent, Jest absent) and notes any gaps or risks (e.g. no wp-env integration test environment, WordPress tested-up-to version vs. current)."
+  - The report includes a prioritized next-actions section listing recommended steps in priority order, grounded in the signals found (for example, add wp-env for integration tests, update the Tested up to header, or run PHPStan).
+  - All three sections — inventory, health/findings, and prioritized actions — are present and reference specific file-level signals from the described repository rather than making generic statements.
+
+rubrics: []

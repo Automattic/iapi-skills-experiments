@@ -1,0 +1,15 @@
+name: http-request
+description: Make an outbound HTTP request to an external web service and handle errors before using the response.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my plugin to fetch some data from an external web service and use it, but I need it to handle the case where the request fails gracefully so the plugin doesn't break the site. Make the request from a hook callback, check whether it succeeded before doing anything with the response, and extract the response body to work with.
+
+acceptance:
+  - An outbound HTTP GET request is made to an external URL.
+  - The response is checked for an error before its content is used.
+  - The response body is extracted using the WordPress HTTP response-body helper.
+  - The request is made from a hook callback, not at file-load time.
+
+rubrics: []

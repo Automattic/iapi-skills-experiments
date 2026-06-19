@@ -1,0 +1,14 @@
+name: block-styles
+description: Register a named, selectable visual style for the block under the slug `custom`.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my WordPress block to offer a named visual style that editors can select from the block's style options panel in the editor. Please register a block style under the slug `custom` for my block, so that when an editor picks it the block receives the `is-style-custom` CSS class on the front end. The style should have a human-readable label so editors know what they're choosing.
+
+acceptance:
+  - A block style named `custom` is registered for `wp-skill/testing-block` on the `init` hook.
+  - The registered style has a `name` (slug `custom`) and a human-readable `label`.
+  - No CSS file is required — registering the style and emitting the class is the acceptance bar (CSS is optional).
+
+rubrics: []

@@ -1,0 +1,15 @@
+name: permission-check
+description: Gate a route so anonymous callers get 401 and admins get the data.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress plugin that exposes a route at `/wp-json/example/v1/private` and gates it so only logged-in administrators can access it. An anonymous (logged-out) request to the route must be denied with HTTP status `401`. A logged-in administrator request must succeed and return the body `This is private data.`. The access gate must be enforced by the route's permission check, not by the main handler.
+
+acceptance:
+  - A route at `example/v1/private` is gated by a permission check.
+  - An anonymous (logged-out) request to the route is denied with HTTP status 401.
+  - An authenticated administrator request to the route succeeds and returns the body `This is private data.`.
+  - The gate is enforced by the route's permission check (not by the main handler).
+
+rubrics: []

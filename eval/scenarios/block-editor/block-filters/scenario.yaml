@@ -1,0 +1,14 @@
+name: block-filters
+description: Append a fixed string to this block's rendered output on every page load via a render-time filter.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my WordPress block's rendered HTML to always include the exact string "Powered by my plugin" on every page load — appended after the block's output. This should only affect my block and not any other blocks on the page. Please set this up so the string appears automatically whenever the block is rendered on the front end.
+
+acceptance:
+  - A render-time filter on the block's output is registered in `index.php`.
+  - The filter callback receives the block's rendered HTML and returns modified HTML (the pinned string appended/prepended/wrapped).
+  - The modification targets only `wp-skill/testing-block` — via the block-specific hook variant or a block-name check in a generic callback (it must not modify all blocks).
+
+rubrics: []

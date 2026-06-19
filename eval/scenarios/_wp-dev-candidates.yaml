@@ -34,7 +34,7 @@
 
 # Implemented Block Editor scenarios — full records
 
-- name: block-editor-dynamic-block
+- name: dynamic-block
   description: Render a block's front-end output dynamically in PHP at render time.
   difficulty: simple
   concepts: [render.php, dynamic-block, server-side-render]
@@ -50,7 +50,7 @@
     - The output includes the pinned text (Hello from PHP).
     - No JavaScript save() function returns non-null content — the block is dynamic.
 
-- name: block-editor-block-supports
+- name: block-supports
   description: Expose a built-in color control on the block so a background color reaches the rendered output.
   difficulty: simple
   concepts: [block.json, supports, get_block_wrapper_attributes]
@@ -64,7 +64,7 @@
     - get_block_wrapper_attributes() is called on the wrapper element so support-derived classes reach the rendered output.
     - No custom attribute registration is used — the support relies on the built-in attribute the support provides.
 
-- name: block-editor-block-styles
+- name: block-styles
   description: Register a named, selectable visual style for the block under the slug `custom`.
   difficulty: simple
   concepts: [register_block_style, block-styles, className]
@@ -78,7 +78,7 @@
     - The registered style has a `name` (slug `custom`) and a human-readable `label`.
     - No CSS file is required — registering the style and emitting the class is the acceptance bar (CSS is optional).
 
-- name: block-editor-block-filters
+- name: block-filters
   description: Append a fixed string to this block's rendered output on every page load via a render-time filter.
   difficulty: simple
   concepts: [render_block, block-filters, add_filter]
@@ -92,7 +92,7 @@
     - The filter callback receives the block's rendered HTML and returns modified HTML (the pinned string appended/prepended/wrapped).
     - The modification targets only `wp-skill/testing-block` — via the block-specific hook variant or a block-name check in a generic callback (it must not modify all blocks).
 
-- name: block-editor-block-bindings
+- name: block-bindings
   description: Register a custom PHP data source that supplies a value to a block, under a pinned source name.
   difficulty: simple
   concepts: [register_block_bindings_source, block-bindings, get_value_callback]
@@ -143,7 +143,7 @@
     - The new attribute is declared with at least a `type` property.
     - The filter is namespaced (the `addFilter` call includes a unique namespace string) to avoid collisions.
 
-- name: block-editor-block-variations
+- name: block-variations
   description: Register a block variation that pre-configures an existing block with custom attributes and a label.
   difficulty: simple
   concepts: [registerBlockVariation, block-variations, editor-JS]
@@ -160,7 +160,7 @@
     - The variation pre-configures at least one attribute via the `attributes` property, making it distinct from the base block.
     - The variation registration runs from a script enqueued in the editor context.
 
-- name: block-editor-inner-blocks
+- name: inner-blocks
   description: Build a block that contains child blocks (InnerBlocks) allowing editors to nest content inside it.
   difficulty: simple
   concepts: [InnerBlocks, allowed-blocks, parent-child]
@@ -177,7 +177,7 @@
     - The block's `save` function (or dynamic render) outputs an `InnerBlocks.Content` component so nested children are serialized into post content.
     - The parent block is registered via `block.json` and `registerBlockType`.
 
-- name: block-editor-block-patterns
+- name: block-patterns
   description: Register a block pattern composed of multiple blocks as a reusable content template, under the pinned name `my-plugin/hero`.
   difficulty: simple
   concepts: [register_block_pattern, block-patterns, pattern-categories]
@@ -215,7 +215,7 @@
 
 # Implemented Themes scenarios — full records
 
-- name: themes-enqueue-assets
+- name: enqueue-assets
   description: Load a front-end stylesheet and script under a shared handle so WordPress emits their tags.
   difficulty: simple
   concepts: [wp_enqueue_scripts, wp_enqueue_style, wp_enqueue_script]
@@ -231,7 +231,7 @@
     - Both assets are enqueued from a callback attached to the front-end asset-enqueueing hook (not the admin or login screens).
     - The enqueues require no theme artifact — they work from the plugin against whatever theme is active.
 
-- name: themes-nav-menu-location
+- name: nav-menu-location
   description: Register a navigation-menu location with a translatable label on theme setup.
   difficulty: simple
   concepts: [register_nav_menus, after_setup_theme, nav-menu-location]
@@ -246,7 +246,7 @@
     - The location's label is wrapped for translation.
     - No theme template or menu-rendering call is required for the registration to be in effect.
 
-- name: themes-sidebar-widget-area
+- name: sidebar-widget-area
   description: Register a sidebar / widget area with an id, translatable name, and widget/title wrappers.
   difficulty: simple
   concepts: [register_sidebar, widgets_init, widget-area]
@@ -425,7 +425,7 @@
 
 # Implemented Common APIs scenarios — full records
 
-- name: common-apis-options
+- name: options
   description: Imperatively store and retrieve a value via the Options API, with a default when unset.
   difficulty: simple
   concepts: [add_option, update_option, get_option]
@@ -441,7 +441,7 @@
     - A default value is provided for when the key has not yet been set.
     - The store and retrieve operations run from a load-time hook.
 
-- name: common-apis-transients
+- name: transients
   description: Cache a computed value with an expiry and recompute it only after it expires, via the Transients API.
   difficulty: simple
   concepts: [set_transient, get_transient, delete_transient]
@@ -457,7 +457,7 @@
     - On subsequent loads before expiry, the cached value is returned without recomputation.
     - The transient key is a namespaced string literal.
 
-- name: common-apis-rewrite-rule
+- name: rewrite-rule
   description: Register a custom URL rewrite rule that routes a pretty URL to a plugin-controlled response.
   difficulty: simple
   concepts: [add_rewrite_rule, register_activation_hook, template_redirect]
@@ -473,7 +473,7 @@
     - The plugin intercepts the request before any theme template loads, outputs its response, and stops further rendering.
     - The rewrite rules are flushed once when the plugin is activated so the URL is live immediately.
 
-- name: common-apis-http-request
+- name: http-request
   description: Make an outbound HTTP request to an external web service and handle errors before using the response.
   difficulty: simple
   concepts: [wp_remote_get, wp_remote_retrieve_body, is_wp_error]
@@ -513,7 +513,7 @@
 
 # Implemented Coding Standards scenarios — full records
 
-- name: coding-standards-php
+- name: php
   description: Write a small PHP helper that maps a status value to a friendly display label.
   difficulty: simple
   concepts: [WPCS, PHP coding standards, Yoda conditions, brace style, naming]
@@ -529,7 +529,7 @@
     - Spacing follows the WordPress PHP standard — spaces inside the parentheses of control structures and function calls that take arguments, and spaces around operators.
     - Identifiers use lowercase snake_case, and the function name is prefixed or namespaced to avoid collisions (not a bare generic name).
 
-- name: coding-standards-inline-docs
+- name: inline-docs
   description: Add a documentation comment to a small PHP function that formats a welcome message.
   difficulty: simple
   concepts: [PHPDoc, inline documentation, docblock, "@param", "@return", "@since"]
@@ -548,7 +548,7 @@
 # === Area: WordPress Playground ===
 # folder: eval/scenarios/playground/
 
-- name: playground-blueprint-plugin-load
+- name: blueprint-plugin-load
   description: Author a Playground Blueprint JSON that installs and activates a plugin and applies an initial setup step.
   difficulty: simple
   concepts: [blueprint, steps, installPlugin, WordPress Playground]
@@ -570,7 +570,7 @@
 # === Area: Code Reference ===
 # folder: eval/scenarios/code-reference/
 
-- name: code-reference-hook-lookup
+- name: hook-lookup
   description: Use the Code Reference to find all actions/filters fired during wp_head and document their parameters.
   difficulty: simple
   concepts: [hooks, actions, filters, wp_head, Code Reference]
@@ -591,7 +591,7 @@
 # === Area: REST API ===
 # folder: eval/scenarios/rest-api/
 
-- name: rest-api-custom-field-on-post
+- name: custom-field-on-post
   description: Add a top-level `reading_time` field to the Posts REST response.
   difficulty: simple
   concepts: [register_rest_field, rest_api_init, modifying-responses, get_callback]
@@ -607,7 +607,7 @@
     - Reading a published post through the site's data API returns `reading_time` with the value `5 min`.
     - The field is exposed on the existing post resource without registering a new route or post meta.
 
-- name: rest-api-authentication-nonce
+- name: authentication-nonce
   description: Use a WP REST API nonce to make authenticated requests from JavaScript.
   difficulty: intermediate
   concepts: [wp_create_nonce, X-WP-Nonce, rest_url, wp_localize_script]
@@ -627,7 +627,7 @@
 
 # Implemented REST API scenarios — full records
 
-- name: rest-api-route-validation
+- name: route-validation
   description: Validate a route's `filter` argument so disallowed values are rejected.
   difficulty: simple
   concepts: [register_rest_route, route-arguments, validation, enum]
@@ -642,7 +642,7 @@
     - A request with `filter=purple` (a disallowed value) is rejected with HTTP status 400.
     - The accepted set of values is constrained server-side (a value outside the allowed set is rejected before the handler runs).
 
-- name: rest-api-permission-check
+- name: permission-check
   description: Gate a route so anonymous callers get 401 and admins get the data.
   difficulty: simple
   concepts: [register_rest_route, permission_callback, authentication, rest_authorization_required_code]
@@ -663,7 +663,7 @@
 
 # Implemented WP-CLI Commands scenarios — full records
 
-- name: wp-cli-custom-command
+- name: custom-command
   description: Register a custom WP-CLI command that prints a pinned message to the terminal.
   difficulty: simple
   concepts: [custom WP-CLI command, WP_CLI::add_command, CLI output]
@@ -684,7 +684,7 @@
 
 # Implemented Performance scenarios — full records
 
-- name: performance-object-cache
+- name: object-cache
   description: Cache an expensive computed value in memory within the request lifecycle so it is not recomputed on repeated access during the same or subsequent requests.
   difficulty: simple
   concepts: [object-cache, wp_cache_get, wp_cache_set, cache-group]
@@ -703,7 +703,7 @@
     - On a cache miss the value is computed and then stored in the cache so the next read can return it.
     - The cache key is a namespaced string literal scoped to the plugin.
 
-- name: performance-autoloaded-options
+- name: autoloaded-options
   description: Store a large, rarely-read setting so it is not loaded into memory on every page request — only fetched on demand.
   difficulty: simple
   concepts: [autoloaded-options, add_option, update_option, autoload]
@@ -727,7 +727,7 @@
 
 # Implemented Static Analysis scenarios — full records
 
-- name: phpstan-baseline
+- name: baseline
   description: Set up PHPStan static analysis for a plugin using the WordPress-aware extension/stubs, configure a sensible level, and handle reported type issues by fixing them or generating a baseline.
   difficulty: simple
   concepts: [phpstan, static-analysis, phpstan.neon, szepeviktor/phpstan-wordpress, baseline]
@@ -752,7 +752,7 @@
 # agent-skills: wpds
 # Harness dependency: no JS build/render step in the eval harness — graded statically by the judge on the produced JS/JSX
 
-- name: wpds-component-ui
+- name: component-ui
   description: Build a small, consistent admin/editor UI using WordPress Design System components from @wordpress/components rather than hand-rolled HTML/CSS.
   difficulty: simple
   concepts: [wpds, design-system, react-components, Panel, ToggleControl, Button]
@@ -776,7 +776,7 @@
 
 # Implemented Agentic Workflows scenarios — full records
 
-- name: wordpress-router-classify
+- name: classify
   description: Classify a WordPress codebase and route it to the correct workflow/skill.
   difficulty: simple
   concepts: [routing, classification, orchestration]
@@ -795,7 +795,7 @@
     - Justifies the decision from concrete signals present in the described codebase — the justification references specific files or tooling clues (block.json, @wordpress/scripts, edit.js/save.js, or absence of functions.php/style.css/theme.json) rather than making a generic statement.
     - Covers the router's intent-based routing categories in the justification — the report demonstrates awareness of the distinction between block development, plugin development, theme development, and other taxonomy branches, explaining why this project falls into the selected category and not the alternatives.
 
-- name: project-triage-report
+- name: report
   description: Deterministically inspect a WordPress repo and produce a structured triage report.
   difficulty: simple
   concepts: [triage, repo-inspection, structured-report]
@@ -823,7 +823,7 @@
     - The report includes a prioritized next-actions section listing recommended steps in priority order, grounded in the signals found (for example, add wp-env for integration tests, update the Tested up to header, or run PHPStan).
     - All three sections — inventory, health/findings, and prioritized actions — are present and reference specific file-level signals from the described repository rather than making generic statements.
 
-- name: plugin-directory-review
+- name: review
   description: Review a plugin against the WordPress.org Plugin Directory guidelines (GPL, naming, trademarks, freemium).
   difficulty: simple
   concepts: [plugin-directory-guidelines, compliance-review, gpl]
@@ -875,7 +875,7 @@
 # Implemented Abilities API scenarios — full records
 # folder: eval/scenarios/abilities-api/
 
-- name: abilities-api-register
+- name: register
   description: Register a named ability so it is discoverable and runnable through the site's data API.
   difficulty: simple
   concepts: [register_ability, abilities-api, rest-exposure, show_in_rest]
@@ -893,7 +893,7 @@
     - The pinned ability id (`my-plugin/greeting`) is used as the ability name.
     - Reading the list of available abilities through the site's data API includes an entry whose name is `my-plugin/greeting`.
 
-- name: abilities-audit-rest-surface
+- name: audit-rest-surface
   description: Audit a plugin's REST surface and produce a structured report proposing which routes should become named abilities.
   difficulty: simple
   concepts: [abilities-api, rest-audit, static-analysis]
@@ -910,7 +910,7 @@
     - Deferred or excluded registrations appear in a dedicated excluded or deferred section, each accompanied by a one-sentence deferral reason; abilities with no backing controller have a null backing and appear in a surfaced-gaps section.
     - The report contains a Notes and Surprises prose section that covers at least the capability-gate mechanism in use and any non-standard patterns found in the plugin.
 
-- name: abilities-verify-callbacks
+- name: verify-callbacks
   description: Verify a plugin's registered abilities and produce a structured PASS/WARN/FAIL verdict report.
   difficulty: simple
   concepts: [abilities-api, verification, callback-behavior]
