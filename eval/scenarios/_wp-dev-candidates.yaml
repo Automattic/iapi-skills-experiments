@@ -26,7 +26,7 @@
 # these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
 # source_files carries developer.wordpress.org URLs (not local paths).
 # Full prompt + acceptance are included for the implemented Plugins, Block
-# Editor, REST API, Themes, and Common APIs scenarios; all other records are lighter stubs.
+# Editor, REST API, Themes, Common APIs, and Coding Standards scenarios; all other records are lighter stubs.
 
 # === Area: Block Editor ===
 
@@ -443,15 +443,39 @@
 
 # === Area: Coding Standards ===
 
-- name: php-coding-standards-yoda
-  description: Apply WordPress PHP coding standards — Yoda conditions, brace style, spacing.
+# Implemented Coding Standards scenarios — full records
+
+- name: coding-standards-php
+  description: Write a small PHP helper that maps a status value to a friendly display label.
   difficulty: simple
-  concepts: [WPCS, PHP coding standards, Yoda conditions]
+  concepts: [WPCS, PHP coding standards, Yoda conditions, brace style, naming]
   source: dev.wordpress.org
   source_files:
     - https://developer.wordpress.org/coding-standards/wordpress-coding-standards/php/
     - https://developer.wordpress.org/coding-standards/wordpress-coding-standards/
-  # TODO: prompt + acceptance
+  prompt: |
+    I'm building a small WordPress plugin and I need a little helper function in PHP. It should take a status value (like an order or post status) and return a short, friendly label for it — for example, turning a stored status into something I can show to a reader. If the status isn't one it recognizes, it should fall back to a sensible default label. Please write that function for me.
+  acceptance:
+    - Comparisons place the constant or literal on the left-hand side (Yoda conditions), so an accidental single `=` assignment cannot pass silently.
+    - Braces follow the WordPress brace style — opening brace on the same line as the statement, closing brace on its own line, and braces used even for single-statement blocks.
+    - Spacing follows the WordPress PHP standard — spaces inside the parentheses of control structures and function calls that take arguments, and spaces around operators.
+    - Identifiers use lowercase snake_case, and the function name is prefixed or namespaced to avoid collisions (not a bare generic name).
+
+- name: coding-standards-inline-docs
+  description: Add a documentation comment to a small PHP function that formats a welcome message.
+  difficulty: simple
+  concepts: [PHPDoc, inline documentation, docblock, "@param", "@return", "@since"]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/coding-standards/inline-documentation-standards/php/
+  prompt: |
+    I have a small PHP function for my plugin that takes a user's display name and a greeting prefix and returns a formatted welcome message. The function works, but other developers (and future me) will need to understand it without reading the body. Please add a proper documentation comment above it that explains what it does, describes each input and the value it returns, and notes the plugin version it was introduced in — formatted the way it should be for this kind of project.
+  acceptance:
+    - The doc block opens with a single-sentence summary line describing what the function does.
+    - Each parameter has a `@param` entry giving its type and `$name` (one per parameter), in declaration order.
+    - There is a `@return` entry stating the returned type (and a description where the type alone is ambiguous).
+    - There is an `@since` tag using a three-digit version number (for example `@since 1.0.0`).
+    - The doc block is a `/** ... */` block placed immediately above the function, with the tag descriptions aligned and formatted per the standard.
 
 # === Area: WordPress Playground ===
 
