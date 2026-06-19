@@ -28,7 +28,7 @@ npx skillsmith <scenario-dir>
 npm run skillsmith -- <scenario-dir>
 ```
 
-Scenarios are organized into seven per-topic folders under `eval/scenarios/` — `interactivity-api/`, `plugins/`, `block-editor/`, `rest-api/`, `themes/`, `common-apis/`, and `coding-standards/` — and each scenario lives one level deeper as `eval/scenarios/<topic>/<scenario>/` (e.g. `interactivity-api/counter`, `plugins/cpt-register`). A scenario is addressed by its `<topic>/<scenario>` path:
+Scenarios are organized into per-topic folders under `eval/scenarios/` — one folder per developer.wordpress.org area or agent-skills topic (`interactivity-api/`, `plugins/`, `block-editor/`, `rest-api/`, `themes/`, `common-apis/`, `coding-standards/`, `abilities-api/`, `wp-cli/`, `playground/`, `performance/`, `phpstan/`, `wpds/`, `wordpress-router/`, `project-triage/`, `plugin-directory/`, `code-reference/`, `advanced-admin/`) — and each scenario lives one level deeper as `eval/scenarios/<topic>/<scenario>/` (e.g. `interactivity-api/counter`, `plugins/cpt-register`). A scenario is addressed by its `<topic>/<scenario>` path:
 ```sh
 npx skillsmith plugins/cpt-register
 ```
@@ -36,7 +36,7 @@ Note: addressing a nested scenario this way requires the upstream Skillsmith nes
 
 `eval/scenarios/` also holds two leading-underscore (non-directory) candidate catalogs — planning artifacts that scenario discovery skips, not runnable scenarios. They **stay at the `eval/scenarios/` root** (they are not moved into the topic folders) and reference scenarios by `name`, not by path:
 - `eval/scenarios/_candidates.yaml` — candidate Interactivity-API scenarios.
-- `eval/scenarios/_wp-dev-candidates.yaml` — broader WordPress-development candidates spanning the developer.wordpress.org areas. Its area headers carry a `# folder:` pointer to the matching topic folder, and it now ends with an `# === Agent-Skills Gaps ===` section recording agent-skills topics that have no scenario yet.
+- `eval/scenarios/_wp-dev-candidates.yaml` — broader WordPress-development candidates spanning the developer.wordpress.org areas and agent-skills topics. Its area headers carry a `# folder:` pointer to the matching topic folder. (An earlier `# === Agent-Skills Gaps ===` section tracked agent-skills topics without a scenario; all have since been promoted to full records.)
 
 This runs one scenario against the single configured testing agent and writes results under `.skillsmith/<runId>/`.
 
