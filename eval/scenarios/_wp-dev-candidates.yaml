@@ -594,16 +594,6 @@
 #   harness-wall     = no PHP-plugin deliverable the current rubrics can grade.
 # Stubs carry NO prompt/acceptance (not implemented scenarios).
 
-- name: abilities-api-register
-  description: Register an Ability via the Abilities API (PHP register_ability) and expose it over REST.
-  difficulty: simple
-  concepts: [register_ability, abilities-api, rest-exposure]
-  source: agent-skills
-  source_files:
-    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-api
-  # agent-skills: wp-abilities-api
-  # Gap (agent-skills/wp-abilities-api): buildable-plugin — WP 6.9+ PHP register_ability() + REST exposure; most scenario-shaped gap, fits the plugin scaffold.
-
 - name: performance-object-cache
   description: Optimize a plugin for performance — autoloaded options, object cache, query optimization.
   difficulty: simple
@@ -613,26 +603,6 @@
     - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-performance
   # agent-skills: wp-performance
   # Gap (agent-skills/wp-performance): buildable-plugin — performance-as-a-topic is uncovered; primitives partially overlap cron/transients/http but profiling/caching is not graded today.
-
-- name: abilities-audit-rest-surface
-  description: Audit a plugin's REST surface for Abilities API registrations and report findings.
-  difficulty: simple
-  concepts: [abilities-api, rest-audit, static-analysis]
-  source: agent-skills
-  source_files:
-    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-audit
-  # agent-skills: wp-abilities-audit
-  # Gap (agent-skills/wp-abilities-audit): review-workflow — audits an existing REST surface; produces a report, not a plugin. May not fit the build-a-plugin-and-grade shape.
-
-- name: abilities-verify-callbacks
-  description: Verify Abilities API registrations and their callback behavior.
-  difficulty: simple
-  concepts: [abilities-api, verification, callback-behavior]
-  source: agent-skills
-  source_files:
-    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-verify
-  # agent-skills: wp-abilities-verify
-  # Gap (agent-skills/wp-abilities-verify): review-workflow — verifies registrations/callbacks; produces a verification result, not a plugin. May not fit the build-a-plugin-and-grade shape.
 
 - name: phpstan-baseline
   description: Configure and run PHPStan static analysis on a plugin and fix the reported type errors.
