@@ -683,3 +683,58 @@
     - https://github.com/WordPress/agent-skills/tree/trunk/skills/wpds
   # agent-skills: wpds
   # Gap (agent-skills/wpds): harness-wall — JS/React component UI; no PHP-plugin deliverable the current rubrics grade.
+
+# Implemented Abilities API scenarios — full records
+# folder: eval/scenarios/abilities-api/
+
+- name: abilities-api-register
+  description: Register a named ability so it is discoverable and runnable through the site's data API.
+  difficulty: simple
+  concepts: [register_ability, abilities-api, rest-exposure, show_in_rest]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/abilities-api/
+    - https://developer.wordpress.org/apis/abilities-api/rest-api-endpoints/
+  prompt: |
+    I want my plugin to expose a small, named action — call it `my-plugin/greeting` — that is discoverable and runnable through the site's data API. The action should return a value when invoked and must be visible when listing available actions over the data API. Make sure it is properly exposed to the data API so it shows up in the list, and gate it so only authorised users can see and run it.
+  acceptance:
+    - The ability is registered on the abilities initialisation hook with a permission callback that gates access to authorised users.
+    - The ability is registered with at least one annotation declaring its behaviour (readonly, destructive, or idempotent).
+    - The ability is explicitly exposed to the REST API (show_in_rest set to true or equivalent) so it appears in the list endpoint.
+    - The ability's execute callback returns a non-empty value.
+    - The pinned ability id (`my-plugin/greeting`) is used as the ability name.
+    - Reading the list of available abilities through the site's data API includes an entry whose name is `my-plugin/greeting`.
+
+- name: abilities-audit-rest-surface
+  description: Audit a plugin's REST surface and produce a structured report proposing which routes should become named abilities.
+  difficulty: simple
+  concepts: [abilities-api, rest-audit, static-analysis]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-audit
+  # Harness dependency: harness needs a report-collection mode (activate-scenario → collect markdown output → grade)
+  # before this can be automatically verified; until then, judge grades the markdown output statically.
+  prompt: |
+    I have an existing WordPress plugin that exposes several REST API routes. I'd like you to audit its REST surface and produce a structured report that inventories all of the REST controllers and endpoints, identifies which routes are good candidates to expose as named, discoverable abilities, notes which ones should be deferred and why, and calls out any gaps or non-standard patterns you noticed. The report should give me a clear picture of what to prioritise so I know exactly what to tackle first.
+  acceptance:
+    - The report contains a Controller Inventory section with a table enumerating at least one REST controller — each row includes the controller class or file, HTTP method, route, callback name, permission callback, and return type.
+    - The report contains a proposed-abilities list where each entry includes the ability name, the backing controller or function, the capability gate, the annotations (readonly, destructive, or idempotent), and the implementation effort (S, M, or L).
+    - Deferred or excluded registrations appear in a dedicated excluded or deferred section, each accompanied by a one-sentence deferral reason; abilities with no backing controller have a null backing and appear in a surfaced-gaps section.
+    - The report contains a Notes and Surprises prose section that covers at least the capability-gate mechanism in use and any non-standard patterns found in the plugin.
+
+- name: abilities-verify-callbacks
+  description: Verify a plugin's registered abilities and produce a structured PASS/WARN/FAIL verdict report.
+  difficulty: simple
+  concepts: [abilities-api, verification, callback-behavior]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-verify
+  # Harness dependency: harness needs a report-collection mode (activate-scenario → collect markdown output → grade)
+  # before this can be automatically verified; until then, judge grades the markdown report statically.
+  prompt: |
+    I have a WordPress plugin with several registered named abilities. I need you to verify them thoroughly — check that each ability's annotations actually match what its callback does (for example, that a read-only ability doesn't write to the database), confirm that the permission gates are correctly set up and not trivially open, lint the input and output schemas for common mistakes, and check that any error codes follow the expected vocabulary. Produce a structured report with a clear overall verdict (PASS, WARN, or FAIL) and per-section findings so I know exactly what needs fixing.
+  acceptance:
+    - The report opens with a top-level Status verdict of exactly PASS, WARN, or FAIL — a single FAIL forces the top-level verdict to FAIL; WARNs without any FAILs yield WARN.
+    - The report contains an annotation-correctness section that checks each read-only ability's callback for prohibited write patterns (database writes, option updates, non-GET REST delegates, filesystem mutations) and records any violation as FAIL with evidence.
+    - The report contains a permission-gates section that classifies each ability's permission callback against known shapes — a direct capability check is acceptable; a literal true is FAIL — and shows a per-ability table with the ability name, the gate claim, the verdict, and supporting evidence.
+    - The report contains schema-lints and error-code vocabulary sections — schema lints flag missing additionalProperties constraints, empty enums, or non-static defaults as WARN; non-vocabulary WP_Error codes are flagged as WARN.
