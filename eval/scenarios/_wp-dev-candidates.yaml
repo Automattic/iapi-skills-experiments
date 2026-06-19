@@ -694,6 +694,30 @@
     - All three controls (Panel/PanelBody, ToggleControl, Button) are imported from `@wordpress/components`, not from any other package or hand-written.
     - The component does not replace the ToggleControl or Button with raw HTML elements (`<input>`, `<button>`, `<div>`) styled to look like those controls.
 
+# === Area: Agentic Workflows ===
+# folder: eval/scenarios/wordpress-router/
+
+# Implemented Agentic Workflows scenarios — full records
+
+- name: wordpress-router-classify
+  description: Classify a WordPress codebase and route it to the correct workflow/skill.
+  difficulty: simple
+  concepts: [routing, classification, orchestration]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wordpress-router
+    - https://raw.githubusercontent.com/WordPress/agent-skills/trunk/skills/wordpress-router/SKILL.md
+    - https://raw.githubusercontent.com/WordPress/agent-skills/trunk/skills/wordpress-router/references/decision-tree.md
+  # agent-skills: wordpress-router
+  # Harness dependency: no plugin deliverable — analysis/routing report graded statically by the judge
+  prompt: |
+    I have a WordPress project and I need you to tell me exactly what kind of WordPress work it is and which development workflow I should follow. Here is what I have: a repository that contains a block.json file, a src/ directory with edit.js and save.js, a package.json referencing @wordpress/scripts and @wordpress/blocks, and a build pipeline using npm run build. There is no functions.php, no style.css header, and no theme.json at the root. What type of WordPress project is this, which category from the WordPress router taxonomy does it fall into, and which specific workflow or skill should I use to continue developing it? Please give me your classification decision and justify it with the concrete signals you found.
+  acceptance:
+    - Identifies the project kind from the router's taxonomy — the report names the specific kind (e.g. wp-block-plugin, wp-plugin, wp-block-theme, wp-theme, wp-site, wp-core, or gutenberg) that best matches the described codebase.
+    - Gives a clear, unambiguous routing decision — the report names the target workflow or skill (e.g. wp-block-development, wp-plugin-development, wp-block-themes) that should be used for this project.
+    - Justifies the decision from concrete signals present in the described codebase — the justification references specific files or tooling clues (block.json, @wordpress/scripts, edit.js/save.js, or absence of functions.php/style.css/theme.json) rather than making a generic statement.
+    - Covers the router's intent-based routing categories in the justification — the report demonstrates awareness of the distinction between block development, plugin development, theme development, and other taxonomy branches, explaining why this project falls into the selected category and not the alternatives.
+
 # === Agent-Skills Gaps ===
 #
 # Review-triggerable stubs for agent-skills topics with NO scenario and NO
@@ -704,16 +728,6 @@
 #   review-workflow  = audit/classify/verify task; may NOT fit the build-a-plugin shape.
 #   harness-wall     = no PHP-plugin deliverable the current rubrics can grade.
 # Stubs carry NO prompt/acceptance (not implemented scenarios).
-
-- name: wordpress-router-classify
-  description: Classify a WordPress codebase and route it to the correct workflow/skill.
-  difficulty: simple
-  concepts: [routing, classification, orchestration]
-  source: agent-skills
-  source_files:
-    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wordpress-router
-  # agent-skills: wordpress-router
-  # Gap (agent-skills/wordpress-router): review-workflow — meta/orchestration skill; no PHP plugin deliverable. May not fit the build-a-plugin-and-grade shape.
 
 - name: project-triage-report
   description: Deterministically inspect a WordPress repo and produce a structured triage report.

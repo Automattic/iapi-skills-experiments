@@ -1,0 +1,15 @@
+name: wordpress-router-classify
+description: Given a described WordPress codebase or task, classify what kind of WordPress work it is and route it to the correct development workflow.
+skills:
+  - wordpress-development
+
+prompt: |
+  I have a WordPress project and I need you to tell me exactly what kind of WordPress work it is and which development workflow I should follow. Here is what I have: a repository that contains a block.json file, a src/ directory with edit.js and save.js, a package.json referencing @wordpress/scripts and @wordpress/blocks, and a build pipeline using npm run build. There is no functions.php, no style.css header, and no theme.json at the root. What type of WordPress project is this, which category from the WordPress router taxonomy does it fall into, and which specific workflow or skill should I use to continue developing it? Please give me your classification decision and justify it with the concrete signals you found.
+
+acceptance:
+  - Identifies the project kind from the router's taxonomy — the report names the specific kind (e.g. wp-block-plugin, wp-plugin, wp-block-theme, wp-theme, wp-site, wp-core, or gutenberg) that best matches the described codebase.
+  - Gives a clear, unambiguous routing decision — the report names the target workflow or skill (e.g. wp-block-development, wp-plugin-development, wp-block-themes) that should be used for this project.
+  - Justifies the decision from concrete signals present in the described codebase — the justification references specific files or tooling clues (block.json, @wordpress/scripts, edit.js/save.js, or absence of functions.php/style.css/theme.json) rather than making a generic statement.
+  - Covers the router's intent-based routing categories in the justification — the report demonstrates awareness of the distinction between block development, plugin development, theme development, and other taxonomy branches, explaining why this project falls into the selected category and not the alternatives.
+
+rubrics: []
