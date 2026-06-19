@@ -1,5 +1,5 @@
 import { expect, test } from "@wordpress/e2e-test-utils-playwright";
-import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
+import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
 
 /**
  * E2E tests for the paginated-list scenario.
