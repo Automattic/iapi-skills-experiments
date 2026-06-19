@@ -439,7 +439,7 @@
   source_files:
     - https://developer.wordpress.org/advanced-administration/wordpress/
     - https://developer.wordpress.org/apis/wp-config-php/
-  # TODO: prompt + acceptance
+  # Deferred: every Advanced Administration sub-topic is either a server/site-root config artifact the plugin scaffold (index.php + block.json) cannot ship — notably wp-config.php, which a plugin can only READ constants from, not define (the same harness wall as theme.json / the Playground blueprint) — or plugin security (nonces/sanitization/capability checks) that overlaps existing Plugins/REST coverage (e.g. rest-api-permission-check). On-domain; deferred on harness-wall + overlap grounds (not off-domain).
 
 # === Area: Coding Standards ===
 
@@ -499,7 +499,7 @@
     - https://developer.wordpress.org/reference/
     - https://developer.wordpress.org/reference/hooks/
     - https://developer.wordpress.org/reference/functions/
-  # TODO: prompt + acceptance
+  # Deferred: the Code Reference is the cross-cutting API reference index (per-symbol pages for functions/hooks/classes) that underlies every other area, not a distinct buildable topic. Any plugin-code scenario reduces to "use a documented symbol" — already covered by the Plugins/Common APIs/REST scenarios, which cite reference/* URLs as source_files — and the only Code-Reference-unique task (looking up / documenting symbols) yields no index.php deliverable to grade. On-domain; deferred as a non-distinct scenario area (not off-domain, not a harness wall).
 
 # === Area: REST API ===
 
