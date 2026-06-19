@@ -203,7 +203,15 @@
   source_files:
     - https://developer.wordpress.org/themes/block-themes/
     - https://developer.wordpress.org/block-editor/reference-guides/theme-json-reference/
-  # Deferred: theme.json is a theme-root artifact the plugin scaffold cannot ship — theme-artifact-bound, not feasible without a theme-scaffold harness change.
+  # Harness dependency: theme.json is a theme-root artifact the plugin scaffold cannot ship — graded statically by the judge on the produced JSON.
+  prompt: |
+    I want to define a small set of custom theme colors that appear as selectable swatches in the editor's color pickers — so editors can choose from my brand colors when styling blocks. Please create a theme.json file that registers a custom color palette with at least two colors, each with a slug, a human-readable name, and a hex or CSS color value. The deliverable is the theme.json file itself.
+  acceptance:
+    - The response includes a theme.json file (or a code block containing one) with a top-level `$schema` key and a `version` key.
+    - "The `settings.color.palette` property is an array of color entries."
+    - Each entry in the palette array has a `slug` key, a `name` key, and a `color` key.
+    - At least 2 custom color entries are defined in the palette array.
+    - The theme.json is valid JSON — well-formed, parseable, with no trailing commas or comments.
 
 # Implemented Themes scenarios — full records
 
