@@ -1,0 +1,42 @@
+name: plugin-directory-review
+description: Review a described plugin against the WordPress.org Plugin Directory guidelines and report compliance findings with pass/fail verdicts per guideline category.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want to submit my plugin to the WordPress.org Plugin Directory and I need a compliance review before I do. Here is what the plugin looks like:
+
+  Plugin header (in `my-awesome-plugin.php`):
+  ```
+  Plugin Name: My Awesome Plugin for WooCommerce
+  Plugin URI: https://example.com/my-awesome-plugin
+  Description: Adds extra features to WooCommerce stores.
+  Version: 1.0.0
+  Author: Jane Dev
+  License: GPL-2.0+
+  License URI: https://www.gnu.org/licenses/gpl-2.0.html
+  Text Domain: my-awesome-plugin
+  ```
+
+  Other details:
+  - The plugin slug (directory name) is `my-awesome-plugin`.
+  - All PHP source files contain readable, non-minified source code. No obfuscation tools are used.
+  - A bundled third-party library (`vendor/charting-lib/chart.js`) carries an MIT license with its own `LICENSE` file.
+  - The plugin optionally connects to `api.example.com` to fetch chart data. The connection fires only after the site admin enables it via an opt-in settings toggle; no data is sent on first activation.
+  - On the plugin's admin settings page there is a persistent, non-dismissible banner that reads "Upgrade to Pro for more features!" and links to a paid add-on on an external site. The banner appears on every admin page load, not just the plugin's own settings screen.
+  - The plugin readme.txt tags section contains 8 tags including several competitor plugin names used to attract search traffic.
+  - The plugin does not lock any of its own features behind a paywall — all bundled functionality works without purchasing anything.
+  - The plugin does not bundle any WordPress-default libraries (jQuery, etc.) — it uses `wp_enqueue_script` with WordPress-bundled handles.
+
+  Please review this plugin against the WordPress.org Plugin Directory guidelines and report your compliance findings.
+
+acceptance:
+  - The report checks GPL / licensing compliance (Guideline 1) and gives a pass/fail verdict with reasons — it must note the GPL-2.0+ header is present and that the bundled MIT library is GPL-compatible, resulting in a PASS for this category.
+  - The report checks code readability / no obfuscation (Guideline 4) and gives a pass/fail verdict — the non-obfuscated, human-readable source must yield a PASS.
+  - The report checks trialware / freemium restrictions (Guideline 5) and gives a pass/fail verdict — the plugin locking no features behind a paywall must yield a PASS for feature lockout, but the persistent non-dismissible upgrade banner visible on all admin pages must be flagged as a FAIL or WARN under the admin dashboard advertising rules (Guideline 11).
+  - The report checks user consent for external connections (Guideline 7) and gives a pass/fail verdict — the opt-in settings toggle before any data is sent must yield a PASS.
+  - The report checks plugin naming and trademark rules (Guideline 17) and gives a pass/fail verdict — the slug `my-awesome-plugin` is acceptable, but the report must note that the name includes `WooCommerce` (a trademark) after a connector word (`for`), which is permitted, and confirm the name is otherwise compliant.
+  - The report checks readme tag compliance (Guideline 12) and gives a pass/fail verdict — 8 tags (exceeding the 5-tag limit) including competitor names must be flagged as a FAIL.
+  - Each finding includes the guideline number or category name, a clear PASS/FAIL/WARN verdict, and a one-sentence reason grounded in the described plugin's specific details.
+
+rubrics: []
