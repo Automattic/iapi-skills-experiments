@@ -1,0 +1,21 @@
+name: multi-directive-element
+description: Renders a block that runs two independent setup steps on mount, each registered as a separate callback on the same element.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that performs two completely independent setup tasks
+  the moment it appears on the page. One task should send an analytics "viewed"
+  event; the other should write a debug marker so I can confirm both tasks
+  actually ran.
+
+  Both tasks should be triggered automatically when the block first renders —
+  not on a button click — and they must be wired up independently so I can add,
+  remove, or change one without touching the other.
+
+acceptance:
+  - The block element carries two separate init-style attributes that each reference a distinct callback — using the triple-hyphen unique-ID suffix form so the same directive type can appear more than once on a single element.
+  - Both callbacks run on mount: the e2e asserts that both a console marker for the analytics step and a console marker for the debug step appear after the block hydrates.
+
+rubrics:
+  - wp-interactivity-api-best-practices
