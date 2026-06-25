@@ -46,9 +46,9 @@ that make it work. The mental model for the implementer:
    folders; this changes Skillsmith's reported `dirName` from `<scenario>` to
    `<group>/<scenario>`. That single change automatically fixes spec lookup in
    `verify-e2e.ts` but breaks failure attribution in its `scenarioDirOf()` parser, which is
-   patched. Add `eval/utils/e2e-helpers.mjs` with the two harness capabilities a few
-   scenarios need. Drop the deprecated `data-wp-on-async--<event>` directive from the
-   shared rubric.
+   patched. Add `eval/utils/e2e-helpers.mjs` with the one shared harness helper
+   (`addLockProbe`) the `locked-private-store` scenario needs. Drop the deprecated
+   `data-wp-on-async--<event>` directive from the shared rubric.
 
 5. **No reference, no execution.** This run does not build golden implementations, does not
    run the Skillsmith `scenarios × agents` matrix, and does not run the e2e specs to green.
@@ -86,11 +86,13 @@ parser are unaffected.
 
 ### `eval/utils/e2e-helpers.mjs` (new)
 
-A new ESM helpers module exporting `interceptAnalytics(page)` and
-`probeStoreOverride(page, namespace, sampleStateKey)`. These supply the two harness
-capabilities that a handful of scenarios need (analytics sink, adversarial store probe).
-Both are thin wrappers over standard Playwright APIs. Nested specs import them via
-`import { interceptAnalytics, probeStoreOverride } from "../../../utils/e2e-helpers.mjs"`.
+A new ESM helpers module exporting a single shared helper, `addLockProbe(page, namespace)`,
+used by the `locked-private-store` scenario to mount an adversarial `store()` override
+probe. It is a thin wrapper over `page.addScriptTag`. The `locked-private-store` nested
+spec imports it via
+`import { addLockProbe } from "../../../utils/e2e-helpers.mjs"`. The analytics sink that
+`pageview-analytics-bridge` needs is **not** a shared helper — it is inlined per spec with
+`page.addInitScript` (see Interfaces and Data Flow).
 
 ### `eval/rubrics/wp-interactivity-api-best-practices.md` (modified)
 
@@ -174,8 +176,8 @@ Imports (note the **three**-level-up paths for nested specs):
 ```js
 import { expect, test } from "@wordpress/e2e-test-utils-playwright";
 import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
-// when needed:
-import { interceptAnalytics, probeStoreOverride } from "../../../utils/e2e-helpers.mjs";
+// only the locked-private-store spec:
+import { addLockProbe } from "../../../utils/e2e-helpers.mjs";
 ```
 
 Lifecycle and fixtures:
@@ -187,6 +189,10 @@ Lifecycle and fixtures:
   `<!-- wp:wp-skill/testing-block /-->`. For multi-instance scenarios, embed it twice:
   `<!-- wp:wp-skill/testing-block /-->\n<!-- wp:wp-skill/testing-block /-->` and address
   instances via `.locator(".wp-block-wp-skill-testing-block").nth(0)` / `.nth(1)`.
+  **`classic-theme-banner` is the sole exception:** its plugin hooks `wp_footer` and emits
+  the banner outside the block pipeline, so its spec creates any post (no testing-block in
+  the content) and locates the banner by its `data-wp-interactive` attribute or a
+  distinctive class.
 - `test.afterAll`: `deactivateAllPlugins()` + `requestUtils.deleteAllPosts()` (and delete
   any created pages).
 
@@ -297,27 +303,50 @@ migration is a rename and/or content rework.
 **Totals:** 8 migrate (4 with rename, 3 of those reworked), 2 scenarios + 1 index deleted,
 58 new = 68 scenarios.
 
-### New harness helper interfaces
+### Harness capabilities for the two scenarios that need them
 
-`eval/utils/e2e-helpers.mjs`:
+**Shared helper — `eval/utils/e2e-helpers.mjs`:**
 
-- **`interceptAnalytics(page) → { getEvents }`** — registers a `page.route()` handler on
-  the scenario's analytics REST endpoint (e.g. `**/wp-json/**/*analytics*`) and returns
-  `getEvents()`, which yields the intercepted request bodies. A spec calls it **before**
-  `page.goto(...)`, then asserts on `getEvents()`. Interception happens at the network
-  layer, so it does not depend on how the agent's plugin names its analytics call —
-  only that it POSTs to the endpoint stated as a scenario constraint in the `acceptance`
-  list.
-
-- **`probeStoreOverride(page, namespace, sampleStateKey) → "locked" | "unlocked"`** —
-  called **after** hydration. Injects an ES module via
-  `page.addScriptTag({ type: "module", content: … })` that imports `store` from
+- **`addLockProbe(page, namespace)`** — used only by `locked-private-store`. Injects an ES
+  module via `page.addScriptTag({ type: "module", content: … })` that imports `store` from
   `@wordpress/interactivity` through WordPress's own importmap, attempts to re-open
-  `namespace` without the `lock` key, and writes `window.__lockResult`. The helper then
-  reads the result via `page.evaluate(() => window.__lockResult)`, returning `"locked"`
-  when the store correctly rejects the override and `"unlocked"` otherwise. It **asserts
-  `window.__lockResult` is defined** after the script runs, so a missing/changed importmap
-  surfaces as a test failure rather than a silent false negative.
+  `namespace` without the `lock` key, and writes
+  `window.__lockResult = "unlocked" | "locked"` depending on whether the override was
+  accepted. The spec calls `addLockProbe(page, namespace)` **after** `page.goto(...)`
+  (post-hydration), then asserts `await page.evaluate(() => window.__lockResult) ===
+  "locked"`. The helper also asserts `window.__lockResult` is *defined* after the script
+  runs, so a missing/changed importmap surfaces as a test failure rather than a silent
+  false negative. Sketch:
+
+  ```js
+  export async function addLockProbe(page, namespace) {
+    await page.addScriptTag({
+      type: "module",
+      content: `import { store } from "@wordpress/interactivity";
+        try { store(${JSON.stringify(namespace)}, {}); window.__lockResult = "unlocked"; }
+        catch (e) { window.__lockResult = "locked"; }`,
+    });
+    // guard against silent importmap failure
+    await expect.poll(() => page.evaluate(() => window.__lockResult)).toBeDefined();
+  }
+  ```
+
+**Analytics sink — inline per spec (no shared helper):**
+
+`pageview-analytics-bridge` does **not** use a shared helper. Its spec stubs the analytics
+callback inline, **before** navigation:
+
+```js
+await page.addInitScript({
+  content:
+    "window.__analyticsTracker = (...a) => { (window.__analyticsEvents ??= []).push(a); };",
+});
+```
+
+then asserts on `page.evaluate(() => window.__analyticsEvents)`. The scenario's `acceptance`
+constrains the agent in user language to call `window.__analyticsTracker(value)` when the
+watched value changes — an integration point, not an iAPI directive name. The pattern is
+used by only this scenario and is simple enough to inline.
 
 ## Key Decisions
 
@@ -391,37 +420,46 @@ migration is a rename and/or content rework.
   expects.
 - **Traces to:** Requirement 13 / Acceptance Criterion 10.
 
-### Decision: Add two shared e2e helpers; omit no scenario from e2e
+### Decision: One shared e2e helper (`addLockProbe`); analytics inline; no scenario omitted
 
-- **Choice:** Build `eval/utils/e2e-helpers.mjs` exporting `interceptAnalytics(page)` and
-  `probeStoreOverride(page, namespace, sampleStateKey)`. Every one of the 68 scenarios has
-  an `e2e.spec.mjs` — analysis found no scenario lacks meaningful runtime signal.
-- **`interceptAnalytics`:** chosen over stubbing `window.__analyticsTracker` via
-  `addInitScript` because `page.route()` intercepts at the network layer and so does not
-  depend on the agent's internal API naming; the analytics endpoint is a stated scenario
-  constraint, so the agent knows to POST to it.
-- **`probeStoreOverride`:** the adversarial probe must call `store()`, which is reachable
-  **only** through an ES `import` — `@wordpress/interactivity` is a pure ES module that
-  makes no assignment to `window.wp.*`, and `storeLocks` is a module-private `Map`
-  (verified on Gutenberg trunk). So `page.evaluate(() => window.wp?.interactivity?.store)`
+- **Choice:** Build `eval/utils/e2e-helpers.mjs` exporting exactly one helper,
+  `addLockProbe(page, namespace)`. The analytics sink is inlined per spec. Every one of the
+  68 scenarios has an `e2e.spec.mjs` — analysis found no scenario lacks meaningful runtime
+  signal.
+- **`addLockProbe`:** the `locked-private-store` adversarial probe must call `store()`,
+  which is reachable **only** through an ES `import` — `@wordpress/interactivity` is a pure
+  ES module that makes no assignment to `window.wp.*`, and `storeLocks` is a module-private
+  `Map` (verified on Gutenberg trunk). So `page.evaluate(() => window.wp?.interactivity?.store)`
   returns `undefined` and cannot be used. The chosen mechanism injects a `type: "module"`
   script via `page.addScriptTag` that resolves `@wordpress/interactivity` through the
-  WordPress 6.5+ importmap. The alternative — having the agent's plugin register a second
-  probe script module (Gutenberg's own fixture pattern) — is rejected because it leaks the
-  test into the agent's plugin and adds authoring burden; the chosen approach keeps the
-  probe entirely in the harness.
-- **`classic-theme-banner` scoping:** rather than requiring a classic-theme template (which
-  would need custom theme PHP), the scenario is scoped so the agent's `render.php` calls
-  `wp_interactivity_process_directives()` directly on a markup string. This exercises the
-  same PHP API in a testable block context; the scoping is recorded in the scenario's
-  `acceptance` list so reviewers do not read it as underimplemented.
-- **Alternatives considered and not needed as shared helpers:** console capture
-  (`page.on("console", …)`, already established in `minimal-scaffold`), fake timers
-  (`page.clock`), IntersectionObserver scroll trigger, multi-instance markup, and
-  cross-page router navigation are all standard Playwright and handled inline per spec.
-- **Trade-offs:** Both helpers are thin wrappers over standard Playwright APIs, not new
-  infrastructure, keeping the harness surface small while satisfying the spec's rule that
-  harness gaps are never a reason to omit an e2e.
+  WordPress 6.5+ importmap, attempts to re-open the namespace without the `lock` key, and
+  writes `window.__lockResult`. The spec asserts the result is `"locked"`. The alternative —
+  having the agent's plugin register a second probe script module (Gutenberg's own fixture
+  pattern) — is rejected because it leaks the test into the agent's plugin and adds
+  authoring burden; the chosen approach keeps the probe entirely in the harness.
+- **Analytics sink — inline, not a shared helper:** `pageview-analytics-bridge` stubs the
+  analytics callback inline with `page.addInitScript` before navigation
+  (`window.__analyticsTracker = (...a) => { (window.__analyticsEvents ??= []).push(a); }`)
+  and asserts on `window.__analyticsEvents`. The analytics target is a **client-side
+  callback** the scenario asks the agent to invoke (`window.__analyticsTracker(value)` when
+  the watched value changes), not necessarily an HTTP request — so network interception
+  (`page.route`) is the wrong tool. The pattern is used by only this scenario and is simple
+  enough to inline rather than factor into a shared helper.
+- **`classic-theme-banner` — exception to the fixed block name:** this scenario does not use
+  `wp-skill/testing-block`. The agent's plugin hooks `wp_footer` and outputs the interactive
+  banner HTML directly, calling `wp_interactivity_process_directives()` on the markup so the
+  directives are processed outside the block directive pipeline. The e2e creates any post,
+  visits it, and locates the banner by its `data-wp-interactive` attribute or a distinctive
+  class. The scenario's `acceptance` records the constraint so reviewers do not read it as
+  off-convention.
+- **Standard mechanisms needing no helper:** console capture (`page.on("console", …)`,
+  already established in `minimal-scaffold`), fake timers (`page.clock`),
+  IntersectionObserver scroll trigger, multi-instance markup, and cross-page router
+  navigation (`requestUtils.createPage()` ×2) are all standard Playwright and handled
+  inline per spec.
+- **Trade-offs:** `addLockProbe` is a thin wrapper over `page.addScriptTag`, not new
+  infrastructure; inlining the analytics stub keeps the helper surface to one export. Both
+  satisfy the spec's rule that harness gaps are never a reason to omit an e2e.
 - **Traces to:** Requirements 7, 8, 9 / Acceptance Criteria 6, 7.
 
 ### Decision: Migrate 8 scenarios with `git mv`; delete 2 + the candidates index
@@ -464,15 +502,16 @@ migration is a rename and/or content rework.
   is the only dependency change; Skillsmith's own source is not modified.
 - **`@wordpress/e2e-test-utils-playwright`** (existing) — `test`, `expect`, `requestUtils`
   (`activatePlugin`, `createPost`, `createPage`, `deleteAllPosts`), and `page.clock`,
-  `page.route`, `page.addScriptTag`, `page.on("console")` from the pinned Playwright.
-- **`@wordpress/interactivity`** (runtime, via WordPress 6.5+ importmap) — `probeStoreOverride`
+  `page.addInitScript`, `page.addScriptTag`, `page.on("console")` from the pinned
+  Playwright.
+- **`@wordpress/interactivity`** (runtime, via WordPress 6.5+ importmap) — `addLockProbe`
   resolves `store` through the importmap WordPress injects in `<head>`. Not a new package
   dependency; a runtime contract the probe relies on.
 - **`eval/utils/wp-cli.mjs`** (existing) — `deactivateAllPlugins`, imported by every spec.
-- **`eval/utils/e2e-helpers.mjs`** (new internal module) — `interceptAnalytics`,
-  `probeStoreOverride`.
-- No new external services. Analytics endpoints referenced by `interceptAnalytics` are
-  intercepted, never actually contacted.
+- **`eval/utils/e2e-helpers.mjs`** (new internal module) — exports `addLockProbe`, imported
+  only by the `locked-private-store` spec.
+- No new external services. The analytics callback `pageview-analytics-bridge` exercises is
+  a client-side stub installed by the spec; nothing is sent over the network.
 
 ## Failure Modes and Observability
 
@@ -486,11 +525,11 @@ migration is a rename and/or content rework.
   would either be dropped (no matching `dirToName` entry → `continue`) or mapped to the
   wrong scenario. The patched two-segment parser keeps attribution exact; the
   `runE2eVerification` path already de-duplicates on `scenario::agent`.
-- **Probe importmap drift** — `probeStoreOverride` depends on WordPress injecting an
-  importmap for `@wordpress/interactivity`. If the importmap URL changes across WP versions
-  the injected module fails silently; the helper guards against a false negative by
-  asserting `window.__lockResult` is *defined* (not merely a particular value), so a
-  missing importmap surfaces as a test failure.
+- **Probe importmap drift** — `addLockProbe` depends on WordPress injecting an importmap for
+  `@wordpress/interactivity`. If the importmap URL changes across WP versions the injected
+  module fails silently; the helper guards against a false negative by asserting
+  `window.__lockResult` is *defined* (not merely a particular value), so a missing importmap
+  surfaces as a test failure.
 - **Observability** — failures are surfaced as `VerificationFailure { scenario, agent,
   details }` from the e2e hook; Playwright's JSON report (`tests-report.json`) is the
   source of truth; hydration/lifecycle scenarios assert on captured `console` output. These
@@ -501,18 +540,20 @@ migration is a rename and/or content rework.
 
 No open design questions remain. Risks for the implementation plan to carry:
 
-1. **`probeStoreOverride` importmap dependency.** Relies on the WP 6.5+ importmap being
-   present under `wp-env`. Mitigated by asserting `window.__lockResult` is defined after the
-   script runs, so a missing importmap fails loudly rather than silently. The plan should
-   ensure the helper implements this assertion.
+1. **`addLockProbe` importmap dependency.** Relies on the WP 6.5+ importmap being present
+   under `wp-env`. Mitigated by asserting `window.__lockResult` is defined after the script
+   runs, so a missing importmap fails loudly rather than silently. The plan should ensure
+   the helper implements this assertion.
 2. **TypeScript scenario e2e depth.** The 4 `typescript/*` scenarios exercise type-system
    constraints. e2e can verify runtime behavior (counter increments, state merges) but not
    type correctness (no `as any`, no explicit casts) — that is an authoring/review
    requirement, not a runtime assertion. Acceptable per spec (e2e tests runtime behavior).
-3. **`classic-theme-banner` scope.** Scoped to a block `render.php` that calls
-   `wp_interactivity_process_directives()` directly rather than a classic-theme template.
-   The plan must record this scoping in the scenario's `acceptance` so reviewers do not flag
-   it as underimplemented.
+3. **`classic-theme-banner` off-convention scope.** The agent's plugin hooks `wp_footer`
+   and emits the banner via `wp_interactivity_process_directives()` outside the block
+   pipeline; the spec creates any post and locates the banner by `data-wp-interactive` /
+   class rather than `wp-skill/testing-block`. This is the sole exception to the fixed
+   block-name convention. The plan must record this scoping in the scenario's `acceptance`
+   so reviewers do not flag it as off-convention or underimplemented.
 4. **Code-phase task volume (planning risk, not design risk).** ~66 authoring tasks (58 new
    + 8 migrations), each producing `scenario.yaml` + `e2e.spec.mjs`. The plan should batch
    these (e.g. one task per group) to stay within agent context limits.
