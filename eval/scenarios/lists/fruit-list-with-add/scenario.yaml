@@ -1,4 +1,4 @@
-name: fruit-list-each
+name: fruit-list-with-add
 description: Build a fruit list rendered server-side via data-wp-each, with an Add button that appends.
 skills:
   - wordpress-development

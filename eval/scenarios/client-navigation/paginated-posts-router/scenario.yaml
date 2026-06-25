@@ -1,4 +1,4 @@
-name: paginated-list
+name: paginated-posts-router
 description: Build a paginated post-list block using a router region for client-side navigation.
 skills:
   - wordpress-development

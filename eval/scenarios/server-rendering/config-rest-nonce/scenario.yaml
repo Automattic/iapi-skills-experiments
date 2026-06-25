@@ -1,4 +1,4 @@
-name: config-fetch
+name: config-rest-nonce
 description: Build a block that fetches a post via REST using config-supplied URL and nonce.
 skills:
   - wordpress-development

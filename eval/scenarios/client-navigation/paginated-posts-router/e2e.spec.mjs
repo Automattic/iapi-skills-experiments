@@ -1,8 +1,8 @@
 import { expect, test } from "@wordpress/e2e-test-utils-playwright";
-import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
+import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
 
 /**
- * E2E tests for the paginated-list scenario.
+ * E2E tests for the paginated-posts-router scenario.
  *
  * Creates 5 plain posts plus a host post that embeds the block. With 6
  * posts total at 3 per page, we expect 2 pages. The test asserts that:
@@ -12,12 +12,12 @@ import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
  *   - Page 2 contains the oldest test post.
  */
 
-test.describe("paginated-list scenario", () => {
+test.describe("paginated-posts-router scenario", () => {
 	let post;
 	test.beforeAll(async ({ requestUtils }, workerInfo) => {
 		deactivateAllPlugins();
 		await requestUtils.activatePlugin(
-			`plugin-paginated-list-${workerInfo.project.metadata.agentId}`,
+			`plugin-paginated-posts-router-${workerInfo.project.metadata.agentId}`,
 		);
 		// Five test posts, oldest first so requestUtils assigns ascending IDs.
 		for (let i = 1; i <= 5; i++) {

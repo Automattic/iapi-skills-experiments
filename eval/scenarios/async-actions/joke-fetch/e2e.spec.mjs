@@ -1,18 +1,22 @@
 import { expect, test } from "@wordpress/e2e-test-utils-playwright";
-import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
+import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
 
 /**
- * E2E tests for the async-fetch scenario.
+ * E2E tests for the joke-fetch scenario.
  *
- * The remote URL is mocked with page.route() so the test is fully isolated.
+ * The remote joke endpoint is intercepted with page.route() so the test is
+ * fully isolated from any real network. The stub URL pattern matches whatever
+ * endpoint the agent chooses; what matters is that clicking the button drives
+ * a fetch, the response's joke field lands in reactive state, and the paragraph
+ * renders it without a direct DOM write.
  */
 
-test.describe("async-fetch scenario", () => {
+test.describe("joke-fetch scenario", () => {
 	let post;
 	test.beforeAll(async ({ requestUtils }, workerInfo) => {
 		deactivateAllPlugins();
 		await requestUtils.activatePlugin(
-			`plugin-async-fetch-${workerInfo.project.metadata.agentId}`,
+			`plugin-joke-fetch-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
 			content: "<!-- wp:wp-skill/testing-block /-->",
@@ -25,22 +29,31 @@ test.describe("async-fetch scenario", () => {
 		await requestUtils.deleteAllPosts();
 	});
 
-	test("clicking Fetch joke renders the mocked joke text", async ({ page }) => {
+	test("clicking the button fetches and displays the joke text", async ({
+		page,
+	}) => {
 		let requestCount = 0;
-		await page.route("**/jsonplaceholder.example/joke", (route) => {
-			requestCount++;
-			route.fulfill({
-				status: 200,
-				contentType: "application/json",
-				body: JSON.stringify({
-					joke: "Why did the chicken cross the road? To yield a Promise.",
-				}),
-			});
+		// Intercept any URL the agent's action fetches so the test is not coupled
+		// to a specific stub URL.
+		await page.route("**/*", (route) => {
+			const url = route.request().url();
+			if (url.includes("joke") && !url.includes("wp-json")) {
+				requestCount++;
+				route.fulfill({
+					status: 200,
+					contentType: "application/json",
+					body: JSON.stringify({
+						joke: "Why did the chicken cross the road? To yield a Promise.",
+					}),
+				});
+			} else {
+				route.continue();
+			}
 		});
 
 		await page.goto(`/?p=${post.id}`);
 
-		await page.getByRole("button", { name: /fetch joke/i }).click();
+		await page.getByRole("button", { name: /get joke|fetch joke/i }).click();
 
 		await expect(
 			page.locator(".wp-block-wp-skill-testing-block"),
@@ -48,25 +61,34 @@ test.describe("async-fetch scenario", () => {
 		expect(requestCount).toBe(1);
 	});
 
-	test("paragraph is empty until the button is clicked", async ({ page }) => {
-		// Mock with a delayed response so we can observe the empty pre-click state.
-		await page.route("**/jsonplaceholder.example/joke", async (route) => {
-			await new Promise((r) => setTimeout(r, 300));
-			route.fulfill({
-				status: 200,
-				contentType: "application/json",
-				body: JSON.stringify({ joke: "Eventually-resolved joke." }),
-			});
+	test("paragraph is empty on load before the button is clicked", async ({
+		page,
+	}) => {
+		// Route any joke fetch with a slow response so we can observe the
+		// empty pre-click state on page load.
+		await page.route("**/*", async (route) => {
+			const url = route.request().url();
+			if (url.includes("joke") && !url.includes("wp-json")) {
+				await new Promise((r) => setTimeout(r, 300));
+				route.fulfill({
+					status: 200,
+					contentType: "application/json",
+					body: JSON.stringify({ joke: "Eventually-resolved joke." }),
+				});
+			} else {
+				route.continue();
+			}
 		});
 
 		await page.goto(`/?p=${post.id}`);
 
-		// Before any click, the joke text must not be present.
+		// Before any click the joke paragraph must be empty — not filled with
+		// server-side or JS-initialised text.
 		await expect(
 			page.locator(".wp-block-wp-skill-testing-block"),
 		).not.toContainText("Eventually-resolved joke.");
 
-		await page.getByRole("button", { name: /fetch joke/i }).click();
+		await page.getByRole("button", { name: /get joke|fetch joke/i }).click();
 
 		await expect(
 			page.locator(".wp-block-wp-skill-testing-block"),

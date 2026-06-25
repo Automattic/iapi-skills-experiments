@@ -1,19 +1,19 @@
 import { expect, test } from "@wordpress/e2e-test-utils-playwright";
-import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
+import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
 
 /**
- * E2E tests for the shared-state scenario.
+ * E2E tests for the shared-state-tally scenario.
  *
  * The post embeds the block twice so we can verify that incrementing in one
  * instance updates the displayed value in BOTH (i.e. they share global state).
  */
 
-test.describe("shared-state scenario", () => {
+test.describe("shared-state-tally scenario", () => {
 	let post;
 	test.beforeAll(async ({ requestUtils }, workerInfo) => {
 		deactivateAllPlugins();
 		await requestUtils.activatePlugin(
-			`plugin-shared-state-${workerInfo.project.metadata.agentId}`,
+			`plugin-shared-state-tally-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
 			content:

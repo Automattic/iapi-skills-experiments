@@ -1,4 +1,4 @@
-name: shared-state
+name: shared-state-tally
 description: Build a counter block whose state is shared across all instances on the page via global state.
 skills:
   - wordpress-development

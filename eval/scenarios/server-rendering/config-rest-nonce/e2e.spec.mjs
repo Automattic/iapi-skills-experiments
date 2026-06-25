@@ -1,20 +1,20 @@
 import { expect, test } from "@wordpress/e2e-test-utils-playwright";
-import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
+import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
 
 /**
- * E2E tests for the config-fetch scenario.
+ * E2E tests for the config-rest-nonce scenario.
  *
  * The REST endpoint is mocked with page.route() so the test is independent
  * of the wp-env post seed and so we can capture the X-WP-Nonce header to
  * verify the agent's view.js used the config-supplied nonce.
  */
 
-test.describe("config-fetch scenario", () => {
+test.describe("config-rest-nonce scenario", () => {
 	let post;
 	test.beforeAll(async ({ requestUtils }, workerInfo) => {
 		deactivateAllPlugins();
 		await requestUtils.activatePlugin(
-			`plugin-config-fetch-${workerInfo.project.metadata.agentId}`,
+			`plugin-config-rest-nonce-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
 			content: "<!-- wp:wp-skill/testing-block /-->",

@@ -1,16 +1,21 @@
 import { expect, test } from "@wordpress/e2e-test-utils-playwright";
-import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
+import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
 
 /**
- * E2E tests for the focus-trap-menu scenario.
+ * E2E tests for the side-drawer scenario.
+ *
+ * Asserts the open/close flow, Tab focus trap within the drawer, Escape
+ * to close, and focus restoration to the trigger button. Scoped to the
+ * testing-block class so theme navigation blocks on the same page do not
+ * interfere.
  */
 
-test.describe("focus-trap-menu scenario", () => {
+test.describe("side-drawer scenario", () => {
 	let post;
 	test.beforeAll(async ({ requestUtils }, workerInfo) => {
 		deactivateAllPlugins();
 		await requestUtils.activatePlugin(
-			`plugin-focus-trap-menu-${workerInfo.project.metadata.agentId}`,
+			`plugin-side-drawer-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
 			content: "<!-- wp:wp-skill/testing-block /-->",
@@ -27,17 +32,15 @@ test.describe("focus-trap-menu scenario", () => {
 		await requestUtils.deleteAllPosts();
 	});
 
-	// Scope to the testing-block so we don't pick up other navigation
-	// blocks on the page (e.g. core/navigation) that may also render links
-	// labelled "Home" / "About" / "Contact". We use the WP-emitted block
-	// class (always derived from the fixed block name) rather than the
-	// agent's chosen `data-wp-interactive` namespace, which is variable.
+	// Scope all locators to the testing-block wrapper so we don't pick up
+	// theme-emitted navigation that also exposes links named Home / About /
+	// Contact. We use the WP-emitted block class (derived from the fixed block
+	// name) rather than the agent's chosen namespace, which is variable.
 	const block = (page) => page.locator(".wp-block-wp-skill-testing-block");
-	// `el.hidden` on the closest ancestor of the home link in the block
-	// reflects the iAPI `data-wp-bind--hidden` wiring directly — and is
-	// not silently defeated by user CSS like `display: flex` on the
-	// drawer, the way Playwright's visibility-based `toBeHidden()` would
-	// be. The scenario tests iAPI wiring; visual styling is not in scope.
+
+	// Check whether the drawer is hidden via the DOM `hidden` attribute on an
+	// ancestor of the Home link. This reflects `data-wp-bind--hidden` wiring
+	// directly and is not defeated by CSS that overrides `display`.
 	const isDrawerHidden = (page) =>
 		page.evaluate(() => {
 			const root = document.querySelector(".wp-block-wp-skill-testing-block");
@@ -53,21 +56,21 @@ test.describe("focus-trap-menu scenario", () => {
 			return false;
 		});
 
-	test("drawer is closed initially with aria-expanded='false'", async ({
+	test("drawer is closed initially and the trigger announces closed state", async ({
 		page,
 	}) => {
-		const hamburger = block(page).getByRole("button", { name: /menu/i });
-		await expect(hamburger).toHaveAttribute("aria-expanded", "false");
+		const trigger = block(page).getByRole("button", { name: /menu/i });
+		await expect(trigger).toHaveAttribute("aria-expanded", "false");
 		expect(await isDrawerHidden(page)).toBe(true);
 	});
 
-	test("clicking the hamburger opens the drawer and exposes the links", async ({
+	test("clicking the trigger opens the drawer and reveals the nav links", async ({
 		page,
 	}) => {
-		const hamburger = block(page).getByRole("button", { name: /menu/i });
-		await hamburger.click();
+		const trigger = block(page).getByRole("button", { name: /menu/i });
+		await trigger.click();
 
-		await expect(hamburger).toHaveAttribute("aria-expanded", "true");
+		await expect(trigger).toHaveAttribute("aria-expanded", "true");
 		await expect
 			.poll(() => isDrawerHidden(page), { timeout: 5000 })
 			.toBe(false);
@@ -82,21 +85,25 @@ test.describe("focus-trap-menu scenario", () => {
 		).toBeVisible();
 	});
 
-	test("Escape closes the drawer and returns focus to the hamburger", async ({
+	test("Escape closes the drawer and returns focus to the trigger", async ({
 		page,
 	}) => {
-		const hamburger = block(page).getByRole("button", { name: /menu/i });
-		await hamburger.click();
-		await expect(hamburger).toHaveAttribute("aria-expanded", "true");
+		const trigger = block(page).getByRole("button", { name: /menu/i });
+		await trigger.click();
+		await expect(trigger).toHaveAttribute("aria-expanded", "true");
 
 		await page.keyboard.press("Escape");
 
-		await expect(hamburger).toHaveAttribute("aria-expanded", "false");
-		await expect.poll(() => isDrawerHidden(page), { timeout: 5000 }).toBe(true);
-		await expect(hamburger).toBeFocused();
+		await expect(trigger).toHaveAttribute("aria-expanded", "false");
+		await expect
+			.poll(() => isDrawerHidden(page), { timeout: 5000 })
+			.toBe(true);
+		// Focus must return to the trigger so the keyboard user does not lose
+		// their position in the page.
+		await expect(trigger).toBeFocused();
 	});
 
-	test("Tab focus is trapped within the three drawer links", async ({
+	test("Tab focus is trapped within the drawer links while the drawer is open", async ({
 		page,
 	}) => {
 		await block(page).getByRole("button", { name: /menu/i }).click();
@@ -104,12 +111,12 @@ test.describe("focus-trap-menu scenario", () => {
 		const home = block(page).getByRole("link", { name: /^home$/i });
 		const contact = block(page).getByRole("link", { name: /^contact$/i });
 
-		// Forward wrap: Tab on Contact -> Home
+		// Forward wrap: Tab past the last link (Contact) wraps to the first (Home).
 		await contact.focus();
 		await page.keyboard.press("Tab");
 		await expect(home).toBeFocused();
 
-		// Backward wrap: Shift+Tab on Home -> Contact
+		// Backward wrap: Shift+Tab past the first link (Home) wraps to the last (Contact).
 		await page.keyboard.press("Shift+Tab");
 		await expect(contact).toBeFocused();
 	});

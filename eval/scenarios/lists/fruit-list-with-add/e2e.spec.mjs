@@ -1,16 +1,16 @@
 import { expect, test } from "@wordpress/e2e-test-utils-playwright";
-import { deactivateAllPlugins } from "../../utils/wp-cli.mjs";
+import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
 
 /**
- * E2E tests for the fruit-list-each scenario.
+ * E2E tests for the fruit-list-with-add scenario.
  */
 
-test.describe("fruit-list-each scenario", () => {
+test.describe("fruit-list-with-add scenario", () => {
 	let post;
 	test.beforeAll(async ({ requestUtils }, workerInfo) => {
 		deactivateAllPlugins();
 		await requestUtils.activatePlugin(
-			`plugin-fruit-list-each-${workerInfo.project.metadata.agentId}`,
+			`plugin-fruit-list-with-add-${workerInfo.project.metadata.agentId}`,
 		);
 		post = await requestUtils.createPost({
 			content: "<!-- wp:wp-skill/testing-block /-->",

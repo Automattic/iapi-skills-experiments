@@ -1,29 +1,24 @@
-name: async-fetch
-description: Build a block with a button that fetches JSON via a generator action.
+name: joke-fetch
+description: Build a block that fetches and displays a joke of the day when the user clicks a button.
 skills:
   - wordpress-development
 
 prompt: |
-  Create an interactive block for WordPress that fetches a joke from a remote
-  endpoint when the user clicks a button.
+  I'd like a fun interactive block for WordPress that shows a "Joke of the
+  Day" on demand. Here is how it should work:
 
-  Requirements:
-  1. Render a button labeled "Fetch joke" and an empty paragraph beneath it.
-  2. When the button is clicked, fetch JSON from
-     `https://jsonplaceholder.example/joke` (a stub URL — the test intercepts
-     and mocks the response).
-  3. After the response comes back, show the response's `joke` string inside
-     that paragraph.
+  When the page first loads, show a button labeled "Get joke" and a
+  paragraph below it that is empty. When the visitor clicks the button,
+  the block should reach out to a remote endpoint and display the joke
+  text in the paragraph once the response arrives.
 
-  The paragraph should start empty and only fill in once the fetched joke is
-  available.
+  The block should not reload the page or navigate away — the joke should
+  just appear in place, below the button, as soon as it is ready.
 
 acceptance:
-  - Has a named store action wired to the "Fetch joke" button via `data-wp-on--click`.
-  - The fetch action is a generator function (`function*` / `*name()`) that uses `yield` for both the `fetch(...)` call and the `.json()` parsing (no `async` / `await`).
-  - The action requests the exact URL string `https://jsonplaceholder.example/joke` from source code.
-  - The `joke` field from the parsed JSON is written into store state or local context after the `yield` resolves; the displayed paragraph is bound reactively (e.g. `data-wp-text`) to that state/context value rather than being mutated via direct DOM writes (`innerText`, `textContent`, `innerHTML`).
-  - Server-rendered HTML for the paragraph reflects the initial empty value (the joke state/context is seeded empty on the server via `wp_interactivity_state()` or `wp_interactivity_data_wp_context()`).
+  - The fetch action is implemented as a generator function that yields for both the network request and the JSON parse steps, so the runtime can pause and resume the action without blocking the page.
+  - After the response resolves, the joke text from the response is stored in reactive state or context and the paragraph displays it via a reactive binding — the paragraph text is never written directly from JavaScript.
+  - The paragraph is empty on initial page load (before the button is clicked), and the joke text appears only after the button is clicked and the response arrives.
 
 rubrics:
   - wp-interactivity-api-best-practices
