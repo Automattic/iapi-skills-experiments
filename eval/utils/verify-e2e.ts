@@ -215,15 +215,45 @@ function parsePlaywrightReport(
 }
 
 /**
- * Extract the scenario directory name from a spec file path. Specs live
- * at `<scenarioDir>/e2e.spec.mjs`, so the scenario directory is the
- * spec's immediate parent. Playwright reports file paths relative to its
- * testDir (`eval/scenarios`), e.g. `counter/e2e.spec.mjs` — there is no
- * `scenarios` segment to anchor on, so we take the parent segment
- * directly. This also handles absolute paths that do include `scenarios`.
+ * Extract the scenario directory key from a spec file path.
+ *
+ * Specs live at `<scenarioDir>/e2e.spec.mjs`. For the nested layout —
+ * `<group>/<scenario>/e2e.spec.mjs` — the key that Skillsmith uses to
+ * attribute failures is `<group>/<scenario>` (the two path segments
+ * immediately before the spec filename). For legacy flat specs —
+ * `<scenario>/e2e.spec.mjs` — the key is just `<scenario>`.
+ *
+ * Playwright reports file paths relative to its `testDir`
+ * (`eval/scenarios`), so a nested spec appears as
+ * `foundations/minimal-scaffold/e2e.spec.mjs` (3 segments) and a flat
+ * spec as `counter/e2e.spec.mjs` (2 segments). Absolute paths that
+ * include ancestor directories are also handled — only the last two
+ * non-filename segments are used, so deeper ancestors are ignored.
+ *
+ * @param file - Spec file path, relative or absolute, with `/` or `\`
+ *   separators.
+ * @returns
+ *   - `"<group>/<scenario>"` when the path has 3 or more non-empty
+ *     segments (nested layout).
+ *   - `"<scenario>"` when the path has exactly 2 non-empty segments
+ *     (flat legacy layout).
+ *   - `undefined` when the path has fewer than 2 non-empty segments.
+ *
+ * @example
+ * scenarioDirOf("foundations/minimal-scaffold/e2e.spec.mjs")
+ * // => "foundations/minimal-scaffold"
+ *
+ * scenarioDirOf("counter/e2e.spec.mjs")
+ * // => "counter"
+ *
+ * scenarioDirOf("e2e.spec.mjs")
+ * // => undefined
  */
 function scenarioDirOf(file: string): string | undefined {
 	const segments = file.split(/[\\/]/).filter((s) => s.length > 0);
-	if (segments.length >= 2) return segments[segments.length - 2];
+	if (segments.length >= 3) {
+		return `${segments[segments.length - 3]}/${segments[segments.length - 2]}`;
+	}
+	if (segments.length === 2) return segments[segments.length - 2];
 	return undefined;
 }
