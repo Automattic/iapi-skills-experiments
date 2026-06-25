@@ -1,0 +1,24 @@
+name: accessible-disclosure
+description: Displays a show/hide toggle button whose announced state, label, and the controlled region's visibility all stay in sync.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a disclosure widget for WordPress — a button that shows or hides
+  a panel of content when clicked. The button label should change to
+  reflect the current state, for example "Show details" when the panel is
+  hidden and "Hide details" when it is visible.
+
+  The widget must also be accessible to screen-reader users: the button
+  should announce whether it is currently expanded or collapsed, and the
+  hidden panel must genuinely be invisible and unreachable by keyboard
+  when collapsed — not just visually hidden with CSS opacity.
+
+acceptance:
+  - A single boolean in state drives all three bound surfaces simultaneously: the `aria-expanded` attribute on the button, the button's visible label text, and the `hidden` attribute on the controlled panel.
+  - When the panel is collapsed, the `hidden` attribute is present on the panel element (making it both visually hidden and removed from the accessibility tree); when expanded, `hidden` is fully absent — not set to an empty string or "false".
+  - The `aria-expanded` attribute on the button is `"true"` when the panel is open and `"false"` when it is closed, keeping the announced state in sync with visibility.
+  - The button label text changes between the collapsed and expanded states (e.g. "Show details" ↔ "Hide details"), derived from the same boolean.
+
+rubrics:
+  - wp-interactivity-api-best-practices

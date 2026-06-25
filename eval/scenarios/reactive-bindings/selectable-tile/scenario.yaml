@@ -1,0 +1,22 @@
+name: selectable-tile
+description: Displays a tile card that toggles a visual highlight when clicked, independently per block instance.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a card block for WordPress that users can click to "select" it.
+  When a card is selected it should show a visible highlight (like a
+  colored border or background), and clicking it again deselects it and
+  removes the highlight.
+
+  I plan to place several of these cards on the same page. Selecting one
+  card must not affect the others — each card must track its own
+  selected/not-selected state independently.
+
+acceptance:
+  - Each block instance tracks its selected state independently — toggling one tile's highlight does not affect any other tile on the page.
+  - The highlight is added and removed by toggling a CSS class on the tile element based on a boolean, not by direct style manipulation.
+  - Clicking the tile toggles its selected state; a second click on the same tile reverts it.
+
+rubrics:
+  - wp-interactivity-api-best-practices
