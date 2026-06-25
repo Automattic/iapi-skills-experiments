@@ -493,9 +493,9 @@ single coherent foundation commit; no separate task exists.
   - All specs import from `../../../utils/wp-cli.mjs`, target `wp-skill/testing-block`, and
     reset with `deactivateAllPlugins`.
 
-### Task 7: Author `state-and-context` group (8 new scenarios)
+### Task 7: Author `state-and-context` group (7 new scenarios)
 
-- **Goal:** Author the 8 net-new `state-and-context` scenarios (the migrated
+- **Goal:** Author the 7 net-new `state-and-context` scenarios (the migrated
   `independent-counters` and `shared-state-tally` are handled in Task 4).
 - **Type:** e2e
 - **Files to change (create, each `scenario.yaml` + `e2e.spec.mjs`):**
