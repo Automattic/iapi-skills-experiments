@@ -18,7 +18,7 @@ improving the iAPI reference until they pass is a later, owner-driven phase. Rea
 nested layout also requires bumping the `@automattic/skillsmith` dependency to a trunk
 commit that supports nested discovery and folder filtering, a small revision to
 `eval/utils/verify-e2e.ts` so failure attribution stays keyed on the scenario directory,
-two new shared e2e helpers in a new `eval/utils/e2e-helpers.mjs`, and one line dropped from
+one new shared e2e helper in a new `eval/utils/e2e-helpers.mjs`, and one line dropped from
 the shared rubric.
 
 ## Approach
@@ -37,9 +37,9 @@ that make it work. The mental model for the implementer:
    scenario is omitted from e2e — analysis found every scenario has testable runtime
    behavior.
 
-3. **Migration vs. new.** 8 of the existing flat scenarios map onto curated scenarios and
+3. **Migration vs. new.** 9 of the existing flat scenarios map onto curated scenarios and
    are moved with `git mv` (some renamed) to preserve history; 2 existing scenarios plus
-   the `_candidates.yaml` index are deleted (`git rm`); the remaining 58 scenarios are
+   the `_candidates.yaml` index are deleted (`git rm`); the remaining 59 scenarios are
    authored from scratch.
 
 4. **Tooling.** Bump `@automattic/skillsmith` to the trunk SHA that supports nested
@@ -300,8 +300,8 @@ migration is a rename and/or content rework.
 - `_candidates.yaml` (`git rm`) — the pre-curation candidate index, superseded by the
   curated set.
 
-**Totals:** 8 migrate (4 with rename, 3 of those reworked), 2 scenarios + 1 index deleted,
-58 new = 68 scenarios.
+**Totals:** 9 migrate (6 with rename, 2 of those reworked), 2 scenarios + 1 index deleted,
+59 new = 68 scenarios.
 
 ### Harness capabilities for the two scenarios that need them
 
@@ -397,8 +397,9 @@ used by only this scenario and is simple enough to inline.
   nested path with no change. But `scenarioDirOf()` currently returns only the
   second-to-last segment (the leaf `<scenario>`), while `dirToName` is keyed on the full
   `<group>/<scenario>` — so attribution would break. Fix `scenarioDirOf()` to return the
-  **last two** path segments joined with `/` when the path has ≥ 3 segments, falling back
-  to the single parent segment otherwise:
+  **group and scenario segments** (third-to-last and second-to-last, skipping the trailing
+  filename) joined with `/` when the path has ≥ 3 segments, falling back to the single
+  parent segment otherwise:
 
   ```typescript
   function scenarioDirOf(file: string): string | undefined {
@@ -462,20 +463,20 @@ used by only this scenario and is simple enough to inline.
   satisfy the spec's rule that harness gaps are never a reason to omit an e2e.
 - **Traces to:** Requirements 7, 8, 9 / Acceptance Criteria 6, 7.
 
-### Decision: Migrate 8 scenarios with `git mv`; delete 2 + the candidates index
+### Decision: Migrate 9 scenarios with `git mv`; delete 2 + the candidates index
 
-- **Choice:** Use `git mv` to relocate the 8 existing scenarios that map onto curated ones
+- **Choice:** Use `git mv` to relocate the 9 existing scenarios that map onto curated ones
   (renaming the `name` field and reworking prompt/acceptance/e2e where the curated scenario
   differs), preserving file history. Delete `counter`, `toggle-visibility`, and
-  `_candidates.yaml` with `git rm`. Author the remaining 58 scenarios from scratch. No
+  `_candidates.yaml` with `git rm`. Author the remaining 59 scenarios from scratch. No
   code-generation or templating tooling is introduced — each `scenario.yaml` and
   `e2e.spec.mjs` is written directly as text.
-- **Alternatives:** Delete-and-recreate the 8 migrated scenarios (rejected — loses git
+- **Alternatives:** Delete-and-recreate the 9 migrated scenarios (rejected — loses git
   history); keep `counter`/`toggle-visibility` (rejected — `counter` has no curated
   counterpart and `toggle-visibility` is fully subsumed, so keeping them would violate
   "no non-curated scenarios remain").
 - **Trade-offs:** `git mv` preserves history at the cost of per-file move tasks; authoring
-  58 from scratch is viable because the proposal descriptions are detailed enough to write
+  59 from scratch is viable because the proposal descriptions are detailed enough to write
   prompts and test-first specs without a reference implementation.
 - **Traces to:** Requirements 3, 4, 5, 6 / Acceptance Criteria 1, 4, 5, 6.
 
@@ -554,6 +555,6 @@ No open design questions remain. Risks for the implementation plan to carry:
    class rather than `wp-skill/testing-block`. This is the sole exception to the fixed
    block-name convention. The plan must record this scoping in the scenario's `acceptance`
    so reviewers do not flag it as off-convention or underimplemented.
-4. **Code-phase task volume (planning risk, not design risk).** ~66 authoring tasks (58 new
-   + 8 migrations), each producing `scenario.yaml` + `e2e.spec.mjs`. The plan should batch
+4. **Code-phase task volume (planning risk, not design risk).** ~68 authoring tasks (59 new
+   + 9 migrations), each producing `scenario.yaml` + `e2e.spec.mjs`. The plan should batch
    these (e.g. one task per group) to stay within agent context limits.
