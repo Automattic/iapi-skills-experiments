@@ -4,6 +4,20 @@
 
 <!-- Non-trivial findings from the design-doc-researcher, with sources cited. -->
 
+### `window.wp.interactivity` global exposure (adversarial store probe)
+
+Source: design-researcher reading `packages/interactivity/src/store.ts` and `index.ts` on Gutenberg trunk (SHA 13c47262).
+
+`@wordpress/interactivity` is a pure ES module. Zero assignment to `window.wp.*` anywhere. `storeLocks` is a module-private `Map`. `store()` is accessible only via ES `import` — `page.evaluate(() => window.wp?.interactivity?.store)` returns `undefined`.
+
+**How to probe the lock from an e2e test:**
+
+- **Option A (recommended):** `page.addScriptTag({ type: 'module', content: 'import {store} from "@wordpress/interactivity"; try { store(ns,{}); window.__lockResult="unlocked"; } catch(e){ window.__lockResult="locked"; }' })`. WordPress 6.5+ injects an importmap in `<head>` mapping `"@wordpress/interactivity"` to its URL. Chromium (Playwright 1.59) supports `type: module` in `addScriptTag`.
+
+- **Option B:** The agent's plugin registers a second script module that imports from `@wordpress/interactivity`, tries the override, and writes `window.__lockResult`. The e2e reads `window.__lockResult` via `page.evaluate()`. Gutenberg itself uses this pattern in fixture plugins (e.g. `packages/e2e-tests/plugins/interactive-blocks/deferred-store/view.js`). Requires the agent to author the probe module, which adds authoring burden but is more reliable if the importmap URL is unstable across WP versions.
+
+Option A is preferred: it keeps the probe in the harness rather than in the agent's plugin, uses the standard WP importmap, and does not require the agent to know about the test.
+
 ### Skillsmith trunk PR #52 design doc supplement
 
 Source: design-researcher reading PR #52 design doc at Skillsmith trunk SHA.
@@ -178,9 +192,7 @@ Two patterns recur and warrant shared helpers in `eval/utils/e2e-helpers.mjs` (n
 
 1. **`interceptAnalytics(page)`** — calls `page.route("**/wp-json/**/*analytics*", handler)` and returns a function `getEvents()` that returns intercepted request bodies. Specs call `const { getEvents } = await interceptAnalytics(page)` before `page.goto(...)`, then assert `getEvents()` contains expected events. The analytics endpoint is part of the scenario's product constraint (specified in the `acceptance` list), so the agent knows to POST to a REST endpoint. This is reliable because `page.route()` is interception-layer, not agent-API-dependent.
 
-2. **`probeStoreOverride(page, namespace, sampleStateKey)`** — design depends on whether `window.wp.interactivity` is globally accessible (pending researcher confirmation). Two designs ready:
-   - **If `window.wp.interactivity` is exposed:** `page.evaluate()` calls `window.wp.interactivity.store(namespace, { [sampleStateKey]: '__probe__' })` and reads back the state, asserting the probe value was rejected (state unchanged).
-   - **If NOT exposed (likely for ES module packages):** the e2e cannot call `store()` from outside the module. Instead, the `locked-private-store` scenario's e2e verifies the lock indirectly: the block's own behavior proves it (state is reactive, unmodified), and the `acceptance` list for the scenario includes "the block registers its store with the `lock` option; a second attempt to open the store from outside returns the locked proxy unchanged." The e2e asserts the *positive* behavior (block works) and the scenario acceptance list covers the lock semantic — the lock is an authoring requirement, not a runtime-observable behavior in a standard Playwright session. This is the fallback design.
+2. **`probeStoreOverride(page, namespace)`** — confirmed mechanism (researcher verified `window.wp.interactivity` does not exist; `store()` is ES-module-only). Uses `page.addScriptTag({ type: 'module', content: ... })` to inject an ES module that imports `store` from `@wordpress/interactivity` via WordPress's own importmap, attempts to re-open `namespace` without the `lock` key, writes `window.__lockResult = "unlocked"` or `"locked"` depending on whether the override was accepted, then reads the result via `page.evaluate(() => window.__lockResult)`. Returns `"locked"` when the store is correctly protected, `"unlocked"` when it is not. The `locked-private-store` e2e calls this after hydration and asserts the result is `"locked"`.
 
 Both helpers live in `eval/utils/e2e-helpers.mjs`, imported as `import { interceptAnalytics, probeStoreOverride } from "../../../utils/e2e-helpers.mjs"`.
 
