@@ -4,6 +4,26 @@
 
 <!-- Non-trivial findings from the design-doc-researcher, with sources cited. -->
 
+### Harness analysis: per-scenario needs
+
+Source: design-researcher reading Playwright 1.60 types, requestUtils source, Gutenberg fixture plugins, and existing e2e specs (2026-06-25).
+
+**pageview-analytics-bridge:** `page.addInitScript({ content: 'window.__analyticsTracker = (...a) => { (window.__analyticsEvents ??= []).push(a); };' })` before navigation stubs the analytics callback. The prompt constrains the agent with user-level phrasing ("when the watched value changes, call `window.__analyticsTracker` with the new value") — an integration point, not an iAPI directive name. E2e asserts `page.evaluate(() => window.__analyticsEvents)`. Inline per spec; no shared helper file needed.
+
+**locked-private-store:** `page.addScriptTag({ type: 'module', content: 'import {store} from "@wordpress/interactivity"; try { store(ns, {}); window.__lockResult = "unlocked"; } catch(e) { window.__lockResult = "locked"; }' })` after hydration. Relies on WordPress 6.5+ importmap. E2e reads `window.__lockResult` via `page.evaluate()`. A shared helper `addLockProbe(page, namespace)` in `eval/utils/e2e-helpers.mjs` wraps this.
+
+**classic-theme-banner:** The agent's plugin hooks into a WordPress action (e.g. `wp_footer`) and outputs the interactive banner HTML via `wp_interactivity_process_directives()`. The e2e creates any post with `requestUtils.createPost`, visits it — the plugin action fires on every frontend page. The block is **NOT** `wp-skill/testing-block`; the e2e locates the banner by its own class or `data-wp-interactive` attribute. This is the one exception to the standard block-name convention. Standard harness covers it; no new capability needed.
+
+**instrumented-mount, multi-directive-element:** `page.on('console', ...)` captures all log calls. Pattern already established in `minimal-scaffold/e2e.spec.mjs` (lines 32–44). Standard.
+
+**TypeScript scenarios (4):** Runtime behavior only (DOM state, reactive text). Type correctness is an authoring/review requirement, not an e2e concern. Standard harness.
+
+**countdown-to-event, live-scoreboard-polling, interval-with-cleanup:** Playwright 1.60 `page.clock` confirmed available. `await page.clock.install(); await page.clock.runFor(3000)` advances `setInterval` timers. Standard.
+
+**in-view-reveal:** `page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))` triggers `IntersectionObserver`. Standard.
+
+**global-toast:** `requestUtils.createPage()` available (REST `/wp/v2/pages`). Create two pages, navigate between them via router link click. Standard.
+
 ### `window.wp.interactivity` global exposure (adversarial store probe)
 
 Source: design-researcher reading `packages/interactivity/src/store.ts` and `index.ts` on Gutenberg trunk (SHA 13c47262).
@@ -12,11 +32,11 @@ Source: design-researcher reading `packages/interactivity/src/store.ts` and `ind
 
 **How to probe the lock from an e2e test:**
 
-- **Option A (recommended):** `page.addScriptTag({ type: 'module', content: 'import {store} from "@wordpress/interactivity"; try { store(ns,{}); window.__lockResult="unlocked"; } catch(e){ window.__lockResult="locked"; }' })`. WordPress 6.5+ injects an importmap in `<head>` mapping `"@wordpress/interactivity"` to its URL. Chromium (Playwright 1.59) supports `type: module` in `addScriptTag`.
+- **Option A (chosen):** `page.addScriptTag({ type: 'module', content: 'import {store} from "@wordpress/interactivity"; try { store(ns,{}); window.__lockResult="unlocked"; } catch(e){ window.__lockResult="locked"; }' })`. WordPress 6.5+ injects an importmap in `<head>` mapping `"@wordpress/interactivity"` to its URL. Chromium (Playwright 1.60) supports `type: module` in `addScriptTag`. Wrapped in `addLockProbe(page, namespace)` in `eval/utils/e2e-helpers.mjs`.
 
-- **Option B:** The agent's plugin registers a second script module that imports from `@wordpress/interactivity`, tries the override, and writes `window.__lockResult`. The e2e reads `window.__lockResult` via `page.evaluate()`. Gutenberg itself uses this pattern in fixture plugins (e.g. `packages/e2e-tests/plugins/interactive-blocks/deferred-store/view.js`). Requires the agent to author the probe module, which adds authoring burden but is more reliable if the importmap URL is unstable across WP versions.
+- **Option B (not chosen):** The agent's plugin registers a second script module that tries the override and writes `window.__lockResult`. Requires the agent to author the probe, adding authoring burden.
 
-Option A is preferred: it keeps the probe in the harness rather than in the agent's plugin, uses the standard WP importmap, and does not require the agent to know about the test.
+Option A is used: probe stays in the harness, agent is unaware of it.
 
 ### Skillsmith trunk PR #52 design doc supplement
 
@@ -172,40 +192,40 @@ Source: design-researcher reading `Automattic/skillsmith` source via GitHub API 
 
 - **Spec link:** Requirements 7, 8, 9 / Acceptance Criteria 6, 7
 
-**Analysis of scenarios by harness need:**
+**Analysis of scenarios by harness need (finalized):**
 
 | Scenario | Need | Mechanism |
 |---|---|---|
-| `pageview-analytics-bridge` | Analytics sink | `page.addInitScript()` to stub `window` analytics object before page load; OR `page.route()` to intercept outbound HTTP calls |
-| `locked-private-store` | Adversarial `store()` probe | `page.evaluate()` to call `window.wp.interactivity.store(namespace, {...})` after hydration and assert original state is unchanged |
-| `classic-theme-banner` | Non-block PHP page | Scenario scoped to agent implementing a block whose `render.php` calls `wp_interactivity_process_directives()` explicitly — tests the function directly without needing a theme template |
-| `instrumented-mount`, `multi-directive-element` | Multiple console messages | `page.on("console", ...)` — standard, already used in `minimal-scaffold` |
-| TypeScript scenarios (4) | TS runtime behavior | Standard harness; e2e tests runtime DOM/state, not compilation |
-| `countdown-to-event`, `live-scoreboard-polling`, `interval-with-cleanup` | Fake timers | `page.clock.runFor()` — available in Playwright 1.59.1 (added in 1.45) |
-| `in-view-reveal` | IntersectionObserver | `page.evaluate(() => window.scrollTo(0, 9999))` triggers intersection — standard Playwright |
-| `global-toast` | Cross-page router navigation | Two posts + `page.click()` + `expect(page).toHaveURL(...)` — standard |
-| Multi-block scenarios | Two block instances | `content: "<!-- wp:wp-skill/testing-block /-->\n<!-- wp:wp-skill/testing-block /-->"` — already done in `independent-counters` |
+| `pageview-analytics-bridge` | Analytics sink | `page.addInitScript()` stubs `window.__analyticsTracker`; prompt constrains agent to call it |
+| `locked-private-store` | Adversarial `store()` probe | `page.addScriptTag({ type: 'module' })` injects ES module via WP importmap; shared helper |
+| `classic-theme-banner` | PHP action banner (no testing-block) | Plugin hooks `wp_footer`, outputs banner via `wp_interactivity_process_directives()`; any post; locate by class |
+| `instrumented-mount`, `multi-directive-element` | Multiple console messages | `page.on("console", ...)` — existing pattern from `minimal-scaffold` |
+| TypeScript scenarios (4) | Runtime behavior only | Standard harness; type correctness is authoring/review concern |
+| `countdown-to-event`, `live-scoreboard-polling`, `interval-with-cleanup` | Fake timers | `page.clock.install()` + `page.clock.runFor()` — Playwright 1.60 confirmed |
+| `in-view-reveal` | IntersectionObserver | `page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))` |
+| `global-toast` | Multi-page router navigation | `requestUtils.createPage()` (confirmed available) × 2, navigate via router link |
+| Multi-block scenarios | Two block instances | Two `<!-- wp:wp-skill/testing-block /-->` in post content — existing pattern |
 
-**New harness helpers needed:**
+**New harness file: `eval/utils/e2e-helpers.mjs`**
 
-Two patterns recur and warrant shared helpers in `eval/utils/e2e-helpers.mjs` (new file):
+One new helper file containing:
 
-1. **`interceptAnalytics(page)`** — calls `page.route("**/wp-json/**/*analytics*", handler)` and returns a function `getEvents()` that returns intercepted request bodies. Specs call `const { getEvents } = await interceptAnalytics(page)` before `page.goto(...)`, then assert `getEvents()` contains expected events. The analytics endpoint is part of the scenario's product constraint (specified in the `acceptance` list), so the agent knows to POST to a REST endpoint. This is reliable because `page.route()` is interception-layer, not agent-API-dependent.
+1. **`addLockProbe(page, namespace)`** — calls `page.addScriptTag({ type: 'module', content: \`import {store} from "@wordpress/interactivity"; try { store("${namespace}", {}); window.__lockResult = "unlocked"; } catch(e) { window.__lockResult = "locked"; }\` })`. The `locked-private-store` e2e calls this after `page.goto()` (post-hydration), then asserts `await page.evaluate(() => window.__lockResult) === "locked"`. Relies on WordPress 6.5+ importmap (present in `wp-env`). Helper also asserts `window.__lockResult` is defined after injection (guards against silent importmap failure).
 
-2. **`probeStoreOverride(page, namespace)`** — confirmed mechanism (researcher verified `window.wp.interactivity` does not exist; `store()` is ES-module-only). Uses `page.addScriptTag({ type: 'module', content: ... })` to inject an ES module that imports `store` from `@wordpress/interactivity` via WordPress's own importmap, attempts to re-open `namespace` without the `lock` key, writes `window.__lockResult = "unlocked"` or `"locked"` depending on whether the override was accepted, then reads the result via `page.evaluate(() => window.__lockResult)`. Returns `"locked"` when the store is correctly protected, `"unlocked"` when it is not. The `locked-private-store` e2e calls this after hydration and asserts the result is `"locked"`.
+**Analytics sink — inline per spec, no shared helper:**
 
-Both helpers live in `eval/utils/e2e-helpers.mjs`, imported as `import { interceptAnalytics, probeStoreOverride } from "../../../utils/e2e-helpers.mjs"`.
+The `pageview-analytics-bridge` e2e uses `page.addInitScript({ content: 'window.__analyticsTracker = (...a) => { (window.__analyticsEvents ??= []).push(a); };' })` inline, not in a shared helper — the pattern is used by only one or two scenarios and is simple enough to inline. The `acceptance` list constrains the agent: "the block calls `window.__analyticsTracker(value)` when the watched value changes."
 
-**`classic-theme-banner` scoping:**
+**`classic-theme-banner` — exception to the block-name convention:**
 
-The scenario is scoped so the agent builds a block whose `render.php` calls `wp_interactivity_process_directives()` explicitly on markup it generates — this exercises the same PHP function as the classic-theme case, in a testable block context. The e2e verifies the block renders and the directives are processed (the element shows the expected reactive behavior). The scenario `acceptance` list records this scope: "The block's render.php calls `wp_interactivity_process_directives()` directly on the markup string, demonstrating the function works outside the standard block directive pipeline."
+The agent's plugin hooks into `wp_footer` (or equivalent WordPress action) and outputs the interactive banner HTML directly, calling `wp_interactivity_process_directives()` on the markup. The e2e creates any post via `requestUtils.createPost`, visits it, and locates the banner by its own `data-wp-interactive` attribute or a distinctive class — NOT by `wp-skill/testing-block`. This is the one scenario that does not use the fixed block name. The `acceptance` list records the constraint: "the plugin's output is processed by `wp_interactivity_process_directives()`, not the block directive pipeline."
 
-**Scenarios with no e2e (recorded rationale):**
+**Scenarios with no e2e:**
 
-After analysis, **no scenario is omitted**. Every scenario has testable runtime behavior. All 68 scenarios have `e2e.spec.mjs`.
+None. All 68 scenarios have `e2e.spec.mjs`.
 
-- **Decision:** Add `eval/utils/e2e-helpers.mjs` with `interceptAnalytics(page)` and `probeStoreOverride(page, namespace, sampleStateKey)`. All 68 scenarios have `e2e.spec.mjs`. No scenario is omitted.
-- **Rationale:** Spec requirement 8 is explicit: harness gaps are not a reason to omit e2e. Both new helpers are thin wrappers over standard Playwright APIs, not new infrastructure. Spec requirement 7 requires helpers be present when specs reference them. The `probeStoreOverride` design is held with one alternative pending researcher confirmation of `window.wp.interactivity` exposure.
+- **Decision:** Add `eval/utils/e2e-helpers.mjs` with `addLockProbe(page, namespace)`. Analytics stub is inline per spec. All 68 scenarios have `e2e.spec.mjs`. `classic-theme-banner` is the one exception to the `wp-skill/testing-block` convention.
+- **Rationale:** Spec Requirement 8 is explicit: harness gaps are not a reason to omit e2e. The one new shared helper (`addLockProbe`) is a thin wrapper around `page.addScriptTag`. The analytics stub is simple enough to inline. The `classic-theme-banner` exception is necessary to correctly test `wp_interactivity_process_directives()` outside the block system.
 
 ### Topic: Standard e2e conventions
 
@@ -221,7 +241,8 @@ After analysis, **no scenario is omitted**. Every scenario has testable runtime 
 - **Accessibility-tree checks:** Use `getByRole(...)` selectors (e.g., `getByRole("button", { name: /label/i })`) and `toHaveAttribute("aria-expanded", "true")` for ARIA state. For dialog semantics, assert `role="dialog"` present/absent.
 - **Router navigation:** For client-navigation scenarios, use `page.click(...)` on navigation links, then `await page.waitForURL(...)` or `expect(page).toHaveURL(...)` to assert soft navigation.
 - **Selector strategy:** Prefer role-based selectors (`getByRole`), then text-based (`getByText`), then attribute-based (`locator("[data-wp-text]")`). Avoid class-only selectors except for the block wrapper (`.wp-block-wp-skill-testing-block`).
-- **Decision:** These conventions are codified and all new specs must follow them. The relative import path change (2 → 3 levels up) is the only structural difference from existing specs.
+- **Exception — `classic-theme-banner`:** This scenario does not use `wp-skill/testing-block` in post content. The agent's plugin outputs the banner via a WordPress action hook; the e2e locates it by `data-wp-interactive` attribute or a distinctive class. All other conventions apply.
+- **Decision:** These conventions are codified and all new specs must follow them. The relative import path change (2 → 3 levels up) is the only structural difference from existing specs. `classic-theme-banner` is the sole exception to the fixed block name.
 - **Rationale:** Consistency with existing specs reduces review friction. The conventions already reflect Playwright best practices and WP e2e test-utils-playwright patterns.
 
 ### Topic: Authoring approach
@@ -261,14 +282,14 @@ After analysis, **no scenario is omitted**. Every scenario has testable runtime 
 
 ## Open Questions
 
-1. **`window.wp.interactivity` global exposure:** The code-phase implementer should verify whether `window.wp.interactivity.store` is callable from `page.evaluate()` in a `wp-env` runtime. If yes, use the `page.evaluate()` path in `probeStoreOverride`. If no (likely — iAPI ships as an ES module without a window global), use the fallback: the `locked-private-store` e2e verifies positive block behavior only, and the `acceptance` field records the lock semantic as an authoring requirement. Either path satisfies Spec Requirement 7 — the helper exists in both cases, just with different internals.
+None — all design questions are resolved.
 
 ## Risks
 
-1. **`probeStore` feasibility:** If `window.wp.interactivity` is not globally accessible (iAPI uses ES modules, not window globals), the adversarial store probe for `locked-private-store` would need a different approach — either a probe script injected before the module, or an in-block test helper. This would change the `e2e-helpers.mjs` design.
+1. **`probeStoreOverride` importmap dependency:** The `page.addScriptTag({ type: 'module' })` approach relies on WordPress injecting an importmap for `@wordpress/interactivity` in the page `<head>`. This is standard in WP 6.5+ with `wp-env`. If the importmap URL changes between WP versions, the injected module fails silently. Mitigation: the `probeStoreOverride` helper should assert that `window.__lockResult` is defined after the script tag executes (not just check its value), so a missing importmap surfaces as a test failure rather than a false negative.
 
-2. **TypeScript scenario e2e depth:** The TypeScript scenarios exercise type-system constraints. Runtime behavior can be tested (counter increments, state merges), but type correctness (no `as any`, no explicit casts) cannot be verified at runtime. The e2e covers runtime behavior; type correctness is only verifiable via `tsc` which is out of scope for the harness. This is acceptable per spec (e2e tests runtime behavior).
+2. **TypeScript scenario e2e depth:** The TypeScript scenarios exercise type-system constraints. Runtime behavior can be tested (counter increments, state merges correctly), but type correctness (no `as any`, no explicit casts) cannot be verified at runtime. The e2e covers runtime behavior only; type correctness is an authoring requirement checked during code review. This is acceptable per spec (e2e tests runtime behavior).
 
-3. **`classic-theme-banner` scope drift:** If the scenario must genuinely test `wp_interactivity_process_directives()` on non-block HTML (a theme template), the harness would need to create a custom PHP file in the theme. This is feasible (`requestUtils` can manage files via `wp-env`) but complex. Scoping it to a block whose `render.php` calls the function directly is simpler and still exercises the same API surface.
+3. **`classic-theme-banner` scope drift:** If the scenario must genuinely test `wp_interactivity_process_directives()` on non-block HTML (a classic theme template), the harness would need custom PHP in the theme directory. The design scopes it to a block `render.php` that calls the function directly — simpler and covers the same API surface. The plan phase should record this scoping so reviewers do not flag it as underimplemented.
 
-4. **68 scenarios × code-phase task decomposition:** With 58 new scenarios and 8 migrations, the code phase has ~66 file-authoring tasks (scenario.yaml + e2e.spec.mjs each, minus migrations that are lighter). The plan phase must decompose these into manageable parallel batches. This is a planning risk, not a design risk.
+4. **Code-phase task volume:** 58 new scenarios + 8 migrations = ~66 file-authoring tasks. Each produces two files (`scenario.yaml` + `e2e.spec.mjs`). The plan phase must batch these into parallel groups (e.g., one task per group folder) to stay within agent context limits. This is a planning risk, not a design risk.
