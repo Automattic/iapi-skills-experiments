@@ -1,0 +1,23 @@
+name: cart-count-cross-block
+description: Renders a product block with an "Add to cart" button and a separate header badge block that reactively shows the current cart item count.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like two interactive WordPress blocks that work together: one is a
+  product card with an "Add to cart" button, and the other is a small
+  badge (for example in a page header area) that shows how many items
+  are in the cart. When the user clicks "Add to cart" on the product
+  card, the count on the badge should update immediately — without a
+  page reload.
+
+  Both blocks are separate and can be placed independently on the page,
+  but they need to stay in sync with each other.
+
+acceptance:
+  - Both blocks share one global-state namespace so the cart count is the single source of truth across blocks.
+  - Clicking "Add to cart" in the product block increments the count displayed in the badge block.
+  - The badge reflects the correct count without a page reload after each click.
+
+rubrics:
+  - wp-interactivity-api-best-practices

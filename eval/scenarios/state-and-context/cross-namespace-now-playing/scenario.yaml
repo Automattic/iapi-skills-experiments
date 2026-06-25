@@ -1,0 +1,24 @@
+name: cross-namespace-now-playing
+description: Renders a "now playing" indicator that lights up based on state owned by a separate plugin's namespace, reading it declaratively with no JavaScript import.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like a WordPress block that shows a "Now Playing" indicator. The
+  indicator should light up (for example, change color or show a label)
+  based on a value that comes from a completely separate plugin — think
+  of it like a music player plugin that exposes what is currently
+  playing, and this block just displays that status.
+
+  The block itself should not duplicate or own that data. It should
+  simply read the other plugin's current value and reflect it, updating
+  automatically whenever the other plugin changes its state. No page
+  reload should be needed.
+
+acceptance:
+  - The indicator reads its display value from another plugin's namespace declaratively in the template markup, not via a JavaScript import or a manual DOM query.
+  - The indicator updates reactively when the source namespace's state changes, without a page reload.
+  - The block's own namespace does not re-declare or duplicate the source state — it only references it.
+
+rubrics:
+  - wp-interactivity-api-best-practices

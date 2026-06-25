@@ -1,0 +1,20 @@
+name: php-seeded-context
+description: Renders a list block whose initial items are built server-side per instance so each block shows a distinct seeded list on first paint.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that displays a short list of items. The list
+  of items should come from the server when the page is built — I don't
+  want to hard-code them in JavaScript. Each time I place the block on a
+  page it should be able to show a different starting list (set via the
+  block's PHP render callback), and the list should already be visible in
+  the HTML before the page's scripts load.
+
+acceptance:
+  - The initial list of items is encoded into each block instance's per-instance context on the server (not fetched client-side and not from global state).
+  - When two instances are on the same page they display distinct server-seeded lists.
+  - The seeded list is present in the server-rendered HTML before any client-side hydration occurs.
+
+rubrics:
+  - wp-interactivity-api-best-practices

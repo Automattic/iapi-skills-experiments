@@ -1,0 +1,25 @@
+name: pageview-analytics-bridge
+description: A UI-less block that forwards changes to a shared reactive value to an analytics callback whenever the value changes.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that acts as a bridge between the page's
+  interactive state and our analytics system. The block itself has no
+  visible UI. Whenever a shared page value changes (for example a
+  section name or page title that other blocks on the page update), the
+  block should call `window.__analyticsTracker(value)` with the new
+  value so our analytics pipeline can record the change.
+
+  The tracking should start as soon as the page loads (not only on
+  subsequent changes) and should keep running for as long as the block
+  is on the page. If it is removed or the page navigates away, the
+  tracking should stop.
+
+acceptance:
+  - The block calls `window.__analyticsTracker(value)` each time the watched shared value changes, including on initial page load.
+  - The tracking subscription is set up at module load time and is cleaned up when the block is removed from the page.
+  - The block has no visible rendered output — it is purely a reactive side-effect connector.
+
+rubrics:
+  - wp-interactivity-api-best-practices
