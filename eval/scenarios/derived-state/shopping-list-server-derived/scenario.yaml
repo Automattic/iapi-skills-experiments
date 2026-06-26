@@ -1,0 +1,22 @@
+name: shopping-list-server-derived
+description: Renders a shopping list where each row shows an in-cart icon derived server-side per item, visible on first paint.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that shows a shopping list. Each item in the list
+  has a name and a checkbox or icon that indicates whether it's already in
+  the cart. The "in cart" indicator should be correct the moment the page
+  loads — I don't want it to be missing or wrong until JavaScript runs.
+  Some items start in the cart and some don't; the block should be able to
+  render each row with the right icon already in the HTML when the server
+  sends the page. Visitors should be able to see at a glance which items
+  are in their cart without waiting for any scripts to execute.
+
+acceptance:
+  - The in-cart state for each row is computed server-side per item and encoded in the initial HTML, so the icon is present (or absent) correctly on first paint without JavaScript.
+  - Items seeded as in-cart render with their in-cart icon visible in the server-rendered HTML; items not in the cart do not show the icon.
+  - The per-row derived icon state comes from server-computed context or state for each item — not toggled or injected by client JavaScript after hydration.
+
+rubrics:
+  - wp-interactivity-api-best-practices

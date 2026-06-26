@@ -1,0 +1,24 @@
+name: tax-calculator-mixed
+description: Shows multiple product cards each with its own price, where a single shared tax rate drives all the derived totals simultaneously.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that works as a tax calculator panel. Each time I
+  add the block to a page it shows a product name and a base price for that
+  product. At the top of the page there should be a single global tax rate
+  field (or stepper) — something like a "Tax rate: 20%" display with + and -
+  buttons. When I change the global tax rate, every product card on the page
+  should immediately update its "Total with tax" line to reflect the new rate
+  applied to that card's own base price. So if I have a $10 product and a $25
+  product and I change the rate from 20% to 10%, both cards update at the
+  same time to show $11.00 and $27.50 respectively.
+
+acceptance:
+  - A single global tax rate is stored in shared global state (not duplicated per card).
+  - Each card's own base price is stored in its per-instance context, so two block instances carry different prices.
+  - The derived "Total with tax" shown in each card is a computed value (getter) that reads the global tax rate and the instance's own base price — it is not a separately stored field.
+  - Changing the global tax rate updates the derived total in every card simultaneously without a page reload.
+
+rubrics:
+  - wp-interactivity-api-best-practices

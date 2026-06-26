@@ -1,0 +1,22 @@
+name: results-no-flash
+description: Displays a search results list where the empty-state message is suppressed on first paint when results exist, with no flash of the empty state.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that shows a list of search results along with a
+  "No results found" message that only appears when the list is genuinely
+  empty. The important thing is that when the page loads with results already
+  in it, visitors should never see that "No results found" text flash on
+  screen for a moment before the results appear. The block should know
+  whether it has results as soon as the HTML is sent from the server, so the
+  correct state is shown immediately — without any JavaScript needing to run
+  first.
+
+acceptance:
+  - The server-rendered HTML shows the results list when results exist and the "No results" message when results are absent — determined server-side so the correct state is present in the initial HTML.
+  - When results are present, the "No results" message is absent from the server-rendered HTML (hidden or not rendered at all), so no flash occurs before hydration.
+  - The derived visibility (has-results vs empty) is computed from the result count on the server and encoded in the initial HTML — not toggled by client-side JavaScript after page load.
+
+rubrics:
+  - wp-interactivity-api-best-practices
