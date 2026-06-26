@@ -1,0 +1,27 @@
+name: ts-async-derived
+description: Renders a counter block in TypeScript with an async fetch action and a derived value that is automatically updated whenever the count changes.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that shows a counter alongside a "doubled"
+  readout — a second number that always shows twice the current count.
+  There should be an "Increment" button that bumps the count up by one
+  and a "Fetch and set" button that loads a number from a remote endpoint
+  and sets the count to that value. The doubled readout should update
+  automatically whenever the count changes, whether from the button or
+  the fetch.
+
+  Please build this in TypeScript with full type safety. I want the async
+  fetch action and the derived "doubled" value to both have correct,
+  explicit return-type annotations in TypeScript so it is clear to the
+  type checker what each one produces.
+
+acceptance:
+  - The async fetch action is typed as a generator function with an explicit `AsyncAction<void>` (or equivalent generator return type) annotation so the TypeScript compiler understands it is an async generator action.
+  - The derived "doubled" getter has an explicit return-type annotation (e.g. `(): number`) so the type checker enforces the return type.
+  - Clicking "Fetch and set" updates the count to the value returned by the fetch, and the derived doubled value reflects the new count.
+  - The doubled readout updates automatically whenever the count changes, both from the increment button and from the async fetch action.
+
+rubrics:
+  - wp-interactivity-api-best-practices

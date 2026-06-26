@@ -1,0 +1,27 @@
+name: ts-server-state-merge
+description: Renders a counter block written in TypeScript where the initial count is seeded by PHP and the type definition merges the server-provided state into the client store type.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need an interactive counter block for WordPress where the starting
+  number comes from the server — the PHP render callback should decide
+  what count the counter begins at (for example, a different starting
+  value per page or post). Visitors should see that initial number right
+  when the page loads, and they should be able to click "Increment" to
+  add one.
+
+  Please build this in TypeScript with full type safety. The TypeScript
+  type for the store should account for the fact that the initial count
+  arrives from the server at runtime, not just from the client-side
+  initial values, so the type checker understands the merged shape
+  correctly.
+
+acceptance:
+  - The initial count is seeded by the PHP render callback into the server state and is present in the server-rendered HTML before any JavaScript runs.
+  - The TypeScript store type is expressed as a merge of the server-provided state shape and the client-side store definition (e.g. `ServerState & typeof storeDef` or equivalent), so the type checker knows the count field exists at runtime even when the client initializes it as undefined or a placeholder.
+  - Clicking "Increment" increases the displayed count from its server-seeded starting value.
+  - The server-seeded count is visible in the rendered HTML on first paint, before the increment button is clicked.
+
+rubrics:
+  - wp-interactivity-api-best-practices
