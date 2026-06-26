@@ -1,0 +1,19 @@
+name: autofocus-revealed-form
+description: Renders a block with a hidden form that, when revealed, automatically moves focus to its first field.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that shows a "Show form" button. When the visitor
+  clicks the button, a short form slides into view and the cursor jumps straight
+  to the first field so they can start typing right away — no extra click needed.
+
+  The form should stay hidden on load and only appear after the button is clicked.
+  Once visible, the first input should receive keyboard focus automatically.
+
+acceptance:
+  - When the form is revealed, the first input field receives focus automatically — the focus is moved by an init callback that runs at the moment the form element is mounted into the live DOM, not by a manual click handler.
+  - The form is hidden on initial load and the focus callback only fires once per reveal, not on every re-render.
+
+rubrics:
+  - wp-interactivity-api-best-practices

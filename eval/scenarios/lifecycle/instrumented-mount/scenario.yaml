@@ -1,0 +1,20 @@
+name: instrumented-mount
+description: Renders a block that fires two independent setup callbacks on mount — an analytics ping and a debug marker — each wired separately on the same element.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that does two completely separate things the moment
+  it appears on the page: it should send an analytics "viewed" ping, and it
+  should write a debug marker so I can confirm the block initialised correctly.
+
+  Both tasks must be wired independently — removing or changing one must not
+  affect the other. Both should fire automatically on first render, not on a
+  button click.
+
+acceptance:
+  - The block element carries two distinct init-style attributes using the triple-hyphen unique-ID suffix form so both can appear on the same element without conflict.
+  - Both callbacks fire on mount: the analytics "viewed" ping and the debug init marker each emit a console message that the e2e can detect, and both appear after a single page load.
+
+rubrics:
+  - wp-interactivity-api-best-practices
