@@ -137,7 +137,213 @@ walkthrough:
 
 ## Authoring conventions
 
-<!-- Populated by a later docs task. -->
+Every scenario in the curated set follows the same shape so the set reads as one
+body of work and so the tooling can discover, run, and attribute each scenario
+without per-scenario special-casing. This section is the contract a new
+`scenario.yaml` + `e2e.spec.mjs` pair must match. The examples below are all
+drawn from shipped scenarios — read the cited files when you need the full
+context.
+
+> [!NOTE]
+> These conventions describe how the specs are *authored*. As stated at the top
+> of this guide, the specs are written test-first and are **not executed** in
+> this work — there is no green run to match against. Author a new spec to be
+> runnable in shape against a later correct implementation, not to a passing
+> suite.
+
+### `scenario.yaml` conventions
+
+A `scenario.yaml` is a Skillsmith scenario definition. Across the set it carries
+the same six fields, in the same order:
+
+```yaml
+name: minimal-scaffold
+description: Build the smallest correctly-wired Interactivity API block.
+skills:
+  - wordpress-development
+
+prompt: |
+  <outcome-focused feature request in non-expert user language>
+
+acceptance:
+  - <a criterion unique to this scenario>
+  - <the distinct iAPI concept this scenario exercises>
+
+rubrics:
+  - wp-interactivity-api-best-practices
+```
+
+The fields, and the rules that govern them:
+
+- **`name`** — the scenario identifier. It **equals the leaf directory name**,
+  is **kebab-case**, and is **globally unique across the whole tree** — unique
+  not just within its group but across every group. (Skillsmith keys reports and
+  artifacts on `name`, and rejects a duplicate `name` at enumeration time, so a
+  collision anywhere in the tree fails the whole run.) Keep the directory name
+  and the `name` field in lockstep.
+- **`description`** — one line, present tense, describing what the scenario
+  builds. See `foundations/minimal-scaffold/scenario.yaml` for the canonical
+  brevity.
+- **`skills`** — the skill under test. For every scenario in this set this is
+  the single-entry list `[wordpress-development]`.
+- **`prompt`** — the human-worded feature request the testing agent is asked to
+  build. See [Prompt convention](#prompt-convention) below — this is the most
+  load-bearing field and has its own rules.
+- **`acceptance`** — the scenario-specific grading criteria. See
+  [`acceptance` vs. the shared rubric](#acceptance-vs-the-shared-rubric) below.
+- **`rubrics`** — the shared rubric the result is graded against. For every
+  scenario in this set this is the single-entry list
+  `[wp-interactivity-api-best-practices]`, which points at
+  [`eval/rubrics/wp-interactivity-api-best-practices.md`](../rubrics/wp-interactivity-api-best-practices.md).
+
+`skills` and `rubrics` are the same for every scenario by design: the set holds
+the **one** `wordpress-development` skill to the **one** shared iAPI rubric, and
+the per-scenario variation lives entirely in `prompt` and `acceptance`.
+
+### Prompt convention
+
+The `prompt` is the heart of a scenario. It is a **realistic, outcome-focused
+feature request written in non-expert user language**: it describes the behavior
+the user wants and **never names an iAPI directive, store API, server helper, or
+any other implementation mechanism**. The scenario tests whether the agent can
+*choose* the right iAPI machinery from a plain-language outcome — so naming that
+machinery in the prompt would defeat the test.
+
+Inherently technical asks are still allowed, but they are phrased as **user
+constraints**, not as directive names. For example:
+
+- `typescript/ts-counter-inference` asks for type safety as a user goal —
+  *"Please build it in TypeScript with full type safety — I want the type
+  checker to understand the shape of the state automatically from how I define
+  it, without me having to write any explicit type annotations or type casts."*
+  It never mentions store generics or the `store()` type parameter.
+- `state-and-context/locked-private-store` asks for hardening as a user goal —
+  *"Harden it so other plugins can't tamper with it, even if they try to access
+  the same namespace."* It never mentions `store()`'s `lock` option.
+
+A quick before/after, drawn from `foundations/minimal-scaffold` — what the rule
+rules out, and what the shipped prompt does instead:
+
+- **Off-convention (names the mechanism):** "Add a block with a `data-wp-init`
+  callback that logs `iapi-ready` to the console once on mount."
+- **On-convention (shipped prompt):** *"once the runtime has picked the block up
+  and finished setting it up on the client, I want to see `iapi-ready` logged to
+  the browser console — just once per block instance, not every time the script
+  file loads."*
+
+Both describe the same outcome, but only the second leaves the agent to discover
+that an init callback is the right tool. When you write a prompt, describe what
+the visitor sees and does; let the rubric and `acceptance` judge whether the
+agent reached for the right directive.
+
+### `acceptance` vs. the shared rubric
+
+A scenario's `acceptance` list holds **only** the criteria unique to that
+scenario — its specific behavior and the distinct iAPI concept it exercises.
+Generic iAPI wiring and reactivity expectations that apply to *every* scenario
+(declaring `supports.interactivity`, using `viewScriptModule`, importing from
+`@wordpress/interactivity` instead of `window.wp.*`, binding reactive text with
+`data-wp-text`, seeding state with `wp_interactivity_state()`, and so on) are
+**not** restated in `acceptance`. Those live in the shared rubric at
+[`eval/rubrics/wp-interactivity-api-best-practices.md`](../rubrics/wp-interactivity-api-best-practices.md),
+which opens by stating that its criteria apply to every scenario and "should not
+be duplicated in scenario-level acceptance lists."
+
+The rubric grades *how well the block is wired in general*; `acceptance` grades
+*whether this scenario's specific behavior and concept are present*. For
+example, `derived-state/price-with-vat` does not restate "binds reactive text
+with `data-wp-text`" (the rubric owns that); its `acceptance` instead pins the
+concept the scenario is for — that the VAT-inclusive total "is exposed as a
+derived getter on the store (computed from the per-instance base price on
+read) — it is not stored as a separate mutable field and is never written by an
+action." When you write `acceptance`, ask of each line: *would this be true of
+every scenario in the set?* If yes, it belongs to the rubric, not here.
+
+### e2e spec conventions
+
+Every `e2e.spec.mjs` is a Playwright spec authored against
+`@wordpress/e2e-test-utils-playwright`, and every spec in the set follows the
+same harness conventions:
+
+- **Fixed block name.** The block under test is always
+  `wp-skill/testing-block`. The spec creates a post whose content is the block
+  comment `<!-- wp:wp-skill/testing-block /-->` and locates the rendered block
+  by its wrapper class `.wp-block-wp-skill-testing-block`. (This name is fixed
+  by the harness — `eval/utils/scaffold-plugin.ts` scaffolds the agent's plugin
+  around exactly this block name.) For multi-instance scenarios, embed the block
+  comment twice and address instances by index — see
+  `state-and-context/cart-count-cross-block/e2e.spec.mjs`, which embeds
+  `<!-- wp:wp-skill/testing-block /-->\n<!-- wp:wp-skill/testing-block /-->` and
+  reads the two instances via `.nth(0)` / `.nth(1)`.
+- **Per-(scenario, agent) plugin activation.** In `test.beforeAll`, the spec
+  activates the plugin Skillsmith scaffolded for this scenario and agent. The
+  plugin slug is `plugin-<scenario>-<agentId>`, and the agent id comes from the
+  Playwright worker metadata:
+
+  ```js
+  await requestUtils.activatePlugin(
+    `plugin-<scenario>-${workerInfo.project.metadata.agentId}`,
+  );
+  ```
+
+- **State reset with `deactivateAllPlugins`.** Each spec deactivates every
+  plugin at the start of `beforeAll` (before activating its own) and again in
+  `afterAll`, so scenarios do not leak plugin state into one another.
+  `afterAll` also cleans up the posts/pages it created (e.g.
+  `requestUtils.deleteAllPosts()`).
+- **Three-level-up helper imports.** Shared harness helpers live in
+  `eval/utils/`. Because specs are nested two directories deeper than the flat
+  layout (`eval/scenarios/<group>/<scenario>/`), they import from `eval/utils/`
+  with a **three-level-up** relative path:
+
+  ```js
+  import { deactivateAllPlugins } from "../../../utils/wp-cli.mjs";
+  ```
+
+  Getting this depth wrong (`../../utils/...`) is the most common authoring slip
+  — count three `../` for a nested spec.
+
+The shared helper module is
+[`eval/utils/e2e-helpers.mjs`](../utils/e2e-helpers.mjs). It currently exports a
+single helper, `addLockProbe`, used by one scenario (see the exceptions below).
+Special-case harness needs are handled in one of two ways: a **shared helper**
+in `eval/utils/e2e-helpers.mjs` when more than one spec would need it, or
+**inlined per spec** when only one scenario needs it and the setup is simple.
+Read `eval/utils/e2e-helpers.mjs` and the two scenarios that use special
+handling (`state-and-context/locked-private-store` and
+`state-and-context/pageview-analytics-bridge`) for the concrete patterns rather
+than copying internals from this guide.
+
+### Documented exceptions to the conventions
+
+Three scenarios deliberately depart from the conventions above. They are
+recorded here — and in each scenario's own `acceptance` — so a reviewer reads
+them as approved, not as off-convention mistakes. In each case the convention is
+relaxed for a real reason; see the named scenario for the specifics.
+
+- **`foundations/classic-theme-banner` — does not use `wp-skill/testing-block`.**
+  This scenario asks for a banner injected from a *classic* theme into the
+  footer, not a block in the editor. The agent's plugin emits the interactive
+  banner HTML outside the block pipeline and processes its directives directly,
+  so there is no testing-block wrapper to target. Its spec creates a plain post
+  (no testing-block in the content) and locates the banner by its
+  `data-wp-interactive` attribute or a distinctive class. This is the **sole**
+  exception to the fixed-block-name convention. See
+  `foundations/classic-theme-banner/`.
+- **`state-and-context/locked-private-store` — uses the shared lock-probe
+  helper.** A `store()` namespace registered as private is reachable only
+  through an ES module import, not through any `window.*` global, so an inline
+  `page.evaluate` cannot probe it. The spec imports `addLockProbe` from
+  `eval/utils/e2e-helpers.mjs` to inject an adversarial probe and assert the
+  re-open attempt is rejected. This is the one scenario that uses the shared
+  helper. See `state-and-context/locked-private-store/` and
+  [`eval/utils/e2e-helpers.mjs`](../utils/e2e-helpers.mjs).
+- **`state-and-context/pageview-analytics-bridge` — inlines its analytics
+  sink.** This scenario forwards a reactive value to a client-side analytics
+  callback. Its spec stubs that callback inline (via `page.addInitScript`,
+  before navigation) and asserts on what was captured, rather than factoring the
+  stub into a shared helper — only this scenario needs it and the setup is
+  small. See `state-and-context/pageview-analytics-bridge/`.
 
 ## Adding a new scenario
 
