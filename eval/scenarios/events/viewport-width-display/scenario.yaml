@@ -1,0 +1,17 @@
+name: viewport-width-display
+description: Displays the current browser window width and updates it live as the viewport is resized.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that shows the current width of the browser
+  window in pixels — something like "Current width: 1024px". As the user
+  resizes their browser window the number should update automatically, with
+  no page reload required.
+
+acceptance:
+  - The displayed width value updates reactively whenever the browser window is resized, reflecting the new viewport width without a page reload.
+  - The width listener is attached to the window (not to a block element), so it fires regardless of which part of the page the user interacts with.
+
+rubrics:
+  - wp-interactivity-api-best-practices

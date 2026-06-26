@@ -1,0 +1,21 @@
+name: command-palette-keydown
+description: Opens a command palette overlay when the "/" key is pressed anywhere on the page.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that shows a command palette — a floating search
+  overlay — whenever the user presses the "/" key anywhere on the page
+  (not just inside the block). The overlay should appear on top of the
+  content, and pressing "/" should not insert the character into any text
+  field or trigger other browser behaviour.
+
+  Pressing Escape or clicking outside should close the palette again.
+
+acceptance:
+  - Pressing the "/" key from anywhere on the document opens the command palette overlay.
+  - The default browser action for the "/" key (e.g. quick-find in Firefox) is prevented so the character is not typed into the page.
+  - The overlay is dismissed when the user presses Escape.
+
+rubrics:
+  - wp-interactivity-api-best-practices
