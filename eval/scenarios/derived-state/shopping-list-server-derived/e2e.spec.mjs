@@ -43,33 +43,58 @@ test.describe("shopping-list-server-derived scenario", () => {
 		const rows = block.locator("li, [role='listitem'], tr");
 		await expect(rows.first()).toBeVisible();
 
-		// At least one in-cart icon/indicator must be present in the static HTML
-		// (the block is seeded with at least one in-cart item)
+		// In-cart icons: server must have rendered an icon/indicator on rows whose
+		// item is in-cart. The block marks in-cart rows with a data attribute or
+		// class — assert at least one such icon is visible in the raw HTML,
+		// confirming the server-derived state was written into the markup.
 		const inCartIcons = block.locator(
-			"[data-in-cart='true'], .in-cart, [aria-label*='cart'], [data-wp-bind]",
+			"[data-in-cart='true'], .in-cart, [aria-label*='cart' i]",
 		);
-		// At minimum the rows themselves confirm the server rendered the list
-		const rowCount = await rows.count();
-		expect(rowCount).toBeGreaterThan(0);
+		const inCartCount = await inCartIcons.count();
+		expect(inCartCount).toBeGreaterThan(0);
 
 		await page.setJavaScriptEnabled(true);
 	});
 
-	test("in-cart items show their icon on first paint (server HTML correctness)", async ({
+	test("in-cart items show their icon on first paint, not-in-cart rows do not", async ({
 		page,
 	}) => {
+		// JavaScript disabled: evaluate only the static server-rendered HTML so
+		// any icon presence is purely from server-computed per-row derived state.
 		await page.setJavaScriptEnabled(false);
 		await page.goto(`/?p=${post.id}`);
 
 		const block = page.locator(".wp-block-wp-skill-testing-block");
 		await expect(block).toBeVisible();
 
-		// Capture the full block HTML to assert correct per-row server state
-		const blockHTML = await block.innerHTML();
+		// In-cart rows: server marks them with a data attribute or class.
+		const inCartIcons = block.locator(
+			"[data-in-cart='true'], .in-cart, [aria-label*='cart' i]",
+		);
 
-		// The server must have rendered distinguishable in-cart vs not-in-cart
-		// markup — the HTML should not be uniform for all rows (some rows differ)
-		expect(blockHTML.length).toBeGreaterThan(0);
+		// Out-of-cart rows: rows that do NOT carry the in-cart marker.
+		const notInCartRows = block.locator(
+			"li:not(.in-cart):not([data-in-cart='true']), [role='listitem']:not(.in-cart):not([data-in-cart='true'])",
+		);
+
+		// At least one row must be in-cart (seeded that way by the block) and its
+		// icon must be present in the server HTML.
+		const inCartCount = await inCartIcons.count();
+		expect(inCartCount).toBeGreaterThan(0);
+
+		// At least one row must be not-in-cart and must NOT carry the icon.
+		const notInCartCount = await notInCartRows.count();
+		expect(notInCartCount).toBeGreaterThan(0);
+
+		// Confirm the not-in-cart rows truly lack the icon by verifying that none
+		// of the not-in-cart row locators contain an in-cart icon descendant.
+		for (let i = 0; i < notInCartCount; i++) {
+			const row = notInCartRows.nth(i);
+			const iconInRow = row.locator(
+				"[data-in-cart='true'], .in-cart, [aria-label*='cart' i]",
+			);
+			await expect(iconInRow).toHaveCount(0);
+		}
 
 		await page.setJavaScriptEnabled(true);
 	});

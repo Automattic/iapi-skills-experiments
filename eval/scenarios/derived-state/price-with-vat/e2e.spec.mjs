@@ -76,12 +76,27 @@ test.describe("price-with-vat scenario", () => {
 		const cards = page.locator(".wp-block-wp-skill-testing-block");
 		await expect(cards).toHaveCount(2);
 
-		// Each card should display a derived total; both VAT lines must be present
+		// For each card, extract the numeric base price and the numeric VAT total
+		// from the rendered text, then assert total === base × 1.20 (to two decimal
+		// places, matching standard rounding for currency display).
 		for (let i = 0; i < 2; i++) {
 			const card = cards.nth(i);
-			// Locate the element tagged with the VAT total binding
-			const vatEl = card.locator("[data-wp-text]").last();
-			await expect(vatEl).not.toBeEmpty();
+			const cardText = await card.textContent();
+
+			// Parse all decimal numbers found in the card (e.g. "10.00", "12.00").
+			// The scenario seeds the block with a known base price; the card renders
+			// it alongside the computed price-with-tax, so at least two numbers appear.
+			const numbers = [...cardText.matchAll(/[\d]+\.[\d]{2}/g)].map((m) =>
+				parseFloat(m[0]),
+			);
+			expect(numbers.length).toBeGreaterThanOrEqual(2);
+
+			// The smallest number is the base price; the larger is the VAT total.
+			const basePrice = Math.min(...numbers);
+			const vatTotal = Math.max(...numbers);
+
+			// Assert the displayed total is exactly base × 1.20, rounded to cents.
+			expect(vatTotal).toBeCloseTo(basePrice * 1.2, 2);
 		}
 	});
 });
