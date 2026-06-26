@@ -1,0 +1,26 @@
+name: footer-client-nav
+description: Build a static footer block that persists across client-side page transitions without re-rendering.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a footer block for my WordPress site that stays visible across every
+  page without flickering or reloading when visitors navigate between pages
+  using the client-side router on my site.
+
+  The footer should show a short copyright line and a few links. When a
+  visitor clicks a link that triggers a smooth in-page navigation, the footer
+  must remain in place — it should NOT be torn down and rebuilt. The footer
+  should still appear even if JavaScript is disabled.
+
+  Make sure the block works even in themes that don't use full-site editing,
+  and that the footer renders in the right place on every page type (posts,
+  pages, archives).
+
+acceptance:
+  - The footer block's `block.json` opts in to client-side navigation so the router knows to preserve it across soft transitions (`supports.interactivity.clientNavigation: true` without necessarily being an interactive region itself)
+  - The footer DOM node persists across a soft navigation — the router does not unmount and remount it; the same element reference survives in the page after a client-side URL change
+  - The footer is present in the server-rendered HTML before JavaScript hydrates (no flash-of-missing-footer)
+
+rubrics:
+  - wp-interactivity-api-best-practices

@@ -1,0 +1,26 @@
+name: section-jump-scroll
+description: Build a multi-page navigation block that scrolls back to the top of the page after each client-side page transition.
+skills:
+  - wordpress-development
+
+prompt: |
+  I have a block on my WordPress site with links to different pages. When
+  visitors click one of those links and the page transitions smoothly
+  (without a full reload), I want the browser to automatically scroll back
+  to the very top of the page so the visitor starts reading from the
+  beginning — just like a normal browser navigation would do.
+
+  Right now after a smooth transition the scroll position stays wherever it
+  was, which is confusing. Please fix this so every soft page change
+  resets the scroll position to the top.
+
+  The links should still work as normal `<a>` anchors if JavaScript is
+  off.
+
+acceptance:
+  - After a soft (client-side) navigation triggered by clicking a link in the block, the page scroll position is reset to the top (scrollY is 0 or very close to 0)
+  - The scroll-to-top happens as a side effect executed after the navigation completes, not before
+  - Navigation links are real `<a>` anchors so the block degrades without JavaScript
+
+rubrics:
+  - wp-interactivity-api-best-practices

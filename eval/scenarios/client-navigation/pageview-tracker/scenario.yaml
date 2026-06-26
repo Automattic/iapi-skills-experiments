@@ -1,0 +1,28 @@
+name: pageview-tracker
+description: Build a block that fires a pageview event on initial load and again after every client-side page transition.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that tracks pageviews for my analytics setup.
+  When any page on my site loads, the block should fire a pageview event
+  to my analytics system (represented by `window.__analyticsTracker(url)`).
+  It should also fire again after every smooth (client-side) page transition
+  — not just on the initial hard load.
+
+  Please make sure the block calls `window.__analyticsTracker(url)` every
+  time the current URL changes, including the very first load. The `url`
+  argument should be the full URL of the page being viewed.
+
+  If `window.__analyticsTracker` is not defined (e.g. the analytics script
+  hasn't loaded yet), the block should silently skip the call rather than
+  throwing an error.
+
+acceptance:
+  - On initial page load the block calls `window.__analyticsTracker(url)` with the current page URL
+  - After each client-side navigation the block calls `window.__analyticsTracker(url)` again with the new URL — one call per navigation
+  - The block reacts to URL changes without polling — it watches the router's current URL and fires whenever it changes
+  - Missing `window.__analyticsTracker` is handled gracefully (no uncaught error)
+
+rubrics:
+  - wp-interactivity-api-best-practices

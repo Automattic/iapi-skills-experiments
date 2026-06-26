@@ -1,0 +1,27 @@
+name: page-header-server-sync
+description: Build a page header block where the server-provided section label refreshes on every client-side navigation while a client-side "compact view" toggle persists across navigations.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a page header block for WordPress that shows two things:
+  a "section label" that is set by the server for each page (for example,
+  "Blog", "Shop", "About"), and a "compact view" toggle button the visitor
+  can click to make the header smaller.
+
+  When a visitor navigates between pages smoothly (client-side), the section
+  label should update to reflect the new page's label — each page provides
+  its own label from PHP. However, if the visitor toggled compact view
+  on before navigating, it should remain toggled after the navigation —
+  the visitor's UI preference should not be reset by a page change.
+
+  In other words: server-provided content refreshes per page, but
+  client-side visitor preferences persist across navigations.
+
+acceptance:
+  - The section label is provided by the server per page and updates to the new page's label after a soft (client-side) navigation
+  - The "compact view" toggle state (a client-side preference) persists across soft navigations — it is not reset when the server data refreshes
+  - After navigating, the section label reflects the destination page's server-provided value while the compact toggle state is unchanged
+
+rubrics:
+  - wp-interactivity-api-best-practices

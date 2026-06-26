@@ -1,0 +1,28 @@
+name: filter-bar-replace-history
+description: Build a filter bar block that updates the URL to reflect the active filter without adding extra entries to the browser history.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a filter bar on my WordPress archive or listing page. When a
+  visitor picks a filter (like a category or tag), the URL should update
+  immediately to reflect their choice — so they can share or bookmark the
+  filtered view — but I do NOT want the browser's back button to make them
+  step through every single filter they tried on the way. Only the final
+  chosen filter should be a history entry.
+
+  In other words: switching filters should replace the current history entry,
+  not push a new one. Clicking the browser back button should take the
+  visitor back to wherever they were before they started filtering, not
+  cycle through every individual filter click.
+
+  The filter controls should still work as plain links if JavaScript is off.
+
+acceptance:
+  - Clicking a filter option updates the URL to include the filter parameter (URL changes)
+  - Each filter click replaces the current history entry rather than pushing a new one — `history.length` does not grow when switching between filters
+  - The browser back button after several filter changes takes the visitor back to the page before any filtering, not through intermediate filter states
+  - Filter links are real `<a>` anchors so the block degrades without JavaScript
+
+rubrics:
+  - wp-interactivity-api-best-practices
