@@ -12,12 +12,9 @@ prompt: |
   up on all of them at once.
 
 acceptance:
-  - Counter value lives in global state seeded via `wp_interactivity_state()` (not in `data-wp-context` / `wp_interactivity_data_wp_context()`), so it is shared across instances rather than per-instance
-  - Initial global state for the counter is seeded to 0 on the server
-  - Every rendered instance uses the same `data-wp-interactive` namespace string, and that namespace matches the one passed to `store()`
-  - The displayed value is bound with `data-wp-text` referencing the global state property (e.g. `state.counter`), not a context property
-  - Has a named increment action wired via `data-wp-on--click` on the Increment button
-  - The increment action mutates the shared `state.*` counter property (not a `context.*` property)
+  - The counter is page-wide shared: all block instances on the page show the same number at all times, and clicking "Increment" on any one of them updates every other instance simultaneously.
+  - The counter value lives in a single shared location (not duplicated per instance), so it is impossible for two instances to disagree on the current count.
+  - The displayed count starts at 0 and is visible on first paint before any client-side script runs.
 
 rubrics:
   - wp-interactivity-api-best-practices

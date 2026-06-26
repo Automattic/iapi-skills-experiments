@@ -14,11 +14,9 @@ prompt: |
   page should be unaffected.
 
 acceptance:
-  - The per-instance counter value lives in local context (set via `data-wp-context` / `wp_interactivity_data_wp_context()`), not in global state via `wp_interactivity_state()`.
-  - Has a named increment store action that mutates the counter through `getContext()` (e.g. `const ctx = getContext(); ctx.counter += 1`), not via a shared/global state reference.
-  - Uses `data-wp-on--click` on the Increment button, wired to the increment action.
-  - Uses `data-wp-text` bound to the local context property (e.g. `context.counter`) to display the value, not a global state property.
-  - Server-rendered HTML seeds the initial counter value (0) inside each instance's per-instance context attribute so it is correct before hydration.
+  - Each block instance maintains its own independent count: clicking "Increment" on one block changes only that block's displayed number, with no effect on any other block instance on the same page.
+  - The counter value is stored per instance, not in a page-wide shared location — so placing the block twice on the same page produces two fully independent counters.
+  - The displayed count is correct on first paint before any client-side script runs.
 
 rubrics:
   - wp-interactivity-api-best-practices

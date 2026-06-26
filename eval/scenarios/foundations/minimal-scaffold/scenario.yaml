@@ -14,9 +14,9 @@ prompt: |
   script file loads.
 
 acceptance:
-  - The literal text "Hello from iAPI" is emitted by `render.php` (server-rendered output), not injected client-side from `view.js`.
-  - 'The `console.log("iapi-ready")` call lives inside an init callback registered on the store (e.g. `store("<namespace>", { callbacks: { <name>() { console.log("iapi-ready"); } } })`) — not as a top-level statement in `view.js`, not inside a `data-wp-on--*` handler, and not inside a `data-wp-watch` callback.'
-  - The wrapper element rendered by `render.php` carries `data-wp-init="callbacks.<name>"` referencing that init callback so the runtime invokes it on hydration.
+  - The literal text "Hello from iAPI" is visible on the page as soon as the server-rendered HTML arrives — before any client-side script runs.
+  - The "iapi-ready" console log is emitted exactly once per block instance when the runtime finishes setting up that instance — it does not fire on every script load and does not fire again if the page is navigated softly.
+  - The init callback runs once on mount per instance, not on every state change.
 
 rubrics:
   - wp-interactivity-api-best-practices

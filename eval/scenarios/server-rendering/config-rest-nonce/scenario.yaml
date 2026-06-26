@@ -25,14 +25,9 @@ prompt: |
     the REST API accepts it.
 
 acceptance:
-  - "`render.php` publishes `restUrl` and `nonce` as plugin configuration (via `wp_interactivity_config()`) consumed by the view — not as per-instance state/context and not hard-coded in JS"
-  - "`restUrl` is produced by `rest_url('wp/v2/posts/1')` and `nonce` by `wp_create_nonce('wp_rest')` on the server"
-  - The view reads both `restUrl` and `nonce` from that configuration (e.g. via `getConfig()`) rather than reconstructing the URL or embedding the nonce literal
-  - The `fetch` call in `view.js` is wired to set the `X-WP-Nonce` request header from the config-supplied nonce
-  - The "Load post" button is wired with `data-wp-on--click` (or `data-wp-on-async--click`) to a named store action that performs the fetch
-  - The store action that performs the fetch is a generator function using `yield` for the `fetch` and `.json()` calls (not `async`/`await`)
-  - The paragraph's text is bound reactively with `data-wp-text` (or equivalent directive) to a single store/context property that holds the title — not assigned via direct DOM writes from `view.js`
-  - The server-rendered HTML for the paragraph contains the initial placeholder text "(no post loaded yet)" so the block reads correctly before JS runs
+  - The REST URL and nonce are computed on the server and handed to the client as plugin-level configuration values shared across the page — they are not embedded as per-instance values and are not hard-coded in the JavaScript file.
+  - The client reads both the REST URL and the nonce from that server-supplied configuration rather than reconstructing them in JavaScript.
+  - The fetch request sends the nonce in the `X-WP-Nonce` request header so the WordPress REST API accepts it as an authenticated request.
 
 rubrics:
   - wp-interactivity-api-best-practices
