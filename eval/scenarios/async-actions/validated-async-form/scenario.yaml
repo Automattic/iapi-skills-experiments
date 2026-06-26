@@ -1,0 +1,23 @@
+name: validated-async-form
+description: Build a block with a contact form that validates inputs inline and shows loading, success, and error states while the submission is in flight.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block with a simple contact form. The form should give
+  visitors instant feedback as they fill it in: if a required field is left
+  empty or an email address looks wrong, show a message next to that field
+  right away without waiting for submit.
+
+  When the visitor clicks Submit, the button should become disabled so they
+  cannot double-submit while the request is in flight. Once the server
+  responds, show a clear success message if it worked, or an error message if
+  something went wrong — without reloading the page.
+
+acceptance:
+  - Invalid or empty required fields are flagged with an inline message before the form is submitted.
+  - The submit button is disabled for the entire duration of the in-flight request and re-enables once the response arrives.
+  - A success state and a distinct error state are each rendered in place after the request completes, without a page reload.
+
+rubrics:
+  - wp-interactivity-api-best-practices
