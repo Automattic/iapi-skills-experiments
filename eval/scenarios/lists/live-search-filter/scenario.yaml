@@ -1,0 +1,25 @@
+name: live-search-filter
+description: Renders a searchable list that narrows in real time as the user types into an input field.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that shows a list of items with a search box above
+  it. As soon as I start typing in the search box, the list should instantly
+  narrow down to only show items whose names match what I've typed. If I clear
+  the search box, the full list should reappear.
+
+  No button or form submission should be needed — the filtering should happen
+  live with every keystroke.
+
+acceptance:
+  - The full list of items is shown when the search field is empty.
+  - Typing a query into the search field reduces the visible list to only
+    items whose text contains the query (case-insensitive); items that do
+    not match are hidden or removed from the rendered output.
+  - Clearing the search field restores the full list immediately.
+  - The filtered view is computed from the full list — the original data
+    set is never mutated by the filtering action.
+
+rubrics:
+  - wp-interactivity-api-best-practices
