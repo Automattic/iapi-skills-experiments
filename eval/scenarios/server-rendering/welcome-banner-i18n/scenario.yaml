@@ -1,0 +1,28 @@
+name: welcome-banner-i18n
+description: Renders a greeting banner whose message is translated on the server and output as correctly localised HTML on first load.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like a WordPress block that shows a welcome banner at the top of
+  the page. The banner message should be translated into the visitor's
+  language automatically — whatever language the WordPress site is set to.
+
+  Requirements:
+  - The greeting text (e.g. "Welcome back, {username}!") should be
+    produced in the correct language on the server so it is already
+    readable before any JavaScript loads. Visitors using screen readers
+    or slow connections must see the translated text immediately.
+  - The username shown in the greeting is seeded server-side (it can be
+    a fixed value like "Guest" for logged-out visitors).
+  - No client-side translation library should be needed; translation
+    happens entirely at render time on the server.
+
+acceptance:
+  - The server-rendered HTML contains the fully translated greeting string on first paint, before JavaScript initialises
+  - The greeting text is produced with WordPress's translation functions (`__()` / `sprintf()`) in `render.php`, not assembled or translated in `view.js`
+  - The username placeholder is resolved server-side (e.g. via `wp_get_current_user()` or a fixed fallback) and included in the translated string before it reaches the browser
+  - The block does not ship a client-side translation catalogue; the translated text arrives as a plain string in the rendered HTML
+
+rubrics:
+  - wp-interactivity-api-best-practices

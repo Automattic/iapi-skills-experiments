@@ -1,0 +1,28 @@
+name: stable-tab-ids
+description: Renders a tabbed panel whose tab and panel IDs are deterministic and remain identical across page loads and soft client-side navigations.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a tabbed content block for WordPress. It should show a row of
+  tabs (e.g. "Overview", "Details", "Reviews") and display the matching
+  panel when a tab is clicked.
+
+  Accessibility requirements:
+  - Each tab button must be associated with its panel via ARIA so that
+    screen readers can announce which panel a tab controls.
+  - The IDs used for that ARIA linkage must be stable — they should be
+    the same every time the page loads and must not change if the visitor
+    navigates to another page and comes back (soft navigation). Randomly
+    generated IDs that differ between renders are not acceptable because
+    they break browser back/forward caching and confuse assistive
+    technologies.
+
+acceptance:
+  - Each tab button has an `aria-controls` attribute pointing to the `id` of its associated panel, and that linkage is present in the server-rendered HTML before JavaScript initialises
+  - The `id` values assigned to tabs and panels are deterministic: they are the same on every page load (not randomly generated at runtime)
+  - After a client-side soft navigation away from and back to the page, the `aria-controls` / `id` values are identical to those present on the initial load
+  - Clicking a tab makes its associated panel visible and the other panels hidden, with `aria-selected` (or equivalent) updated accordingly
+
+rubrics:
+  - wp-interactivity-api-best-practices
