@@ -347,4 +347,102 @@ relaxed for a real reason; see the named scenario for the specifics.
 
 ## Adding a new scenario
 
-<!-- Populated by a later docs task. -->
+This is the end-to-end walkthrough for adding a brand-new scenario to the
+curated set. It ties together the [taxonomy](#the-12-capability-groups) and the
+[authoring conventions](#authoring-conventions) above into an ordered procedure
+— follow the steps in order, and lean on those two sections for the details
+rather than re-deriving them here.
+
+> [!NOTE]
+> A new scenario's `e2e.spec.mjs` is authored **test-first**, exactly like the
+> rest of the set: you write it to be runnable in shape against a later correct
+> implementation, not to a green run. See the banner at the top of this guide —
+> there is no passing suite to author against, and adding a scenario does not
+> change that.
+
+### The steps
+
+1. **Pick the capability group.** Decide which of the
+   [12 capability groups](#the-12-capability-groups) the behavior belongs to —
+   the group whose region of the iAPI surface your scenario exercises. Browse
+   that group's existing scenarios first: if one already covers the same concept,
+   the set is meant to be de-duplicated, so reconsider whether a new scenario is
+   warranted. If the behavior genuinely fits none of the 12 groups, you have
+   likely found a gap in the taxonomy itself — that is a curation decision, not a
+   routine authoring step, so raise it before inventing a 13th group, since the
+   taxonomy is settled and the group set is fixed at 12.
+
+2. **Choose the scenario directory name.** Pick a **kebab-case** identifier that
+   is **globally unique across the whole tree** — unique not just within its
+   group but across every group, because Skillsmith keys reports and artifacts on
+   the scenario `name` and rejects a duplicate `name` at enumeration time (a
+   collision anywhere fails the whole run). The directory name and the
+   `scenario.yaml` `name` field must be identical; see the
+   [`name` rule](#scenarioyaml-conventions).
+
+3. **Create the leaf directory.** Make a new directory at
+   `eval/scenarios/<group>/<scenario>/`, one level deep under the group you
+   picked. This leaf is the **only** place its two files live — never add a
+   `scenario.yaml` directly to a group directory (Skillsmith's recursive
+   discovery would pick a stray group-level YAML up as a malformed scenario). See
+   [Layout](#layout).
+
+4. **Author `scenario.yaml`.** Write the six fields per the
+   [`scenario.yaml` conventions](#scenarioyaml-conventions). In particular:
+   - Write the [`prompt`](#prompt-convention) as a realistic, outcome-focused
+     feature request in **non-expert user language** — describe what the visitor
+     sees and does, and **never name an iAPI directive, store API, or server
+     helper**. Phrase inherently technical asks as user constraints.
+   - Put **only scenario-specific criteria** in
+     [`acceptance`](#acceptance-vs-the-shared-rubric) — the specific behavior and
+     the distinct iAPI concept this scenario exercises. Do **not** restate generic
+     iAPI wiring or reactivity expectations; those are owned by the shared rubric
+     at
+     [`eval/rubrics/wp-interactivity-api-best-practices.md`](../rubrics/wp-interactivity-api-best-practices.md),
+     which states its criteria apply to every scenario and "should not be
+     duplicated in scenario-level acceptance lists." For each `acceptance` line,
+     ask: *would this be true of every scenario in the set?* If yes, it belongs to
+     the rubric, not here.
+
+5. **Author `e2e.spec.mjs`.** Every curated scenario ships an `e2e.spec.mjs` —
+   **none omits it** — so your scenario needs one too. Write it per the
+   [e2e spec conventions](#e2e-spec-conventions): target the fixed block name
+   `wp-skill/testing-block`, activate the per-(scenario, agent) plugin
+   `plugin-<scenario>-<agentId>` in `beforeAll`, reset state with
+   `deactivateAllPlugins`, and import shared helpers from `eval/utils/` with the
+   **three-level-up** relative path (`../../../utils/...`) the nested layout
+   requires. Assert the scenario's intended user-facing behavior (visible
+   DOM/state changes, accessibility-tree attributes, and/or server-rendered HTML).
+
+6. **Decide whether a special harness capability is needed.** Most scenarios need
+   no special handling — console capture, fake timers, multi-instance markup, and
+   router navigation are all standard and handled inline. If your scenario needs
+   something the harness lacks, do **not** drop the e2e — build the capability.
+   Place it per the rule the conventions already establish: a **shared helper** in
+   [`eval/utils/e2e-helpers.mjs`](../utils/e2e-helpers.mjs) when more than one spec
+   would need it, or **inlined per spec** when only one scenario needs it and the
+   setup is simple. Read that module and the
+   [documented exceptions](#documented-exceptions-to-the-conventions) for the
+   concrete patterns before adding anything new.
+
+### Run that one scenario locally to sanity-check it
+
+While authoring, you can run your single scenario against the one configured
+testing agent to sanity-check that it is well-formed and that the agent has a
+fair shot at the prompt. Address the scenario by its **nested `<group>/<scenario>`
+path** — Skillsmith enumerates scenarios at `eval/scenarios/*/*/scenario.yaml`
+and matches a positional argument against that nested id, so the bare leaf name
+no longer addresses a scenario. For example, the single-scenario invocation
+targets a path like `foundations/minimal-scaffold`, not `minimal-scaffold`.
+
+The canonical run instructions — prerequisites, environment, the exact command,
+and where reports land — live in the [root README](../../README.md) under its
+"Running evals" section. Use those rather than the shape sketched here; this
+guide defers to the root README so the run commands have a single source of truth.
+
+> [!IMPORTANT]
+> **Run at most one scenario, never the full matrix.** Sanity-checking is always
+> a single nested-path run against one testing agent. The full
+> `scenarios × testing-agents` matrix is expensive and is the **owner's manual
+> step** — it is never run as part of authoring. The root README's agent-cap
+> section is the authority on this rule.
