@@ -1,0 +1,27 @@
+name: image-lightbox
+description: Build a block where clicking a thumbnail opens a full-screen overlay showing the larger image, with dialog semantics and focus restoration when the overlay is dismissed.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that shows a small thumbnail image. When the
+  user clicks the thumbnail, a full-screen overlay appears showing the
+  image at a larger size. Here is how it should work:
+
+  - Clicking the thumbnail opens a full-screen overlay with the enlarged
+    image and a button to close it.
+  - Pressing Escape or clicking the close button dismisses the overlay
+    and returns focus to the thumbnail or the button that opened it.
+  - Screen readers should recognise the overlay as a dialog so they can
+    announce it appropriately.
+  - While the overlay is open, keyboard focus should stay within it so
+    users can reach the close button without tabbing through the rest of
+    the page.
+
+acceptance:
+  - The overlay is recognised by assistive technology as a dialog (role="dialog" or the <dialog> element) while it is open, and is not exposed as a dialog when closed.
+  - After the overlay is closed (via the close button or Escape), focus returns to the element that triggered the lightbox — the user's focus position is not lost.
+  - The overlay closes on Escape as well as on the close button click, and in both cases focus is restored to the trigger.
+
+rubrics:
+  - wp-interactivity-api-best-practices

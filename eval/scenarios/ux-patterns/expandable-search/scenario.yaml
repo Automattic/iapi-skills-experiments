@@ -1,0 +1,24 @@
+name: expandable-search
+description: Build a block with a magnifier icon button that expands a search input field when clicked, moving focus to the field, and collapses when the user clicks outside or moves focus away.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block with an expandable search bar. Here is how it
+  should work:
+
+  - There is a magnifier icon button. When clicked, a text search field
+    slides or fades in and the cursor is placed in the field
+    automatically so the user can start typing immediately.
+  - When the user clicks anywhere outside the search bar, or moves focus
+    away from it, the field should collapse and hide again.
+  - The magnifier button should be keyboard accessible: pressing Enter or
+    Space on it should also expand the field and move focus to it.
+
+acceptance:
+  - Clicking the magnifier button expands the search field and immediately moves focus to the text input — the user can type without an extra click or Tab press.
+  - Clicking outside the expanded search area (or moving focus away from it with Tab) collapses the field and hides it.
+  - The collapse-on-outside-click behaviour is implemented by checking whether the newly focused element is still within the search component (using element containment), so it does not fire spuriously when focus moves between elements inside the component.
+
+rubrics:
+  - wp-interactivity-api-best-practices

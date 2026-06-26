@@ -1,0 +1,30 @@
+name: accessible-modal
+description: Build a modal dialog that traps keyboard focus while open, closes on Escape, and returns focus to the button that opened it.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block with a modal dialog. Here is how it should
+  work:
+
+  - There is a button labelled "Open modal" that opens a dialog overlay.
+    The dialog has a heading, some content, and a "Close" button.
+  - While the dialog is open, pressing Tab should cycle through elements
+    inside the dialog only — keyboard focus must not escape to the rest
+    of the page behind the overlay.
+  - Pressing Escape while the dialog is open should close it and move
+    focus back to the "Open modal" button so the user does not lose their
+    place.
+  - Clicking the "Close" button inside the dialog should also close it
+    and return focus to the trigger.
+  - Screen readers should recognise the overlay as a dialog and be able
+    to announce its heading.
+
+acceptance:
+  - The dialog element carries role="dialog" (or uses the <dialog> element) only while the modal is open — it is not present in the DOM or is hidden without the dialog role when closed.
+  - While the modal is open, Tab focus is trapped within the dialog: tabbing past the last focusable element wraps back to the first, and keyboard focus cannot reach elements outside the dialog.
+  - Pressing Escape closes the modal and returns focus to the trigger button that opened it — the user's focus position is restored.
+  - Clicking the "Close" button inside the modal also closes it and returns focus to the trigger button.
+
+rubrics:
+  - wp-interactivity-api-best-practices
