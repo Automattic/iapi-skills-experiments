@@ -1,0 +1,16 @@
+name: block-variations
+description: Register a block variation that pre-configures an existing block with custom attributes and a label.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want to add a pre-configured version of an existing WordPress block to the editor's inserter — a variation that starts with specific attribute values already set, so editors can insert it with one click and get a consistently styled or pre-filled block. Please register a block variation for an existing core block (for example, the core Group block or another suitable block), give it a name and a human-readable label, and pre-set at least one attribute so the variation is meaningfully distinct from the base block.
+
+acceptance:
+  - A block variation is registered using `registerBlockVariation` from `@wordpress/blocks`.
+  - The variation targets an existing block by name (e.g. `core/group` or another core block).
+  - The variation has a `name` (unique identifier) and a `title` or `label` (human-readable).
+  - The variation pre-configures at least one attribute via the `attributes` property, making it distinct from the base block.
+  - The variation registration runs from a script enqueued in the editor context.
+
+rubrics: []

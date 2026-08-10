@@ -1,0 +1,15 @@
+name: verify-callbacks
+description: Verify a plugin's registered abilities and produce a structured PASS/WARN/FAIL verdict report.
+skills:
+  - wordpress-development
+
+prompt: |
+  I have a WordPress plugin with several registered named abilities. I need you to verify them thoroughly — check that each ability's annotations actually match what its callback does (for example, that a read-only ability doesn't write to the database), confirm that the permission gates are correctly set up and not trivially open, lint the input and output schemas for common mistakes, and check that any error codes follow the expected vocabulary. Produce a structured report with a clear overall verdict (PASS, WARN, or FAIL) and per-section findings so I know exactly what needs fixing.
+
+acceptance:
+  - The report opens with a top-level Status verdict of exactly PASS, WARN, or FAIL — a single FAIL forces the top-level verdict to FAIL; WARNs without any FAILs yield WARN.
+  - The report contains an annotation-correctness section that checks each read-only ability's callback for prohibited write patterns (database writes, option updates, non-GET REST delegates, filesystem mutations) and records any violation as FAIL with evidence.
+  - The report contains a permission-gates section that classifies each ability's permission callback against known shapes — a direct capability check is acceptable; a literal true is FAIL — and shows a per-ability table with the ability name, the gate claim, the verdict, and supporting evidence.
+  - The report contains schema-lints and error-code vocabulary sections — schema lints flag missing additionalProperties constraints, empty enums, or non-static defaults as WARN; non-vocabulary WP_Error codes are flagged as WARN.
+
+rubrics: []

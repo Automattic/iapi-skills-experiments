@@ -1,0 +1,15 @@
+name: enqueue-assets
+description: Load a front-end stylesheet and script under a shared handle so WordPress emits their tags.
+skills:
+  - wordpress-development
+
+prompt: |
+  On my WordPress site's front-end pages, I want an actual stylesheet file and an actual script file to both be loaded — not just declared or reserved — under the shared handle `themes-frontend-assets`, so the browser receives their tags. Both files must have a real source URL so WordPress emits the `<link>` and `<script>` elements on every front-end page.
+
+acceptance:
+  - On the front end, a stylesheet is enqueued (not merely registered) under the handle `themes-frontend-assets`, with a real source, so WordPress emits its `<link>` element.
+  - On the front end, a script is enqueued (not merely registered) under the handle `themes-frontend-assets`, with a real source, so WordPress emits its `<script>` element.
+  - Both assets are enqueued from a callback attached to the front-end asset-enqueueing hook (not the admin or login screens).
+  - The enqueues require no theme artifact — they work from the plugin against whatever theme is active.
+
+rubrics: []

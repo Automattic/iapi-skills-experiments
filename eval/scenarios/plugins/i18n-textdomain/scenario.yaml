@@ -1,0 +1,15 @@
+name: i18n-textdomain
+description: Make all user-facing plugin strings translation-ready with a consistent text domain.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want all of my plugin's user-facing text to be ready to translate into other languages, so translators can localize it later.
+
+acceptance:
+  - "User-facing strings are wrapped in a gettext function (`__()` / `_e()` / `esc_html__()`)."
+  - The text domain is a literal string equal to the plugin slug.
+  - A `Text Domain:` header is present in the plugin header.
+  - No variable or constant is used as the text-domain argument, and no variable is used as the translatable-string argument (both must be literals).
+
+rubrics: []

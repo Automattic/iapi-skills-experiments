@@ -1,0 +1,15 @@
+name: admin-menu-page
+description: Add a capability-gated admin settings page reachable from the dashboard.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my plugin to add its own settings screen reachable from the WordPress dashboard, so administrators have a place to manage it.
+
+acceptance:
+  - Registers the page via `add_menu_page()` (or `add_submenu_page()` / `add_options_page()`) on the `admin_menu` action hook.
+  - A `capability` (e.g. `manage_options`) is set to gate access.
+  - A `menu_slug` and a render callback are provided.
+  - The render callback outputs escaped markup, and no output is produced outside the callback.
+
+rubrics: []

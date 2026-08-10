@@ -1,0 +1,16 @@
+name: shortcode-with-attr
+description: Register a `greeting` shortcode that renders a name attribute with a default.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want to create a WordPress shortcode called `greeting` that I can drop into any post or page. When I write `[greeting name="Alice"]` in the editor, I want it to display a greeting message to Alice on the front end. The shortcode should fall back to a default name if none is provided.
+
+acceptance:
+  - Plugin registers a shortcode via `add_shortcode()` (hooked on `init` or called after theme setup).
+  - The shortcode callback accepts `$atts` and uses `shortcode_atts()` to merge user-supplied attributes with defaults (so omitting the `name` attribute falls back to the default).
+  - The callback returns an HTML string — it does not echo or print directly.
+  - The output escapes the attribute value before rendering it (e.g. `esc_html()` or `esc_attr()`).
+  - Placing `[greeting name="Alice"]` in a post causes the rendered page to contain a greeting message including "Alice".
+
+rubrics: []

@@ -1,0 +1,16 @@
+name: blueprint-plugin-load
+description: Author a Playground Blueprint JSON that installs and activates a plugin and applies an initial setup step.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a one-click way to spin up a fresh WordPress environment with a specific plugin already installed, activated, and ready to use — without having to go through the admin UI. Please give me a WordPress Playground Blueprint JSON that boots a fresh WordPress site with the Contact Form 7 plugin installed and activated, and that also applies at least one initial setup step such as setting the site title or logging me in as an admin, so the environment is immediately usable. The deliverable is the Blueprint JSON itself.
+
+acceptance:
+  - The response includes a Blueprint JSON object (or a code block containing one) with a top-level `steps` array.
+  - The `steps` array contains an `installPlugin` step that references the Contact Form 7 plugin (by slug `contact-form-7` or an equivalent zip/resource URL).
+  - The plugin is activated — either via an `installPlugin` step with `activate: true`, or via a separate activation step.
+  - The `steps` array contains at least one additional setup step (such as `setSiteOptions`, `login`, or `runPHP`) matching the initial-setup requirement in the prompt.
+  - The JSON is well-formed and parseable (valid JSON syntax, no trailing commas, no comments).
+
+rubrics: []

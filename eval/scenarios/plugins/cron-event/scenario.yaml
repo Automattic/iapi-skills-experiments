@@ -1,0 +1,15 @@
+name: cron-event
+description: Schedule a recurring background task via WP-Cron, cleaned up on deactivation.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my plugin to run a recurring background task automatically — say a periodic cleanup that runs on a regular schedule — without me having to trigger it manually.
+
+acceptance:
+  - Schedules the event via `wp_schedule_event()`, guarded by a `wp_next_scheduled()` check so it is not scheduled more than once.
+  - The event is hooked to a named action with a callback that performs the task.
+  - Uses a valid built-in recurrence (`hourly`) — no custom interval (which would require the `cron_schedules` filter).
+  - Unschedules the event on plugin deactivation (`register_deactivation_hook` + `wp_unschedule_event()`, or `wp_clear_scheduled_hook()`).
+
+rubrics: []

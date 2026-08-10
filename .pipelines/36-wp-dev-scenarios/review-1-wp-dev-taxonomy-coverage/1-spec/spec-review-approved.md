@@ -1,0 +1,7 @@
+# Spec Review
+
+## Verdict: approved
+
+## Summary
+
+The prior rejection's sole issue — R8/AC8 ambiguity about where documentation citation lives — is fully and correctly resolved. R8 now explicitly places traceability in the catalog entry's source provenance field (`source`/`source_files`), prohibits embedding URLs in `scenario.yaml` acceptance strings, and cross-references R9 to close the loop. AC8 is restructured into three independently verifiable parts: (1) prompt is user-voice/tool-agnostic, (2) `scenario.yaml` acceptance strings contain no embedded URLs (statically checkable by file read), and (3) the catalog entry's source provenance field cites the grounding doc pages (statically checkable by looking up the catalog entry by scenario name). This is consistent with R9, the `_candidates.yaml` precedent, and the v1 scenario format. The rest of the spec is internally consistent: R3/R9 agree that `source`/`source_files` are catalog-only fields; R8 ties documentation grounding to those catalog fields without leaking into `scenario.yaml`; no new contradictions were introduced by the edit. All 14 requirements map to all 14 acceptance criteria with no gaps; the two-layer artifact model, flat discovery constraints, v1 non-duplication, schema conformance, mixed verification bar, static-only verification, and skill-untouched constraints are all present, unambiguous, and WHAT-not-HOW. The out-of-scope list is explicit and covers all nine boundaries from the consolidated requirements. The spec is ready to proceed to design.

@@ -1,0 +1,15 @@
+name: route-validation
+description: Validate a route's `filter` argument so disallowed values are rejected.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress plugin that exposes a REST route at `/wp-json/example/v1/color`. The route should accept a `filter` query argument that is restricted to a fixed set of allowed color values. A request with an allowed value — for example `/wp-json/example/v1/color?filter=blue` — should succeed with HTTP status `200`. A request with a disallowed value — for example `/wp-json/example/v1/color?filter=purple` — should be rejected with HTTP status `400`. The validation must happen on the server side, so a value outside the allowed set is rejected before the handler runs.
+
+acceptance:
+  - A route at `example/v1/color` accepts a `filter` query argument.
+  - A request with `filter=blue` (an allowed value) succeeds with HTTP status 200.
+  - A request with `filter=purple` (a disallowed value) is rejected with HTTP status 400.
+  - The accepted set of values is constrained server-side (a value outside the allowed set is rejected before the handler runs).
+
+rubrics: []

@@ -1,0 +1,17 @@
+name: register
+description: Register a named ability so it is discoverable and runnable through the site's data API.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my plugin to expose a small, named action — call it `my-plugin/greeting` — that is discoverable and runnable through the site's data API. The action should return a value when invoked and must be visible when listing available actions over the data API. Make sure it is properly exposed to the data API so it shows up in the list, and gate it so only authorised users can see and run it.
+
+acceptance:
+  - The ability is registered on the abilities initialisation hook with a permission callback that gates access to authorised users.
+  - The ability is registered with at least one annotation declaring its behaviour (readonly, destructive, or idempotent).
+  - The ability is explicitly exposed to the REST API (show_in_rest set to true or equivalent) so it appears in the list endpoint.
+  - The ability's execute callback returns a non-empty value.
+  - The pinned ability id (`my-plugin/greeting`) is used as the ability name.
+  - Reading the list of available abilities through the site's data API includes an entry whose name is `my-plugin/greeting`.
+
+rubrics: []

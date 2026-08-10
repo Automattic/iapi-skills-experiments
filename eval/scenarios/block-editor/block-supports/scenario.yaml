@@ -1,0 +1,14 @@
+name: block-supports
+description: Expose a built-in color control on the block so a background color reaches the rendered output.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my WordPress block to support background (and/or text) color controls in the editor, so that an editor can pick a color — for example vivid-red — and that color actually shows up on the block on the front end. The block should expose these built-in color options without me having to register any custom attributes for them.
+
+acceptance:
+  - The block declares at least one block support (e.g. color background and/or text) so the corresponding editor control appears.
+  - get_block_wrapper_attributes() is called on the wrapper element so support-derived classes reach the rendered output.
+  - No custom attribute registration is used — the support relies on the built-in attribute the support provides.
+
+rubrics: []

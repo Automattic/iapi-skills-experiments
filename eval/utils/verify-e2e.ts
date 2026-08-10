@@ -215,15 +215,37 @@ function parsePlaywrightReport(
 }
 
 /**
- * Extract the scenario directory name from a spec file path. Specs live
- * at `<scenarioDir>/e2e.spec.mjs`, so the scenario directory is the
- * spec's immediate parent. Playwright reports file paths relative to its
- * testDir (`eval/scenarios`), e.g. `counter/e2e.spec.mjs` — there is no
- * `scenarios` segment to anchor on, so we take the parent segment
- * directly. This also handles absolute paths that do include `scenarios`.
+ * Extract the scenario directory path from a spec file path. Specs live
+ * at `<scenarioDir>/e2e.spec.mjs`, so the scenario directory is everything
+ * between the `eval/scenarios` root and the `e2e.spec.mjs` filename.
+ *
+ * Playwright reports file paths relative to its testDir (`eval/scenarios`),
+ * e.g. `counter/e2e.spec.mjs` (flat) or `plugins/cpt-register/e2e.spec.mjs`
+ * (nested). Absolute paths that include a `scenarios` segment are also
+ * handled. In both cases the returned value is the full relative path from
+ * `eval/scenarios/` to the scenario directory (e.g. `counter` or
+ * `plugins/cpt-register`), joined with forward slashes so it matches the
+ * `dirName` form that Skillsmith supplies.
+ *
+ * Flat case (testDir-relative, no `scenarios` segment):
+ *   `counter/e2e.spec.mjs` → `counter`
+ * Nested case (testDir-relative, no `scenarios` segment):
+ *   `plugins/cpt-register/e2e.spec.mjs` → `plugins/cpt-register`
+ * Absolute path (contains `scenarios` segment):
+ *   `/…/eval/scenarios/plugins/cpt-register/e2e.spec.mjs` → `plugins/cpt-register`
  */
 function scenarioDirOf(file: string): string | undefined {
 	const segments = file.split(/[\\/]/).filter((s) => s.length > 0);
-	if (segments.length >= 2) return segments[segments.length - 2];
-	return undefined;
+	// Drop the trailing filename (e2e.spec.mjs); need at least the dir segment.
+	if (segments.length < 2) return undefined;
+	const dirSegments = segments.slice(0, -1);
+	// If the path contains a `scenarios` anchor (absolute paths do), return
+	// everything after it. Otherwise (testDir-relative) return all remaining
+	// segments joined — this is the full relative path from eval/scenarios/.
+	const anchorIdx = dirSegments.lastIndexOf("scenarios");
+	if (anchorIdx !== -1) {
+		const after = dirSegments.slice(anchorIdx + 1);
+		return after.length > 0 ? after.join("/") : undefined;
+	}
+	return dirSegments.join("/");
 }

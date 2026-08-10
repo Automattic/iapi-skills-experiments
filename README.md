@@ -28,10 +28,15 @@ npx skillsmith <scenario-dir>
 npm run skillsmith -- <scenario-dir>
 ```
 
-Scenario names are the bare directory names under `eval/scenarios/` (e.g. `counter`, `async-fetch`). For example:
+Scenarios are organized into per-topic folders under `eval/scenarios/` — one folder per developer.wordpress.org area or agent-skills topic (`interactivity-api/`, `plugins/`, `block-editor/`, `rest-api/`, `themes/`, `common-apis/`, `coding-standards/`, `abilities-api/`, `wp-cli/`, `playground/`, `performance/`, `phpstan/`, `wpds/`, `wordpress-router/`, `project-triage/`, `plugin-directory/`, `code-reference/`, `advanced-admin/`) — and each scenario lives one level deeper as `eval/scenarios/<topic>/<scenario>/` (e.g. `interactivity-api/counter`, `plugins/cpt-register`). A scenario is addressed by its `<topic>/<scenario>` path:
 ```sh
-npx skillsmith counter
+npx skillsmith plugins/cpt-register
 ```
+Note: addressing a nested scenario this way requires the upstream Skillsmith nested-discovery change described under [Skillsmith nested-discovery dependency](#skillsmith-nested-discovery-dependency) below. Until that ships, nested scenarios are not discoverable via `npx skillsmith`.
+
+`eval/scenarios/` also holds two leading-underscore (non-directory) candidate catalogs — planning artifacts that scenario discovery skips, not runnable scenarios. They **stay at the `eval/scenarios/` root** (they are not moved into the topic folders) and reference scenarios by `name`, not by path:
+- `eval/scenarios/_candidates.yaml` — candidate Interactivity-API scenarios.
+- `eval/scenarios/_wp-dev-candidates.yaml` — broader WordPress-development candidates spanning the developer.wordpress.org areas and agent-skills topics. Its area headers carry a `# folder:` pointer to the matching topic folder. (An earlier `# === Agent-Skills Gaps ===` section tracked agent-skills topics without a scenario; all have since been promoted to full records.)
 
 This runs one scenario against the single configured testing agent and writes results under `.skillsmith/<runId>/`.
 
@@ -51,12 +56,25 @@ All run output lands under `.skillsmith/<runId>/`:
 - Run-level summary: `report.json`, `run.json`, `summary.txt`
 - Playwright results: `iteration-N/tests-report.json`
 
+### Skillsmith nested-discovery dependency
+
+The per-topic folder layout above depends on an upstream change to the pinned `@automattic/skillsmith` (currently `github:Automattic/skillsmith#6bd90c34d88b815fdf4fd661dc8c51288111444c`). The pinned version discovers scenarios with a **flat, non-recursive** `readdir` of `eval/scenarios/` — it lists only immediate children and expects a `scenario.yaml` directly inside each — and reports each scenario's directory as a **basename** `dirName` (e.g. `counter`). A topic folder like `plugins/` has no `plugins/scenario.yaml`, so the pinned Skillsmith skips it without descending, and the nested scenarios inside it are never found.
+
+Making nested scenarios discoverable and runnable requires **two upstream changes** in Skillsmith's `src/scenarios/enumerate.ts`:
+
+- **(A) Recursive discovery** — walk the subdirectories of the scenarios root (not just its immediate children) to find `scenario.yaml` at any depth, so scenarios inside topic folders are enumerated.
+- **(B) Relative `dirName`** — report each scenario's `dirName` as the path **relative to the scenarios root** (e.g. `plugins/cpt-register`, not `cpt-register`), so dirNames stay unique across topic folders and `npx skillsmith plugins/cpt-register` can address a nested scenario.
+
+**Until (A) and (B) ship upstream, the nested scenarios are invisible to the pinned Skillsmith** — the suite is reorganized but not runnable via `npx skillsmith`. This is an accepted, temporary state; the owner is driving the upstream fix via an issue. The local harness is already updated for the nested layout (the e2e specs' relative imports and `verify-e2e.ts`'s failure-attribution path reconstruction), so the moment the upstream change lands the suite is functional with no further local work.
+
+Playwright e2e collection is **not** affected: `playwright.config.ts` uses `testDir: "./eval/scenarios"` with `testMatch: "**/e2e.spec.mjs"`, and the `**/` glob already collects specs at any nesting depth, so no Playwright change is needed.
+
 ## Agent cap (R12)
 
-**Agents must never run the full eval matrix; an agent runs at most one scenario against one testing agent, and the full matrix is the owner's manual step.** Always pass a single scenario directory as a positional argument so the run stays capped:
+**Agents must never run the full eval matrix; an agent runs at most one scenario against one testing agent, and the full matrix is the owner's manual step.** Always pass a single scenario as a positional argument so the run stays capped. A single nested `<topic>/<scenario>` path is the capped unit of work:
 
 ```sh
-npx skillsmith <one-scenario-dir>
+npx skillsmith plugins/cpt-register
 ```
 
 Running `npm run skillsmith` with no argument executes the entire `scenarios × testing-agents` matrix. That is expensive and is reserved for the owner to run by hand after setup — it is never an agent task.

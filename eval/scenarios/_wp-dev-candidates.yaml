@@ -1,0 +1,928 @@
+# WordPress-development candidate catalog
+# Snapshot date: 2026-06-18
+#
+# This is the WordPress-development candidate catalog — distinct from the
+# Interactivity-API catalog at eval/scenarios/_candidates.yaml. It covers
+# every one of the 10 top-level developer.wordpress.org areas and records
+# documentation provenance for the six implemented Plugins scenarios.
+#
+# Area → landing URL map (10 top-level areas):
+#
+#   Documentation (7):
+#     Block Editor         https://developer.wordpress.org/block-editor/
+#     Themes               https://developer.wordpress.org/themes/
+#     Plugins              https://developer.wordpress.org/plugins/
+#     Common APIs          https://developer.wordpress.org/apis/
+#     Advanced Admin       https://developer.wordpress.org/advanced-administration/
+#     Coding Standards     https://developer.wordpress.org/coding-standards/
+#     WordPress Playground https://developer.wordpress.org/playground/wordpress-playground-resources/
+#
+#   API Reference (3):
+#     Code Reference       https://developer.wordpress.org/reference/
+#     REST API             https://developer.wordpress.org/rest-api/
+#     WP-CLI Commands      https://developer.wordpress.org/cli/commands/
+#
+# Record shape mirrors _candidates.yaml. source: dev.wordpress.org distinguishes
+# these entries from the iAPI catalog's source: docs (local Gutenberg checkout).
+# source_files carries developer.wordpress.org URLs (not local paths).
+# Full prompt + acceptance are included for the implemented Plugins, Block
+# Editor, REST API, Themes, Common APIs, Coding Standards, WP-CLI Commands,
+# Advanced Administration, and Code Reference scenarios; all other records are lighter stubs.
+
+# === Area: Block Editor ===
+# folder: eval/scenarios/block-editor/
+
+# Implemented Block Editor scenarios — full records
+
+- name: dynamic-block
+  description: Render a block's front-end output dynamically in PHP at render time.
+  difficulty: simple
+  concepts: [render.php, dynamic-block, server-side-render]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/creating-dynamic-blocks/
+  prompt: |
+    I want to create a WordPress block whose front-end output is generated dynamically on the server each time the page loads — the output should not be baked into the saved post content but produced fresh in PHP every time. The block should display the exact text "Hello from PHP" on the front end.
+  acceptance:
+    - The block's front-end output is generated dynamically in PHP at render time (not from a static JS save()).
+    - The render template produces and returns HTML output.
+    - get_block_wrapper_attributes() is called on the block's wrapper element.
+    - The output includes the pinned text (Hello from PHP).
+    - No JavaScript save() function returns non-null content — the block is dynamic.
+
+- name: block-supports
+  description: Expose a built-in color control on the block so a background color reaches the rendered output.
+  difficulty: simple
+  concepts: [block.json, supports, get_block_wrapper_attributes]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
+  prompt: |
+    I want my WordPress block to support background (and/or text) color controls in the editor, so that an editor can pick a color — for example vivid-red — and that color actually shows up on the block on the front end. The block should expose these built-in color options without me having to register any custom attributes for them.
+  acceptance:
+    - The block declares at least one block support (e.g. color background and/or text) so the corresponding editor control appears.
+    - get_block_wrapper_attributes() is called on the wrapper element so support-derived classes reach the rendered output.
+    - No custom attribute registration is used — the support relies on the built-in attribute the support provides.
+
+- name: block-styles
+  description: Register a named, selectable visual style for the block under the slug `custom`.
+  difficulty: simple
+  concepts: [register_block_style, block-styles, className]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-styles/
+  prompt: |
+    I want my WordPress block to offer a named visual style that editors can select from the block's style options panel in the editor. Please register a block style under the slug `custom` for my block, so that when an editor picks it the block receives the `is-style-custom` CSS class on the front end. The style should have a human-readable label so editors know what they're choosing.
+  acceptance:
+    - A block style named `custom` is registered for `wp-skill/testing-block` on the `init` hook.
+    - The registered style has a `name` (slug `custom`) and a human-readable `label`.
+    - No CSS file is required — registering the style and emitting the class is the acceptance bar (CSS is optional).
+
+- name: block-filters
+  description: Append a fixed string to this block's rendered output on every page load via a render-time filter.
+  difficulty: simple
+  concepts: [render_block, block-filters, add_filter]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/filters/block-filters/
+  prompt: |
+    I want my WordPress block's rendered HTML to always include the exact string "Powered by my plugin" on every page load — appended after the block's output. This should only affect my block and not any other blocks on the page. Please set this up so the string appears automatically whenever the block is rendered on the front end.
+  acceptance:
+    - A render-time filter on the block's output is registered in `index.php`.
+    - The filter callback receives the block's rendered HTML and returns modified HTML (the pinned string appended/prepended/wrapped).
+    - The modification targets only `wp-skill/testing-block` — via the block-specific hook variant or a block-name check in a generic callback (it must not modify all blocks).
+
+- name: block-bindings
+  description: Register a custom PHP data source that supplies a value to a block, under a pinned source name.
+  difficulty: simple
+  concepts: [register_block_bindings_source, block-bindings, get_value_callback]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-bindings/
+  prompt: |
+    I want to connect a block's attribute to a value coming from the server using a custom data source registered under the specific name `my-plugin/greeting`. Please set up this custom source so that it supplies a value from PHP to a block, allowing editors to bind block attributes to that server-provided greeting value.
+  acceptance:
+    - A custom block binding source is registered on the `init` hook.
+    - The source name matches `/^[a-z0-9-]+\/[a-z0-9-]+$/` and equals the pinned name (`my-plugin/greeting`).
+    - A value callback (`get_value_callback`) is provided that returns a non-empty string.
+    - The source namespace matches the plugin's namespace.
+
+- name: block-api-static-block
+  description: Register a simple static block with block.json, edit.js, save.js, and an icon.
+  difficulty: simple
+  concepts: [registerBlockType, block.json, edit, save]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/getting-started/
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/
+  # Harness dependency: static save()/JS build — asserting a specific static save() render is brittle and contradicts the dynamic scaffold; graded statically by the judge on the produced block.json/edit.js/save.js.
+  prompt: |
+    I want to create a WordPress block that bakes its output directly into the saved post content — not generated on the server on every load, but serialized into the page when the editor saves. Please build a static block with a name, a category, an edit function that lets me type content in the editor, and a save function that serializes that content into the post. The block should be registered using block.json.
+  acceptance:
+    - A `block.json` file declares the block's name, title, and category, and references an editor script (editorScript or via the build setup).
+    - An `edit` function renders the block's editing interface in the block editor.
+    - A `save` function returns the serialized markup that is baked into post content — it does not return null (the block is static, not dynamic).
+    - No `render.php` or `render` callback is used — the block's front-end output comes from the `save` function's serialized markup.
+    - The block is registered via `registerBlockType` using the block.json metadata.
+
+- name: block-filter-add-custom-attribute
+  description: Add a custom attribute to an existing core block via the blocks.registerBlockType filter.
+  difficulty: intermediate
+  concepts: [addFilter, blocks.registerBlockType, BlockEdit, BlockSave]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/filters/block-filters/
+    - https://developer.wordpress.org/block-editor/how-to-guides/
+  # Harness dependency: editor-only JS filter (no front-end/REST surface) — addFilter on blocks.registerBlockType runs only in the editor; graded statically by the judge on the produced JS.
+  prompt: |
+    I want to extend an existing WordPress core block — say the core Paragraph block — so that it carries an extra custom attribute of my choosing. I do not want to create a new block; I want to add this attribute to an existing one by hooking into the block registration process in JavaScript. Please add a custom attribute to the core Paragraph block so it is available in the editor alongside the block's built-in attributes.
+  acceptance:
+    - A JavaScript filter is registered on the `blocks.registerBlockType` hook using `addFilter` from `@wordpress/hooks`.
+    - The filter targets a named existing/core block (e.g. `core/paragraph`).
+    - The filter callback merges a new custom attribute into `settings.attributes` without removing the block's existing attributes.
+    - The new attribute is declared with at least a `type` property.
+    - The filter is namespaced (the `addFilter` call includes a unique namespace string) to avoid collisions.
+
+- name: block-variations
+  description: Register a block variation that pre-configures an existing block with custom attributes and a label.
+  difficulty: simple
+  concepts: [registerBlockVariation, block-variations, editor-JS]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/
+  # Harness dependency: editor-only JS variation registration (inserter-only, no front-end/REST surface) — registerBlockVariation runs only in the editor; graded statically by the judge on the produced JS.
+  prompt: |
+    I want to add a pre-configured version of an existing WordPress block to the editor's inserter — a variation that starts with specific attribute values already set, so editors can insert it with one click and get a consistently styled or pre-filled block. Please register a block variation for an existing core block (for example, the core Group block or another suitable block), give it a name and a human-readable label, and pre-set at least one attribute so the variation is meaningfully distinct from the base block.
+  acceptance:
+    - A block variation is registered using `registerBlockVariation` from `@wordpress/blocks`.
+    - The variation targets an existing block by name (e.g. `core/group` or another core block).
+    - The variation has a `name` (unique identifier) and a `title` or `label` (human-readable).
+    - The variation pre-configures at least one attribute via the `attributes` property, making it distinct from the base block.
+    - The variation registration runs from a script enqueued in the editor context.
+
+- name: inner-blocks
+  description: Build a block that contains child blocks (InnerBlocks) allowing editors to nest content inside it.
+  difficulty: simple
+  concepts: [InnerBlocks, allowed-blocks, parent-child]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/nested-blocks-inner-blocks/
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/
+  # Harness dependency: editor-only InnerBlocks/allowedBlocks (parent-child restriction is inserter-only) — the allowedBlocks restriction is enforced only in the editor inserter and is not front-end observable; graded statically by the judge on the produced JS.
+  prompt: |
+    I want to create a WordPress block that acts as a container — editors can place other blocks inside it, like a layout wrapper or a section block. Please build a block that uses the InnerBlocks component to allow nested child blocks, and restrict the allowed child block types to a specific set (for example, only core Paragraph and core Image blocks). The block should also serialize its nested children correctly when the post is saved.
+  acceptance:
+    - The block's `edit` function renders an `InnerBlocks` component with an `allowedBlocks` prop that restricts which child blocks can be inserted.
+    - The `allowedBlocks` prop lists at least one specific block type (e.g. `core/paragraph`, `core/image`), preventing arbitrary block nesting.
+    - The block's `save` function (or dynamic render) outputs an `InnerBlocks.Content` component so nested children are serialized into post content.
+    - The parent block is registered via `block.json` and `registerBlockType`.
+
+- name: block-patterns
+  description: Register a block pattern composed of multiple blocks as a reusable content template, under the pinned name `my-plugin/hero`.
+  difficulty: simple
+  concepts: [register_block_pattern, block-patterns, pattern-categories]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-patterns/
+  prompt: |
+    I want to make a reusable content template available in the WordPress editor — a pre-built arrangement of blocks that editors can insert with a single click. Please register a block pattern named `my-plugin/hero` with a human-readable title, so it shows up in the pattern inserter and editors can use it to quickly add a hero-style section to their pages.
+  acceptance:
+    - A block pattern is registered on the `init` hook under the pinned name `my-plugin/hero`.
+    - The pattern has a human-readable title.
+    - The pattern content is a non-empty string of block markup.
+    - The registered pattern is listed by name at the block patterns REST endpoint when requested by an authenticated user.
+
+# === Area: Themes ===
+# folder: eval/scenarios/themes/
+
+- name: theme-json-custom-color-palette
+  description: Define a custom color palette for a block theme via theme.json.
+  difficulty: simple
+  concepts: [theme.json, color, palette, block themes]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/themes/block-themes/
+    - https://developer.wordpress.org/block-editor/reference-guides/theme-json-reference/
+  # Harness dependency: theme.json is a theme-root artifact the plugin scaffold cannot ship — graded statically by the judge on the produced JSON.
+  prompt: |
+    I want to define a small set of custom theme colors that appear as selectable swatches in the editor's color pickers — so editors can choose from my brand colors when styling blocks. Please create a theme.json file that registers a custom color palette with at least two colors, each with a slug, a human-readable name, and a hex or CSS color value. The deliverable is the theme.json file itself.
+  acceptance:
+    - The response includes a theme.json file (or a code block containing one) with a top-level `$schema` key and a `version` key.
+    - "The `settings.color.palette` property is an array of color entries."
+    - Each entry in the palette array has a `slug` key, a `name` key, and a `color` key.
+    - At least 2 custom color entries are defined in the palette array.
+    - The theme.json is valid JSON — well-formed, parseable, with no trailing commas or comments.
+
+# Implemented Themes scenarios — full records
+
+- name: enqueue-assets
+  description: Load a front-end stylesheet and script under a shared handle so WordPress emits their tags.
+  difficulty: simple
+  concepts: [wp_enqueue_scripts, wp_enqueue_style, wp_enqueue_script]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/themes/core-concepts/including-assets/
+    - https://developer.wordpress.org/themes/classic-themes/
+  prompt: |
+    On my WordPress site's front-end pages, I want an actual stylesheet file and an actual script file to both be loaded — not just declared or reserved — under the shared handle `themes-frontend-assets`, so the browser receives their tags. Both files must have a real source URL so WordPress emits the `<link>` and `<script>` elements on every front-end page.
+  acceptance:
+    - On the front end, a stylesheet is enqueued (not merely registered) under the handle `themes-frontend-assets`, with a real source, so WordPress emits its `<link>` element.
+    - On the front end, a script is enqueued (not merely registered) under the handle `themes-frontend-assets`, with a real source, so WordPress emits its `<script>` element.
+    - Both assets are enqueued from a callback attached to the front-end asset-enqueueing hook (not the admin or login screens).
+    - The enqueues require no theme artifact — they work from the plugin against whatever theme is active.
+
+- name: nav-menu-location
+  description: Register a navigation-menu location with a translatable label on theme setup.
+  difficulty: simple
+  concepts: [register_nav_menus, after_setup_theme, nav-menu-location]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/reference/functions/register_nav_menus/
+  prompt: |
+    I want my plugin to make a navigation-menu location available — a named slot that a theme can assign a menu to — identified by the slug `primary`, with a human-readable, translatable label. The location should be registered early enough to be in place before the theme renders its templates.
+  acceptance:
+    - A navigation-menu location with the pinned slug is registered.
+    - The registration runs on the theme-setup hook (so it is in place before templates render).
+    - The location's label is wrapped for translation.
+    - No theme template or menu-rendering call is required for the registration to be in effect.
+
+- name: sidebar-widget-area
+  description: Register a sidebar / widget area with an id, translatable name, and widget/title wrappers.
+  difficulty: simple
+  concepts: [register_sidebar, widgets_init, widget-area]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/reference/functions/register_sidebar/
+  prompt: |
+    Make available a sidebar / widget area — a region where widgets can be placed — identified by the id `themes-sidebar-1` with the human-readable, translatable name `Theme Sidebar`, and provide markup that wraps each widget and each widget title so the output is properly structured.
+  acceptance:
+    - A sidebar / widget area with the pinned id and human-readable name is registered.
+    - The registration runs on the widgets-initialization hook.
+    - The registration supplies before/after wrappers for each widget and its title.
+    - The widget area's name is wrapped for translation.
+
+# === Area: Plugins ===
+# folder: eval/scenarios/plugins/
+
+- name: taxonomy-register
+  description: Register a `genre` taxonomy on posts, exposed via the REST API.
+  difficulty: simple
+  concepts: [register_taxonomy, show_in_rest, init-hook]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/taxonomies/working-with-custom-taxonomies/
+    - https://developer.wordpress.org/reference/functions/register_taxonomy/
+  prompt: |
+    I want editors to be able to group and label my posts into a named set of terms — a "genre" classification (use the identifier `genre`) — and I want those genres reachable through my site's data API so other tools can read them.
+  acceptance:
+    - Registers the taxonomy on the `init` action hook (not before it).
+    - The taxonomy is attached to the `post` object type.
+    - "`public => true` and `show_in_rest => true` are both set."
+    - The taxonomy identifier does not exceed 32 characters and uses only lowercase letters, dashes, and underscores.
+    - "Labels (`name` / `singular_name`) are wrapped in `__()` for translation."
+
+- name: post-meta-rest
+  description: Register a `subtitle` post meta exposed in the REST API.
+  difficulty: simple
+  concepts: [register_post_meta, show_in_rest, init-hook]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/metadata/managing-post-metadata/
+    - https://developer.wordpress.org/reference/functions/register_post_meta/
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/
+  prompt: |
+    I want to store an extra piece of information on each of my posts — a short subtitle, saved under the key `subtitle` — and have it available through my site's data API so other tools can read it back.
+  acceptance:
+    - Registers the post meta on the `init` action hook, targeting the core `post` type.
+    - "`single => true` is set (the value is a single scalar, not an array)."
+    - "`type` is set (e.g. `string`)."
+    - "`show_in_rest => true` is set so the value surfaces in the REST API."
+    - The meta key is public (no leading underscore), so it is exposed rather than protected.
+
+- name: settings-register
+  description: Register a `my_plugin_tagline` setting exposed in the REST API with a default.
+  difficulty: simple
+  concepts: [register_setting, show_in_rest, sanitize_callback]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/settings/settings-api/
+    - https://developer.wordpress.org/plugins/settings/options-api/
+    - https://developer.wordpress.org/reference/functions/register_setting/
+  prompt: |
+    I want a site-wide configurable option my editors can set — a tagline override stored under `my_plugin_tagline`, defaulting to `Hello world` — and I want it available through my site's data API.
+  acceptance:
+    - Registers the setting with `show_in_rest => true` so it is exposed in the REST API.
+    - The setting is registered so that it surfaces in REST — on `init` or `rest_api_init` (NOT only on `admin_init`).
+    - "`type` is set (e.g. `string`)."
+    - A `default` is provided.
+    - A `sanitize_callback` is provided.
+
+- name: cron-event
+  description: Schedule a recurring background task via WP-Cron, cleaned up on deactivation.
+  difficulty: simple
+  concepts: [wp_schedule_event, wp_next_scheduled, register_deactivation_hook]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/cron/
+    - https://developer.wordpress.org/plugins/cron/scheduling-wp-cron-events/
+    - https://developer.wordpress.org/plugins/cron/understanding-wp-cron-scheduling/
+  prompt: |
+    I want my plugin to run a recurring background task automatically — say a periodic cleanup that runs on a regular schedule — without me having to trigger it manually.
+  acceptance:
+    - Schedules the event via `wp_schedule_event()`, guarded by a `wp_next_scheduled()` check so it is not scheduled more than once.
+    - The event is hooked to a named action with a callback that performs the task.
+    - Uses a valid built-in recurrence (`hourly`) — no custom interval (which would require the `cron_schedules` filter).
+    - Unschedules the event on plugin deactivation (`register_deactivation_hook` + `wp_unschedule_event()`, or `wp_clear_scheduled_hook()`).
+
+- name: i18n-textdomain
+  description: Make all user-facing plugin strings translation-ready with a consistent text domain.
+  difficulty: simple
+  concepts: [gettext, text-domain, i18n]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/internationalization/
+    - https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
+    - https://developer.wordpress.org/plugins/internationalization/localization/
+  prompt: |
+    I want all of my plugin's user-facing text to be ready to translate into other languages, so translators can localize it later.
+  acceptance:
+    - "User-facing strings are wrapped in a gettext function (`__()` / `_e()` / `esc_html__()`)."
+    - The text domain is a literal string equal to the plugin slug.
+    - A `Text Domain:` header is present in the plugin header.
+    - No variable or constant is used as the text-domain argument, and no variable is used as the translatable-string argument (both must be literals).
+
+- name: admin-menu-page
+  description: Add a capability-gated admin settings page reachable from the dashboard.
+  difficulty: simple
+  concepts: [add_menu_page, admin_menu, capability]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/administration-menus/
+    - https://developer.wordpress.org/plugins/administration-menus/top-level-menus/
+    - https://developer.wordpress.org/plugins/administration-menus/sub-menus/
+  prompt: |
+    I want my plugin to add its own settings screen reachable from the WordPress dashboard, so administrators have a place to manage it.
+  acceptance:
+    - Registers the page via `add_menu_page()` (or `add_submenu_page()` / `add_options_page()`) on the `admin_menu` action hook.
+    - A `capability` (e.g. `manage_options`) is set to gate access.
+    - A `menu_slug` and a render callback are provided.
+    - The render callback outputs escaped markup, and no output is produced outside the callback.
+
+- name: user-role-check
+  description: Check user capabilities before performing an action using current_user_can().
+  difficulty: simple
+  concepts: [current_user_can, capability, user-roles]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/users/
+    - https://developer.wordpress.org/reference/functions/current_user_can/
+  # Harness dependency: current_user_can() gating in a hook callback has no HTTP surface — capability gating silently skips the action when the check fails and is not observable via a URL request; graded statically by the judge.
+  prompt: |
+    I want my plugin to perform a sensitive operation — say, updating a configuration value — only when the current user has the right permission. If the user does not have the required capability, the operation should be silently skipped. Please wire this up in a plugin hook callback so the capability check happens automatically before any sensitive work is done.
+  acceptance:
+    - "`current_user_can('<capability>')` is called before the sensitive operation runs — for example `current_user_can('manage_options')` or another named built-in capability."
+    - The sensitive operation (the action that requires the capability) is skipped entirely when the capability check fails — the hook callback returns early without performing the work.
+    - The capability check happens before any sensitive work, not after.
+    - The hook callback does not gate a REST route or use a REST-specific permission mechanism — this is a general plugin hook context.
+
+# superseded by common-apis-http-request (shipped under Common APIs; covers wp_remote_get + is_wp_error + wp_remote_retrieve_body)
+
+- name: ajax-handler
+  description: Register an authenticated admin-ajax handler and call it from JavaScript.
+  difficulty: intermediate
+  concepts: [wp_ajax, check_ajax_referer, wp_send_json_success]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/javascript/ajax/
+    - https://developer.wordpress.org/reference/hooks/wp_ajax_action/
+  prompt: |
+    I want my WordPress plugin to handle a request coming from the browser via the admin-ajax endpoint. When an authenticated admin visits the page and a request is sent to the action `my_plugin_ping`, the server should respond with a JSON success response containing a field `pong` set to `true`. The handler must verify the request is legitimate before doing anything else.
+  acceptance:
+    - Registers a `wp_ajax_my_plugin_ping` hook callback to handle the action for authenticated users.
+    - Calls `check_ajax_referer` (or equivalent nonce verification) before processing the request, so unauthenticated or forged requests are rejected.
+    - Responds with `wp_send_json_success()` — the response body is a JSON object with `"success": true`.
+    - An authenticated admin POST to `/wp-admin/admin-ajax.php?action=my_plugin_ping` returns a JSON body with `"success": true`.
+
+- name: privacy-data-exporter
+  description: Register a personal data exporter for GDPR compliance.
+  difficulty: intermediate
+  concepts: [wp_privacy_personal_data_exporters, register_exporter]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/plugins/privacy/adding-the-personal-data-exporter-to-your-plugin/
+    - https://developer.wordpress.org/plugins/privacy/
+  # Harness dependency: the personal-data exporter only runs inside the admin Tools > Export Personal Data wizard (admin-driven, multi-step) — no public URL or REST route to exercise; graded statically by the judge.
+  prompt: |
+    I want my plugin to participate in WordPress's built-in personal data export tool so that when a site administrator exports a user's data for privacy compliance, my plugin's data for that user is included in the export. Please register a personal data exporter that returns structured data about the user.
+  acceptance:
+    - The exporter is registered via the `wp_privacy_personal_data_exporters` filter, adding an entry to the exporters array.
+    - The registered entry includes a human-readable, translatable exporter name and a callback.
+    - The exporter callback returns an array with a `data` key (array of items) and a `done` key (boolean).
+    - Each item in `data` includes at least `group_id`, `group_label`, `item_id`, and a `data` array of name/value pairs.
+
+# === Area: Common APIs ===
+# folder: eval/scenarios/common-apis/
+
+# Implemented Common APIs scenarios — full records
+
+- name: options
+  description: Imperatively store and retrieve a value via the Options API, with a default when unset.
+  difficulty: simple
+  concepts: [add_option, update_option, get_option]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/options/
+    - https://developer.wordpress.org/reference/functions/get_option/
+  prompt: |
+    I want my plugin to save a piece of its own configuration so it persists across requests and I can read it back later. Store the value under the key `my_plugin_setting`, defaulting to `enabled` when it has not been saved yet. I need to imperatively write the value and read it back — not register a setting for the admin UI, just store and retrieve it directly.
+  acceptance:
+    - A value is stored under the pinned namespaced key.
+    - The stored value is retrieved by reading it back from the same key.
+    - A default value is provided for when the key has not yet been set.
+    - The store and retrieve operations run from a load-time hook.
+
+- name: transients
+  description: Cache a computed value with an expiry and recompute it only after it expires, via the Transients API.
+  difficulty: simple
+  concepts: [set_transient, get_transient, delete_transient]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/transients/
+    - https://developer.wordpress.org/reference/functions/set_transient/
+  prompt: |
+    I want my plugin to cache the result of an expensive computation so it is not recalculated on every page load. Store the result under the key `my_plugin_data` with an expiration time, and when the cache has not yet been set or has expired, recompute the value and store it again. On subsequent loads before the cache expires, the cached value should be returned without recomputation.
+  acceptance:
+    - The transient is checked first; if it has expired or is not yet set, the value is (re)computed.
+    - The computed value is stored with an expiration time.
+    - On subsequent loads before expiry, the cached value is returned without recomputation.
+    - The transient key is a namespaced string literal.
+
+- name: rewrite-rule
+  description: Register a custom URL rewrite rule that routes a pretty URL to a plugin-controlled response.
+  difficulty: simple
+  concepts: [add_rewrite_rule, register_activation_hook, template_redirect]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/rewrite/
+  prompt: |
+    When someone visits `/my-custom-page` on my site, I want my plugin to respond with the exact text `Hello from my plugin` — not a 404 and not a themed page, just that response served directly by my plugin. The plugin should also make sure this URL works immediately after it is activated, without requiring me to visit the permalinks settings page.
+  acceptance:
+    - A custom URL path (the pinned path) is handled by a registered rewrite rule.
+    - Navigating to the pinned path returns HTTP status 200 (not a 404).
+    - The response body contains the pinned text token.
+    - The plugin intercepts the request before any theme template loads, outputs its response, and stops further rendering.
+    - The rewrite rules are flushed once when the plugin is activated so the URL is live immediately.
+
+- name: http-request
+  description: Make an outbound HTTP request to an external web service and handle errors before using the response.
+  difficulty: simple
+  concepts: [wp_remote_get, wp_remote_retrieve_body, is_wp_error]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/making-http-requests/
+    - https://developer.wordpress.org/reference/functions/wp_remote_get/
+  prompt: |
+    I want my plugin to fetch some data from an external web service and use it, but I need it to handle the case where the request fails gracefully so the plugin doesn't break the site. Make the request from a hook callback, check whether it succeeded before doing anything with the response, and extract the response body to work with.
+  acceptance:
+    - An outbound HTTP GET request is made to an external URL.
+    - The response is checked for an error before its content is used.
+    - The response body is extracted using the WordPress HTTP response-body helper.
+    - The request is made from a hook callback, not at file-load time.
+
+# === Area: Advanced Administration ===
+# folder: eval/scenarios/advanced-admin/
+
+- name: wp-config-custom-constant
+  description: Define a custom constant in wp-config.php and use it to gate debug output.
+  difficulty: simple
+  concepts: [define, wp-config.php, custom constant]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/advanced-administration/wordpress/
+    - https://developer.wordpress.org/apis/wp-config-php/
+  # Harness dependency: the plugin scaffold cannot ship a wp-config.php, so the produced snippet is judge-graded statically — mirrors theme.json/blueprint.
+  prompt: |
+    Define a custom configuration constant in `wp-config.php` and use it in the plugin to gate behavior — for example, enabling extra debug logging only when the constant is set and true. Show both the `wp-config.php` snippet that defines the constant and the plugin code that reads it to decide whether to run the extra behavior.
+  acceptance:
+    - A `wp-config.php` snippet defines the named constant via `define()`, placed above the "stop editing" line.
+    - The plugin reads the constant via `defined()` and/or the constant itself to gate behavior (e.g. enabling extra debug logging only when the constant is set and true).
+    - The value and behavior described in the plugin code match the constant defined in the `wp-config.php` snippet.
+
+# === Area: Coding Standards ===
+# folder: eval/scenarios/coding-standards/
+
+# Implemented Coding Standards scenarios — full records
+
+- name: php
+  description: Write a small PHP helper that maps a status value to a friendly display label.
+  difficulty: simple
+  concepts: [WPCS, PHP coding standards, Yoda conditions, brace style, naming]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/coding-standards/wordpress-coding-standards/php/
+    - https://developer.wordpress.org/coding-standards/wordpress-coding-standards/
+  prompt: |
+    I'm building a small WordPress plugin and I need a little helper function in PHP. It should take a status value (like an order or post status) and return a short, friendly label for it — for example, turning a stored status into something I can show to a reader. If the status isn't one it recognizes, it should fall back to a sensible default label. Please write that function for me.
+  acceptance:
+    - Comparisons place the constant or literal on the left-hand side (Yoda conditions), so an accidental single `=` assignment cannot pass silently.
+    - Braces follow the WordPress brace style — opening brace on the same line as the statement, closing brace on its own line, and braces used even for single-statement blocks.
+    - Spacing follows the WordPress PHP standard — spaces inside the parentheses of control structures and function calls that take arguments, and spaces around operators.
+    - Identifiers use lowercase snake_case, and the function name is prefixed or namespaced to avoid collisions (not a bare generic name).
+
+- name: inline-docs
+  description: Add a documentation comment to a small PHP function that formats a welcome message.
+  difficulty: simple
+  concepts: [PHPDoc, inline documentation, docblock, "@param", "@return", "@since"]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/coding-standards/inline-documentation-standards/php/
+  prompt: |
+    I have a small PHP function for my plugin that takes a user's display name and a greeting prefix and returns a formatted welcome message. The function works, but other developers (and future me) will need to understand it without reading the body. Please add a proper documentation comment above it that explains what it does, describes each input and the value it returns, and notes the plugin version it was introduced in — formatted the way it should be for this kind of project.
+  acceptance:
+    - The doc block opens with a single-sentence summary line describing what the function does.
+    - Each parameter has a `@param` entry giving its type and `$name` (one per parameter), in declaration order.
+    - There is a `@return` entry stating the returned type (and a description where the type alone is ambiguous).
+    - There is an `@since` tag using a three-digit version number (for example `@since 1.0.0`).
+    - The doc block is a `/** ... */` block placed immediately above the function, with the tag descriptions aligned and formatted per the standard.
+
+# === Area: WordPress Playground ===
+# folder: eval/scenarios/playground/
+
+- name: blueprint-plugin-load
+  description: Author a Playground Blueprint JSON that installs and activates a plugin and applies an initial setup step.
+  difficulty: simple
+  concepts: [blueprint, steps, installPlugin, WordPress Playground]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/playground/wordpress-playground-resources/
+    - https://wordpress.github.io/wordpress-playground/blueprints/
+    - https://wordpress.github.io/wordpress-playground/blueprints/steps/
+  # Harness dependency: no Blueprint runner in the eval harness — graded statically by the judge on the produced JSON.
+  prompt: |
+    I want a one-click way to spin up a fresh WordPress environment with a specific plugin already installed, activated, and ready to use — without having to go through the admin UI. Please give me a WordPress Playground Blueprint JSON that boots a fresh WordPress site with the Contact Form 7 plugin installed and activated, and that also applies at least one initial setup step such as setting the site title or logging me in as an admin, so the environment is immediately usable. The deliverable is the Blueprint JSON itself.
+  acceptance:
+    - The response includes a Blueprint JSON object (or a code block containing one) with a top-level `steps` array.
+    - The `steps` array contains an `installPlugin` step that references the Contact Form 7 plugin (by slug `contact-form-7` or an equivalent zip/resource URL).
+    - The plugin is activated — either via an `installPlugin` step with `activate: true`, or via a separate activation step.
+    - The `steps` array contains at least one additional setup step (such as `setSiteOptions`, `login`, or `runPHP`) matching the initial-setup requirement in the prompt.
+    - The JSON is well-formed and parseable (valid JSON syntax, no trailing commas, no comments).
+
+# === Area: Code Reference ===
+# folder: eval/scenarios/code-reference/
+
+- name: hook-lookup
+  description: Use the Code Reference to find all actions/filters fired during wp_head and document their parameters.
+  difficulty: simple
+  concepts: [hooks, actions, filters, wp_head, Code Reference]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/reference/
+    - https://developer.wordpress.org/reference/hooks/
+    - https://developer.wordpress.org/reference/functions/
+  # Harness dependency: documentation report, no plugin deliverable — judge-graded on the produced documentation.
+  prompt: |
+    Using the WordPress reference docs, identify the action and filter hooks that are fired during the `wp_head` lifecycle point and document each hook's name and parameters. For each hook, note whether it is an action or a filter, and list its parameters and their types or signatures as described in the reference.
+  acceptance:
+    - Names the relevant hooks fired during the `wp_head` lifecycle (e.g. `wp_head`, `wp_enqueue_scripts`, `wp_print_styles`, or others documented at developer.wordpress.org/reference/hooks/).
+    - Documents each hook's type — whether it is an action or a filter.
+    - Documents each hook's parameters and their types or signatures as described in the reference.
+    - The documentation is grounded in the WordPress Code Reference (developer.wordpress.org/reference/) rather than invented or inferred without citation.
+
+# === Area: REST API ===
+# folder: eval/scenarios/rest-api/
+
+- name: custom-field-on-post
+  description: Add a top-level `reading_time` field to the Posts REST response.
+  difficulty: simple
+  concepts: [register_rest_field, rest_api_init, modifying-responses, get_callback]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/
+    - https://developer.wordpress.org/reference/functions/register_rest_field/
+  prompt: |
+    I want each of my posts to include an extra piece of information when read back through my site's data API. The field should be named `reading_time`, always return the value `5 min`, and appear directly alongside the post's other fields — not buried inside the post's custom-fields or meta section.
+  acceptance:
+    - A new top-level field named `reading_time` is added to the post resource's REST response (not nested under the resource's meta).
+    - The field is registered for the post resource on the REST initialization hook.
+    - Reading a published post through the site's data API returns `reading_time` with the value `5 min`.
+    - The field is exposed on the existing post resource without registering a new route or post meta.
+
+- name: authentication-nonce
+  description: Use a WP REST API nonce to make authenticated requests from JavaScript.
+  difficulty: intermediate
+  concepts: [wp_create_nonce, X-WP-Nonce, rest_url, wp_localize_script]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/rest-api/using-the-rest-api/authentication/
+    - https://developer.wordpress.org/rest-api/using-the-rest-api/
+    - https://developer.wordpress.org/rest-api/key-concepts/
+  # Harness dependency: the JS nonce flow requires a JS toolchain and live browser cookie session to exercise end-to-end — the client-side fetch with X-WP-Nonce cannot be asserted without a live browser; graded statically by the judge on the PHP localize wiring and JS snippet.
+  prompt: |
+    I want my plugin's JavaScript to be able to make authenticated requests to the WordPress REST API from the browser. Please set up the PHP side so it creates a REST nonce and passes it — along with the REST API base URL — to my JavaScript, and show the JavaScript snippet that reads those values and sends the nonce as the `X-WP-Nonce` header on a fetch request to a REST API endpoint.
+  acceptance:
+    - PHP calls `wp_create_nonce('wp_rest')` to generate the REST nonce.
+    - PHP passes the nonce and the REST base URL (via `rest_url()`) to JavaScript using `wp_localize_script`.
+    - A JavaScript snippet reads the localized nonce value and sends it as the `X-WP-Nonce` header on a `fetch` request to a REST API URL.
+    - The nonce is passed as a request header (not as a query parameter or request body field).
+
+# Implemented REST API scenarios — full records
+
+- name: route-validation
+  description: Validate a route's `filter` argument so disallowed values are rejected.
+  difficulty: simple
+  concepts: [register_rest_route, route-arguments, validation, enum]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/
+  prompt: |
+    I need a WordPress plugin that exposes a REST route at `/wp-json/example/v1/color`. The route should accept a `filter` query argument that is restricted to a fixed set of allowed color values. A request with an allowed value — for example `/wp-json/example/v1/color?filter=blue` — should succeed with HTTP status `200`. A request with a disallowed value — for example `/wp-json/example/v1/color?filter=purple` — should be rejected with HTTP status `400`. The validation must happen on the server side, so a value outside the allowed set is rejected before the handler runs.
+  acceptance:
+    - A route at `example/v1/color` accepts a `filter` query argument.
+    - A request with `filter=blue` (an allowed value) succeeds with HTTP status 200.
+    - A request with `filter=purple` (a disallowed value) is rejected with HTTP status 400.
+    - The accepted set of values is constrained server-side (a value outside the allowed set is rejected before the handler runs).
+
+- name: permission-check
+  description: Gate a route so anonymous callers get 401 and admins get the data.
+  difficulty: simple
+  concepts: [register_rest_route, permission_callback, authentication, rest_authorization_required_code]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/
+    - https://developer.wordpress.org/reference/functions/rest_authorization_required_code/
+  prompt: |
+    I need a WordPress plugin that exposes a route at `/wp-json/example/v1/private` and gates it so only logged-in administrators can access it. An anonymous (logged-out) request to the route must be denied with HTTP status `401`. A logged-in administrator request must succeed and return the body `This is private data.`. The access gate must be enforced by the route's permission check, not by the main handler.
+  acceptance:
+    - A route at `example/v1/private` is gated by a permission check.
+    - An anonymous (logged-out) request to the route is denied with HTTP status 401.
+    - An authenticated administrator request to the route succeeds and returns the body `This is private data.`.
+    - The gate is enforced by the route's permission check (not by the main handler).
+
+# === Area: WP-CLI Commands ===
+# folder: eval/scenarios/wp-cli/
+
+# Implemented WP-CLI Commands scenarios — full records
+
+- name: custom-command
+  description: Register a custom WP-CLI command that prints a pinned message to the terminal.
+  difficulty: simple
+  concepts: [custom WP-CLI command, WP_CLI::add_command, CLI output]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/cli/commands/
+    - https://make.wordpress.org/cli/handbook/guides/commands-cookbook/
+    - https://make.wordpress.org/cli/handbook/references/internal-api/wp-cli-add-command/
+  prompt: |
+    I want my WordPress plugin to add its own command-line command so I can run it from the terminal when managing the site. The command should be named `my-plugin hello` and, when run, it must print exactly the text `Hello from my-plugin` to the terminal output. The command should only be available when the plugin is active.
+  acceptance:
+    - The plugin registers a custom WP-CLI command accessible as `wp my-plugin hello`.
+    - Running `wp my-plugin hello` prints the text `Hello from my-plugin` to stdout.
+    - The command is only available when the plugin is active.
+
+# === Area: Performance ===
+# folder: eval/scenarios/performance/
+
+# Implemented Performance scenarios — full records
+
+- name: object-cache
+  description: Cache an expensive computed value in memory within the request lifecycle so it is not recomputed on repeated access during the same or subsequent requests.
+  difficulty: simple
+  concepts: [object-cache, wp_cache_get, wp_cache_set, cache-group]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/reference/functions/wp_cache_set/
+    - https://developer.wordpress.org/reference/functions/wp_cache_get/
+    - https://developer.wordpress.org/reference/functions/wp_cache_add/
+  # Harness dependency: none (graded statically by the judge on the produced PHP; no runtime assertion).
+  prompt: |
+    I have an expensive value my plugin computes — it takes noticeable time to build — and I want to make it fast to re-read so it is not recomputed on every request. Please store it in memory so repeated reads within a request (or across requests if a persistent backend is available) return the cached value without recomputing. Use a dedicated namespace for my plugin's cached entries to avoid key collisions with other code.
+  acceptance:
+    - The value is cached using the WordPress object cache API (`wp_cache_get`, `wp_cache_set`, or `wp_cache_add`) — NOT the transient API (`get_transient`/`set_transient`).
+    - The cache entry uses an explicit, non-default cache group (the `$group` argument is a non-empty string) namespaced to the plugin.
+    - Before recomputing, the cache is checked first; if a cached value is found it is returned without recomputation (the `wp_cache_get` result or found-flag is checked before any expensive work).
+    - On a cache miss the value is computed and then stored in the cache so the next read can return it.
+    - The cache key is a namespaced string literal scoped to the plugin.
+
+- name: autoloaded-options
+  description: Store a large, rarely-read setting so it is not loaded into memory on every page request — only fetched on demand.
+  difficulty: simple
+  concepts: [autoloaded-options, add_option, update_option, autoload]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/advanced-administration/performance/optimization/
+    - https://developer.wordpress.org/reference/functions/add_option/
+    - https://developer.wordpress.org/reference/functions/update_option/
+  # Harness dependency: none (graded statically by the judge on the produced PHP; no runtime assertion).
+  # API note: 'yes'/'no' strings for the autoload arg are deprecated as of WP 6.7.0; modern code uses boolean false. Acceptance tolerates legacy 'no' but does not hard-pin it.
+  prompt: |
+    My plugin stores a large chunk of data — think a full configuration payload or a cached report — that is only needed on one rarely-visited admin screen. Right now it seems to slow down every page load even when that screen is not being viewed. I want to persist this data so it survives across requests, but I do NOT want it pulled into memory on every page load — only when that specific screen actually needs it.
+  acceptance:
+    - The option is stored with autoload turned OFF — the autoload argument is explicitly set to `false` (preferred) or the legacy `'no'` string (tolerated); `true` / `'yes'` / omitting the argument is not acceptable.
+    - The option is written via `add_option` (4th argument) or `update_option` (3rd argument) with the autoload argument explicitly provided and set to the not-autoload value.
+    - The value represents a large or rarely-read payload — not a tiny flag read on every request.
+    - The option is retrieved on demand via `get_option` only when needed, not preloaded or enqueued into every request.
+
+# === Area: Static Analysis (PHPStan) ===
+# folder: eval/scenarios/phpstan/
+
+# Implemented Static Analysis scenarios — full records
+
+- name: baseline
+  description: Set up PHPStan static analysis for a plugin using the WordPress-aware extension/stubs, configure a sensible level, and handle reported type issues by fixing them or generating a baseline.
+  difficulty: simple
+  concepts: [phpstan, static-analysis, phpstan.neon, szepeviktor/phpstan-wordpress, baseline]
+  source: agent-skills
+  source_files:
+    - https://phpstan.org/user-guide/getting-started
+    - https://github.com/szepeviktor/phpstan-wordpress
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-phpstan
+  # agent-skills: wp-phpstan
+  # Harness dependency: no PHPStan runner in the eval harness — graded statically by the judge on the produced config + code
+  prompt: |
+    I want to add PHPStan static analysis to my plugin so type errors are caught before they reach production. Please set it up with the WordPress-aware extension so WordPress core functions are understood correctly, configure a sensible analysis level, point it at the plugin's source, and then handle whatever type issues it finds — either fix them in the PHP, or if there are pre-existing issues that are too large to address right now, generate a baseline file so they are grandfathered and future new errors are still caught.
+  acceptance:
+    - A `phpstan.neon` or `phpstan.neon.dist` configuration file is produced at the project root.
+    - The config declares a `level` key under `parameters` (a numeric PHPStan level).
+    - The config includes the `szepeviktor/phpstan-wordpress` extension — either via an `includes:` entry referencing the extension's neon file or via the `extensions:` key — so WordPress core functions and types are understood.
+    - The config sets `paths` under `parameters` to focus analysis on the plugin's first-party PHP source (not vendor or build directories).
+    - Either the reported type issues are corrected in the PHP source, or a `phpstan-baseline.neon` file is generated and referenced from the config via `includes:` so pre-existing errors are grandfathered and new errors are still caught.
+
+# === Area: WordPress Design System (wpds) ===
+# folder: eval/scenarios/wpds/
+# agent-skills: wpds
+# Harness dependency: no JS build/render step in the eval harness — graded statically by the judge on the produced JS/JSX
+
+- name: component-ui
+  description: Build a small, consistent admin/editor UI using WordPress Design System components from @wordpress/components rather than hand-rolled HTML/CSS.
+  difficulty: simple
+  concepts: [wpds, design-system, react-components, Panel, ToggleControl, Button]
+  source: agent-skills
+  source_files:
+    - https://developer.wordpress.org/block-editor/reference-guides/components/
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wpds
+  # agent-skills: wpds
+  # Harness dependency: no JS build/render step in the eval harness — graded statically by the judge on the produced JS/JSX
+  prompt: |
+    I want to build a small settings panel for my WordPress plugin's block editor sidebar using the official WordPress component library — the same components the editor itself uses — so it looks consistent with the rest of the WordPress admin UI. Please build a React component that renders a settings panel with a labeled toggle (for example, enabling or disabling a feature) and a primary action button. Use the WordPress components from @wordpress/components (such as Panel, PanelBody, ToggleControl, and Button) rather than hand-rolling the controls with raw HTML and CSS.
+  acceptance:
+    - The component imports Panel and/or PanelBody from `@wordpress/components` and renders at least one of them as the panel container.
+    - The component imports ToggleControl from `@wordpress/components` and renders it with at least a `label` prop and a `checked` prop — no raw `<input type="checkbox">` is used for this control.
+    - The component imports Button from `@wordpress/components` and renders it with `variant="primary"` — no raw `<button>` with hand-rolled primary CSS is used for this control.
+    - All three controls (Panel/PanelBody, ToggleControl, Button) are imported from `@wordpress/components`, not from any other package or hand-written.
+    - The component does not replace the ToggleControl or Button with raw HTML elements (`<input>`, `<button>`, `<div>`) styled to look like those controls.
+
+# === Area: Agentic Workflows ===
+# folder: eval/scenarios/wordpress-router/
+
+# Implemented Agentic Workflows scenarios — full records
+
+- name: classify
+  description: Classify a WordPress codebase and route it to the correct workflow/skill.
+  difficulty: simple
+  concepts: [routing, classification, orchestration]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wordpress-router
+    - https://raw.githubusercontent.com/WordPress/agent-skills/trunk/skills/wordpress-router/SKILL.md
+    - https://raw.githubusercontent.com/WordPress/agent-skills/trunk/skills/wordpress-router/references/decision-tree.md
+  # agent-skills: wordpress-router
+  # Harness dependency: no plugin deliverable — analysis/routing report graded statically by the judge
+  prompt: |
+    I have a WordPress project and I need you to tell me exactly what kind of WordPress work it is and which development workflow I should follow. Here is what I have: a repository that contains a block.json file, a src/ directory with edit.js and save.js, a package.json referencing @wordpress/scripts and @wordpress/blocks, and a build pipeline using npm run build. There is no functions.php, no style.css header, and no theme.json at the root. What type of WordPress project is this, which category from the WordPress router taxonomy does it fall into, and which specific workflow or skill should I use to continue developing it? Please give me your classification decision and justify it with the concrete signals you found.
+  acceptance:
+    - Identifies the project kind from the router's taxonomy — the report names the specific kind (e.g. wp-block-plugin, wp-plugin, wp-block-theme, wp-theme, wp-site, wp-core, or gutenberg) that best matches the described codebase.
+    - Gives a clear, unambiguous routing decision — the report names the target workflow or skill (e.g. wp-block-development, wp-plugin-development, wp-block-themes) that should be used for this project.
+    - Justifies the decision from concrete signals present in the described codebase — the justification references specific files or tooling clues (block.json, @wordpress/scripts, edit.js/save.js, or absence of functions.php/style.css/theme.json) rather than making a generic statement.
+    - Covers the router's intent-based routing categories in the justification — the report demonstrates awareness of the distinction between block development, plugin development, theme development, and other taxonomy branches, explaining why this project falls into the selected category and not the alternatives.
+
+- name: report
+  description: Deterministically inspect a WordPress repo and produce a structured triage report.
+  difficulty: simple
+  concepts: [triage, repo-inspection, structured-report]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-project-triage
+    - https://raw.githubusercontent.com/WordPress/agent-skills/trunk/skills/wp-project-triage/SKILL.md
+  # agent-skills: wp-project-triage
+  # Harness dependency: no plugin deliverable — triage report graded statically by the judge on the produced structured output
+  prompt: |
+    I have a WordPress repository and I need a structured triage report before I start making changes. Here is what the repo looks like:
+
+    - Root contains: `index.php` (plugin main file), `block.json`, `src/edit.js`, `src/save.js`, `composer.json`, `phpunit.xml`, `package.json` (with `@wordpress/scripts` and `@wordpress/blocks`), and a `build/` output directory.
+    - The plugin header in `index.php` declares `Plugin Name: My Feature Plugin`, `Version: 1.2.0`, `Requires at least: 6.0`, `Tested up to: 6.5`, and `Requires PHP: 7.4`.
+    - There is a `block.json` at the root referencing `"editorScript": "file:./build/index.js"`.
+    - There is no `functions.php`, no `style.css` theme header, and no `theme.json` at the root.
+    - `composer.json` lists `szepeviktor/phpstan-wordpress` under `require-dev`. A `vendor/` directory is present.
+    - `phpunit.xml` is present; no `jest.config.js` or Playwright config found.
+    - No `.wp-env.json` or `wp-env` dependency found in `package.json`.
+
+    Please produce a structured triage report for this repository.
+  acceptance:
+    - The report includes a project inventory section that names the identified project kind (wp-block-plugin or equivalent) and lists the concrete signals used to reach that conclusion (block.json, @wordpress/scripts, edit.js/save.js, absence of functions.php/theme header).
+    - "The report includes a findings or health section that covers tooling present (PHP: Composer + PHPStan; Node: @wordpress/scripts; Tests: PHPUnit present, wp-env absent, Jest absent) and notes any gaps or risks (e.g. no wp-env integration test environment, WordPress tested-up-to version vs. current)."
+    - The report includes a prioritized next-actions section listing recommended steps in priority order, grounded in the signals found (for example, add wp-env for integration tests, update the Tested up to header, or run PHPStan).
+    - All three sections — inventory, health/findings, and prioritized actions — are present and reference specific file-level signals from the described repository rather than making generic statements.
+
+- name: review
+  description: Review a plugin against the WordPress.org Plugin Directory guidelines (GPL, naming, trademarks, freemium).
+  difficulty: simple
+  concepts: [plugin-directory-guidelines, compliance-review, gpl]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-plugin-directory-guidelines
+    - https://raw.githubusercontent.com/WordPress/agent-skills/trunk/skills/wp-plugin-directory-guidelines/SKILL.md
+    - https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/
+  # agent-skills: wp-plugin-directory-guidelines
+  # Harness dependency: no plugin deliverable — compliance report graded statically by the judge on the produced findings
+  prompt: |
+    I want to submit my plugin to the WordPress.org Plugin Directory and I need a compliance review before I do. Here is what the plugin looks like:
+
+    Plugin header (in `my-awesome-plugin.php`):
+    ```
+    Plugin Name: My Awesome Plugin for WooCommerce
+    Plugin URI: https://example.com/my-awesome-plugin
+    Description: Adds extra features to WooCommerce stores.
+    Version: 1.0.0
+    Author: Jane Dev
+    License: GPL-2.0+
+    License URI: https://www.gnu.org/licenses/gpl-2.0.html
+    Text Domain: my-awesome-plugin
+    ```
+
+    Other details:
+    - The plugin slug (directory name) is `my-awesome-plugin`.
+    - All PHP source files contain readable, non-minified source code. No obfuscation tools are used.
+    - A bundled third-party library (`vendor/charting-lib/chart.js`) carries an MIT license with its own `LICENSE` file.
+    - The plugin optionally connects to `api.example.com` to fetch chart data. The connection fires only after the site admin enables it via an opt-in settings toggle; no data is sent on first activation.
+    - On the plugin's admin settings page there is a persistent, non-dismissible banner that reads "Upgrade to Pro for more features!" and links to a paid add-on on an external site. The banner appears on every admin page load, not just the plugin's own settings screen.
+    - The plugin readme.txt tags section contains 8 tags including several competitor plugin names used to attract search traffic.
+    - The plugin does not lock any of its own features behind a paywall — all bundled functionality works without purchasing anything.
+    - The plugin does not bundle any WordPress-default libraries (jQuery, etc.) — it uses `wp_enqueue_script` with WordPress-bundled handles.
+
+    Please review this plugin against the WordPress.org Plugin Directory guidelines and report your compliance findings.
+  acceptance:
+    - The report checks GPL / licensing compliance (Guideline 1) and gives a pass/fail verdict with reasons — it must note the GPL-2.0+ header is present and that the bundled MIT library is GPL-compatible, resulting in a PASS for this category.
+    - The report checks code readability / no obfuscation (Guideline 4) and gives a pass/fail verdict — the non-obfuscated, human-readable source must yield a PASS.
+    - The report checks trialware / freemium restrictions (Guideline 5) and gives a pass/fail verdict — the plugin locking no features behind a paywall must yield a PASS for feature lockout, but the persistent non-dismissible upgrade banner visible on all admin pages must be flagged as a FAIL or WARN under the admin dashboard advertising rules (Guideline 11).
+    - The report checks user consent for external connections (Guideline 7) and gives a pass/fail verdict — the opt-in settings toggle before any data is sent must yield a PASS.
+    - The report checks plugin naming and trademark rules (Guideline 17) and gives a pass/fail verdict — the slug `my-awesome-plugin` is acceptable, but the report must note that the name includes `WooCommerce` (a trademark) after a connector word (`for`), which is permitted, and confirm the name is otherwise compliant.
+    - The report checks readme tag compliance (Guideline 12) and gives a pass/fail verdict — 8 tags (exceeding the 5-tag limit) including competitor names must be flagged as a FAIL.
+    - Each finding includes the guideline number or category name, a clear PASS/FAIL/WARN verdict, and a one-sentence reason grounded in the described plugin's specific details.
+
+# === Agent-Skills Gaps ===
+# (all gaps promoted to full records)
+
+# Implemented Abilities API scenarios — full records
+# folder: eval/scenarios/abilities-api/
+
+- name: register
+  description: Register a named ability so it is discoverable and runnable through the site's data API.
+  difficulty: simple
+  concepts: [register_ability, abilities-api, rest-exposure, show_in_rest]
+  source: dev.wordpress.org
+  source_files:
+    - https://developer.wordpress.org/apis/abilities-api/
+    - https://developer.wordpress.org/apis/abilities-api/rest-api-endpoints/
+  prompt: |
+    I want my plugin to expose a small, named action — call it `my-plugin/greeting` — that is discoverable and runnable through the site's data API. The action should return a value when invoked and must be visible when listing available actions over the data API. Make sure it is properly exposed to the data API so it shows up in the list, and gate it so only authorised users can see and run it.
+  acceptance:
+    - The ability is registered on the abilities initialisation hook with a permission callback that gates access to authorised users.
+    - The ability is registered with at least one annotation declaring its behaviour (readonly, destructive, or idempotent).
+    - The ability is explicitly exposed to the REST API (show_in_rest set to true or equivalent) so it appears in the list endpoint.
+    - The ability's execute callback returns a non-empty value.
+    - The pinned ability id (`my-plugin/greeting`) is used as the ability name.
+    - Reading the list of available abilities through the site's data API includes an entry whose name is `my-plugin/greeting`.
+
+- name: audit-rest-surface
+  description: Audit a plugin's REST surface and produce a structured report proposing which routes should become named abilities.
+  difficulty: simple
+  concepts: [abilities-api, rest-audit, static-analysis]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-audit
+  # Harness dependency: harness needs a report-collection mode (activate-scenario → collect markdown output → grade)
+  # before this can be automatically verified; until then, judge grades the markdown output statically.
+  prompt: |
+    I have an existing WordPress plugin that exposes several REST API routes. I'd like you to audit its REST surface and produce a structured report that inventories all of the REST controllers and endpoints, identifies which routes are good candidates to expose as named, discoverable abilities, notes which ones should be deferred and why, and calls out any gaps or non-standard patterns you noticed. The report should give me a clear picture of what to prioritise so I know exactly what to tackle first.
+  acceptance:
+    - The report contains a Controller Inventory section with a table enumerating at least one REST controller — each row includes the controller class or file, HTTP method, route, callback name, permission callback, and return type.
+    - The report contains a proposed-abilities list where each entry includes the ability name, the backing controller or function, the capability gate, the annotations (readonly, destructive, or idempotent), and the implementation effort (S, M, or L).
+    - Deferred or excluded registrations appear in a dedicated excluded or deferred section, each accompanied by a one-sentence deferral reason; abilities with no backing controller have a null backing and appear in a surfaced-gaps section.
+    - The report contains a Notes and Surprises prose section that covers at least the capability-gate mechanism in use and any non-standard patterns found in the plugin.
+
+- name: verify-callbacks
+  description: Verify a plugin's registered abilities and produce a structured PASS/WARN/FAIL verdict report.
+  difficulty: simple
+  concepts: [abilities-api, verification, callback-behavior]
+  source: agent-skills
+  source_files:
+    - https://github.com/WordPress/agent-skills/tree/trunk/skills/wp-abilities-verify
+  # Harness dependency: harness needs a report-collection mode (activate-scenario → collect markdown output → grade)
+  # before this can be automatically verified; until then, judge grades the markdown report statically.
+  prompt: |
+    I have a WordPress plugin with several registered named abilities. I need you to verify them thoroughly — check that each ability's annotations actually match what its callback does (for example, that a read-only ability doesn't write to the database), confirm that the permission gates are correctly set up and not trivially open, lint the input and output schemas for common mistakes, and check that any error codes follow the expected vocabulary. Produce a structured report with a clear overall verdict (PASS, WARN, or FAIL) and per-section findings so I know exactly what needs fixing.
+  acceptance:
+    - The report opens with a top-level Status verdict of exactly PASS, WARN, or FAIL — a single FAIL forces the top-level verdict to FAIL; WARNs without any FAILs yield WARN.
+    - The report contains an annotation-correctness section that checks each read-only ability's callback for prohibited write patterns (database writes, option updates, non-GET REST delegates, filesystem mutations) and records any violation as FAIL with evidence.
+    - The report contains a permission-gates section that classifies each ability's permission callback against known shapes — a direct capability check is acceptable; a literal true is FAIL — and shows a per-ability table with the ability name, the gate claim, the verdict, and supporting evidence.
+    - The report contains schema-lints and error-code vocabulary sections — schema lints flag missing additionalProperties constraints, empty enums, or non-static defaults as WARN; non-vocabulary WP_Error codes are flagged as WARN.

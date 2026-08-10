@@ -1,0 +1,16 @@
+name: custom-endpoint
+description: Register a custom REST endpoint returning a JSON greeting message.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want my WordPress plugin to expose a simple JSON endpoint that returns a greeting message. When someone sends a GET request to `/wp-json/myplugin/v1/hello`, they should get back a JSON response with a `message` field.
+
+acceptance:
+  - Route is registered via `register_rest_route()` inside an `add_action('rest_api_init', ...)` callback.
+  - The namespace follows the `vendor/v1` pattern (a plugin-scoped prefix, not a bare generic name).
+  - A `permission_callback` is explicitly set on the route — a public endpoint uses `'__return_true'` (not omitted, which would trigger a `_doing_it_wrong` notice as of WP 5.5).
+  - The callback **returns** data (a plain array or `WP_REST_Response`) rather than echoing JSON or calling `wp_send_json()` / `die()`.
+  - A GET request to the registered route returns HTTP 200 and a JSON body containing a `message` field.
+
+rubrics: []
