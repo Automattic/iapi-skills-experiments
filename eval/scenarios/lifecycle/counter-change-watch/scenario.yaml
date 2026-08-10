@@ -1,0 +1,20 @@
+name: counter-change-watch
+description: Renders a block with a counter and a live readout that updates instantly whenever the count changes, including when the page first loads.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block with a number counter and a separate readout that
+  always reflects the current count. The readout should update immediately
+  whenever the count changes — and it should also show the right value straight
+  away when the page loads, without needing any click.
+
+  Add "+" and "−" buttons to change the count, and make sure the readout stays
+  in sync at all times.
+
+acceptance:
+  - The readout updates immediately when the count changes via the increment or decrement buttons, driven by a reactive watch callback that re-runs every time the count value changes.
+  - The readout also reflects the correct count on initial page load — the watch callback fires on mount, not only in response to user interactions.
+
+rubrics:
+  - wp-interactivity-api-best-practices

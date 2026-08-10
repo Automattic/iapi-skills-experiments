@@ -1,0 +1,30 @@
+name: recipe-card-server-context
+description: Build a recipe card block where the recipe title comes from the server per page while a client-side "servings" adjustment persists across client-side navigations.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a recipe card block for WordPress. Each page that includes this
+  block shows a different recipe — the recipe title and other core details
+  are provided by the server per page.
+
+  The card also has a "servings" adjuster: visitors can increase or
+  decrease the number of servings, which scales the ingredient quantities.
+  This is a purely local adjustment the visitor makes in their browser.
+
+  When a visitor navigates between recipe pages smoothly (without a full
+  reload), the recipe title and server-provided details should update to
+  the new recipe. However, if the visitor already adjusted the servings on
+  the previous page, that adjustment should carry over to the new page —
+  it should not reset back to the default after a page change.
+
+  In short: server-supplied recipe data refreshes per page, but the
+  visitor's servings preference stays put.
+
+acceptance:
+  - The recipe title is provided by the server for each page and updates to the new recipe's title after a soft (client-side) navigation
+  - The visitor's servings count (a client-side local adjustment) persists across soft navigations — it is not reset when the server re-syncs local context for the new page
+  - After navigating, the title reflects the destination page's server-provided value while the servings count is unchanged
+
+rubrics:
+  - wp-interactivity-api-best-practices

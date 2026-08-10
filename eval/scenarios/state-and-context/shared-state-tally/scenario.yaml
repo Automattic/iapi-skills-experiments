@@ -1,0 +1,20 @@
+name: shared-state-tally
+description: Build a counter block whose state is shared across all instances on the page via global state.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like an interactive block for WordPress that shows a shared tally
+  counter. It should display a number (starting at 0) and an "Increment"
+  button. The key thing is that the counter is shared page-wide: if I drop
+  the block onto a page multiple times, every instance should show the same
+  number, and clicking "Increment" on any one of them should bump the number
+  up on all of them at once.
+
+acceptance:
+  - The counter is page-wide shared: all block instances on the page show the same number at all times, and clicking "Increment" on any one of them updates every other instance simultaneously.
+  - The counter value lives in a single shared location (not duplicated per instance), so it is impossible for two instances to disagree on the current count.
+  - The displayed count starts at 0 and is visible on first paint before any client-side script runs.
+
+rubrics:
+  - wp-interactivity-api-best-practices

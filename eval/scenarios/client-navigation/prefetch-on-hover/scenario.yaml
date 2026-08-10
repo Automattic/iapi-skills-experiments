@@ -1,0 +1,26 @@
+name: prefetch-on-hover
+description: Build a navigation block that preloads the target page when the visitor hovers a link, then navigates smoothly on click.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a navigation block for WordPress that makes page transitions feel
+  instant. When a visitor hovers over any navigation link for a moment, the
+  block should quietly start loading that page in the background so that
+  when they actually click it the page is already ready and swaps in
+  immediately — no visible loading delay.
+
+  If the visitor hovers and then clicks, the navigation should complete
+  smoothly and update the URL. If they hover but don't click, nothing should
+  happen to the visible page.
+
+  The navigation links should still work normally without JavaScript — each
+  link is a real anchor that navigates with a full page load as a fallback.
+
+acceptance:
+  - Hovering a navigation link triggers a background prefetch of the target URL before any click occurs
+  - After prefetching on hover, clicking the link completes a soft (client-side) navigation — the URL updates and the page content swaps without a full reload
+  - The navigation links are real `<a>` anchors with valid `href` values so they degrade gracefully without JavaScript
+
+rubrics:
+  - wp-interactivity-api-best-practices

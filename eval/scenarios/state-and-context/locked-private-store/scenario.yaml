@@ -1,0 +1,19 @@
+name: locked-private-store
+description: Renders an interactive widget whose internal state is hardened so that other plugins on the page cannot tamper with or override it.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that shows a simple interactive widget —
+  something like a vote button that tracks a count. The key requirement
+  is that the block's data should be private: other plugins installed on
+  the site should not be able to read from or write to the block's
+  internal state. Harden it so other plugins can't tamper with it, even
+  if they try to access the same namespace.
+
+acceptance:
+  - After the page hydrates, an attempt by external code to re-open or override the block's store namespace is rejected (throws an error) rather than silently succeeding.
+  - The widget's interactive functionality (e.g. clicking a button and seeing the count change) still works normally for the end user despite the hardening.
+
+rubrics:
+  - wp-interactivity-api-best-practices

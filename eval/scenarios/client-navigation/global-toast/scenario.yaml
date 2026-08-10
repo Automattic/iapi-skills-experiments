@@ -1,0 +1,27 @@
+name: global-toast
+description: Build a toast notification region that appears on any page in the site regardless of whether that page's content itself includes the toast block.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a toast notification system for my WordPress site. When an action
+  on one block (like saving a form or completing a task) triggers a success
+  or error message, a toast notification should appear briefly at the top
+  of the page — even on pages that don't have the toast block explicitly
+  placed in their content.
+
+  The toast should appear globally, not just on pages where I've manually
+  inserted it. If one block on the page fires a "show toast" action, the
+  toast notification region should appear and display the message, then
+  disappear after a few seconds.
+
+  The system should work correctly during client-side navigation — the toast
+  region should still be available even after smooth page transitions.
+
+acceptance:
+  - The toast notification region is injected into the page dynamically so it is available on any page, even those that did not render it in their static content
+  - Triggering a toast action from a block on a page causes the toast region to appear with the notification message
+  - The toast region is present after a soft (client-side) navigation — it is not lost when the router swaps page content
+
+rubrics:
+  - wp-interactivity-api-best-practices

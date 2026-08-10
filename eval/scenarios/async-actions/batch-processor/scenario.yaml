@@ -1,0 +1,22 @@
+name: batch-processor
+description: Build a block that processes a large list of items in the background while keeping the page responsive and showing live progress.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that can crunch through a large list of items — say,
+  hundreds of records — without freezing the browser. The block should show a
+  progress bar or counter that updates as the work moves along so visitors can
+  see it is still running. The page should remain scrollable and interactive
+  during the whole process.
+
+  Add a "Start" button to kick off the processing and a label that shows how
+  many items have been handled out of the total.
+
+acceptance:
+  - The processing loop yields control back to the browser between batches so the page stays responsive while the work is in progress.
+  - The progress counter or bar visibly advances during processing — it does not jump straight from 0% to 100%.
+  - The "Start" button is disabled or hidden while processing is running to prevent duplicate runs.
+
+rubrics:
+  - wp-interactivity-api-best-practices

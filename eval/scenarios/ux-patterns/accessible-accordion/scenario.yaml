@@ -1,0 +1,26 @@
+name: accessible-accordion
+description: Build a FAQ accordion where each section can be independently expanded or collapsed, with correct ARIA attributes present in the server-rendered HTML before JavaScript runs.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that shows a list of frequently asked
+  questions in an accordion format. Here is how it should work:
+
+  - There are at least three questions, each with a toggle button and a
+    collapsible answer panel below it.
+  - Clicking a question's button expands or collapses only that answer —
+    multiple answers can be open at the same time. Expanding one question
+    does not close any others.
+  - The button for each question should announce whether the answer is
+    currently expanded or collapsed to screen readers.
+  - The answer panels should be correctly associated with their question
+    buttons in a way assistive technology can follow.
+
+acceptance:
+  - Each section toggles independently: expanding one question does not affect other sections — multiple sections can be open simultaneously.
+  - The server-rendered HTML (before JavaScript hydrates the page) already has aria-expanded="false" on each collapsed toggle button, so the initial state is correct on first paint without a flash.
+  - Each toggle button has aria-expanded set to "true" when its panel is open and "false" when closed; each panel is linked to its button via aria-controls or equivalent ARIA association.
+
+rubrics:
+  - wp-interactivity-api-best-practices

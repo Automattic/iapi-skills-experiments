@@ -1,0 +1,26 @@
+name: reorderable-todo-list
+description: Renders a keyed to-do list whose items can be moved up or down without recreating DOM nodes.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a to-do list block for WordPress where I can reorder items without
+  the whole list flickering or losing focus.
+
+  The block should show a short list of to-do items. Each item should have
+  an "Up" and a "Down" button so the user can move it earlier or later in
+  the list. Moving an item should feel instant — the row should shift
+  position without any visible rebuilding or losing of the existing elements.
+
+acceptance:
+  - Each list item element carries a stable unique key so the browser can
+    match it to the same DOM node across reorders — items are tracked
+    individually, not rebuilt from scratch on every state change.
+  - Clicking "Up" moves the targeted item one position earlier in the list;
+    clicking "Down" moves it one position later; items at the boundaries do
+    not move further in that direction.
+  - After a reorder the list displays the new order immediately without a
+    full re-render flash.
+
+rubrics:
+  - wp-interactivity-api-best-practices

@@ -1,0 +1,24 @@
+name: ts-counter-inference
+description: Renders an interactive counter block built entirely in TypeScript where all store types are inferred from the initial state definition with no explicit type annotations or casts.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like an interactive counter block for WordPress. It should display a
+  number that starts at zero, with an "Increment" button that adds one each
+  time it's clicked and a "Decrement" button that subtracts one.
+
+  Please build it in TypeScript with full type safety — I want the type
+  checker to understand the shape of the state automatically from how I
+  define it, without me having to write any explicit type annotations or
+  type casts. The TypeScript should compile cleanly and be bundled to
+  standard JavaScript for the browser.
+
+acceptance:
+  - The store's state type is entirely inferred from the initial state literal — no explicit type annotations, interfaces, generics, or `as` casts are used in the store definition.
+  - The increment and decrement actions reference the state through the inferred type so TypeScript would flag a typo or wrong-type assignment at compile time.
+  - Clicking the "Increment" button increases the displayed count by one; clicking "Decrement" decreases it by one.
+  - The current count is visible in the block on first paint (server-rendered HTML), before any button is clicked.
+
+rubrics:
+  - wp-interactivity-api-best-practices

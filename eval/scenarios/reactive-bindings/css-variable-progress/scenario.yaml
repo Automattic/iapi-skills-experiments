@@ -1,0 +1,23 @@
+name: css-variable-progress
+description: Displays a progress bar whose fill percentage is controlled by increment and decrement buttons.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a progress-bar block for WordPress. The bar should start at 0%
+  and have two buttons — "Grow" and "Shrink" — that increase or decrease
+  the fill by 10 percentage points each time they are clicked (clamped
+  between 0% and 100%).
+
+  The visual fill of the bar should update instantly as users click. The
+  bar's width should be driven by an inline CSS custom property so the
+  designer can theme the color and transition in the stylesheet without
+  touching JavaScript.
+
+acceptance:
+  - The bar's fill is controlled by an inline CSS custom property (e.g. `--progress`) set on the bar element, whose value is derived from the current percentage in state — the binding updates the CSS variable value, not the width style directly.
+  - The percentage is clamped so it cannot go below 0 or above 100; the Grow and Shrink buttons have no effect at the respective boundary.
+  - The CSS custom property value changes reactively on each button click without a page reload.
+
+rubrics:
+  - wp-interactivity-api-best-practices

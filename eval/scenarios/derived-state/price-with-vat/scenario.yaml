@@ -1,0 +1,22 @@
+name: price-with-vat
+description: Displays a product price card where the VAT-inclusive total is computed from the base price seeded server-side per instance.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that acts as a product price card. Each card shows
+  a product name, its base price (e.g. "$10.00"), and below that a line that
+  reads "Price with tax: $12.00" where the tax-inclusive amount is always
+  base price × 1.20 (20% VAT). I want to be able to place the block twice on
+  a page — each with a different product name and base price — and each card
+  should independently show its own correct price-with-tax total. The
+  calculated total should be shown correctly right when the page loads,
+  without any button clicks or page refreshes.
+
+acceptance:
+  - Each block instance reads its own base price and product name from per-instance server-seeded context, so two instances on the same page show different products and different base prices.
+  - The VAT-inclusive total is exposed as a derived getter on the store (computed from the per-instance base price on read) — it is not stored as a separate mutable field and is never written by an action.
+  - Both the base price and the computed price-with-tax are visible in the server-rendered HTML on first paint, before any JavaScript interaction.
+
+rubrics:
+  - wp-interactivity-api-best-practices

@@ -1,0 +1,21 @@
+name: interval-with-cleanup
+description: Renders a block with an on/off toggle that starts and stops a ticking timer, with full cleanup so no timer leak occurs after it is turned off.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that has a simple on/off switch for a live timer.
+  When switched on, the timer should tick and update a counter on screen every
+  second. When switched off, the ticking must stop completely — no background
+  updates, no memory leaks. Switching it back on should restart from where it
+  left off or from zero.
+
+  The timer must not keep running after it is turned off, even if the visitor
+  leaves the page or the block is removed.
+
+acceptance:
+  - When the toggle is turned off, the ticking stops and the counter no longer advances — the cleanup function registered with the watch callback tears down the interval so no further ticks fire.
+  - If the block is removed from the page while the timer is running, the interval is also cleared — cleanup runs on unmount, not just on re-run.
+
+rubrics:
+  - wp-interactivity-api-best-practices

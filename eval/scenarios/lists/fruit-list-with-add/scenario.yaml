@@ -1,0 +1,21 @@
+name: fruit-list-with-add
+description: Build a fruit list rendered server-side via data-wp-each, with an Add button that appends.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like an interactive block for WordPress that shows a list of fruits.
+
+  When the page first loads, the list should already contain three fruits:
+  Apple, Banana, and Cherry.
+
+  Below the list there should be a button labeled "Add Mango". Clicking it
+  should add "Mango" as a new item at the end of the list.
+
+acceptance:
+  - All three initial fruits (Apple, Banana, Cherry) are present in the server-rendered HTML and visible before any JavaScript runs — the list is not built or populated by client-side code.
+  - Clicking "Add Mango" appends Mango to the end of the list in place — the three existing items stay in the DOM and are not re-rendered or replaced; only the new fourth item is added.
+  - The list items are rendered from a reactive collection, not from a static PHP loop — so adding an item via the button causes the new item to appear without a page reload.
+
+rubrics:
+  - wp-interactivity-api-best-practices

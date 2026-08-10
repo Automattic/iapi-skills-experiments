@@ -1,0 +1,24 @@
+name: derived-double
+description: Build a counter that displays its doubled value via a derived getter.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want an interactive block for WordPress that shows two numbers side by
+  side: a counter and a value that is always exactly double the counter.
+  The counter should start at 1, so when the page first loads the block
+  should display 1 next to 2.
+
+  Below the numbers there should be an "Increment" button. Each click
+  bumps the counter by 1, and the second number must stay in sync — so
+  after one click I see 2 and 4, after two clicks 3 and 6, and so on.
+  The doubled number is purely a reflection of the counter; there is no
+  separate "doubled" value that a user or action can set independently.
+
+acceptance:
+  - The doubled value is always exactly twice the counter and updates automatically whenever the counter changes — it is never set independently and there is no separate action that writes to the doubled value.
+  - There is only one mutable field (the counter); the doubled value is derived from it on demand rather than stored as a second independent value that could get out of sync.
+  - Both the counter (1) and the doubled value (2) are visible and correct on first paint before any client-side script runs.
+
+rubrics:
+  - wp-interactivity-api-best-practices

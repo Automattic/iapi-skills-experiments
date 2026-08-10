@@ -1,0 +1,29 @@
+name: external-link-respect
+description: Build a navigation block that intercepts same-origin link clicks for smooth transitions but lets external links and modifier-key clicks pass through to the browser normally.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a navigation block on my WordPress site that makes same-site links
+  navigate smoothly without a full page reload. However, it's important
+  that certain link behaviors are NOT intercepted:
+
+  - If a visitor Ctrl-clicks or Command-clicks a link (to open it in a new
+    tab), that should work as normal — the browser opens a new tab.
+  - If a link points to a completely different website (a different domain),
+    the browser should follow it normally — don't try to handle it
+    client-side.
+  - Middle-button clicks should also be left alone.
+
+  In other words: only intercept plain left-clicks on links that point to
+  pages on the same site. For everything else, let the browser do what it
+  normally does.
+
+acceptance:
+  - A plain left-click on a same-origin link is intercepted and handled as a soft navigation (URL changes, no full reload)
+  - A Ctrl/Cmd-click on a link is NOT intercepted — the browser's default new-tab behavior proceeds
+  - A link whose href points to a different origin (external URL) is NOT intercepted — the router lets the browser follow it normally
+  - The guard checks for modifier keys and same-origin before calling `event.preventDefault()`
+
+rubrics:
+  - wp-interactivity-api-best-practices

@@ -1,0 +1,18 @@
+name: in-view-reveal
+description: Renders a block with a banner that animates in the first time it scrolls into the viewport, and does not animate again on subsequent scrolls.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that contains a promotional banner placed lower on the
+  page. The banner should stay invisible until the visitor scrolls it into view,
+  at which point it should animate in with a fade or slide effect. The animation
+  should happen only once — if the visitor scrolls away and back again, the banner
+  stays visible without repeating the animation.
+
+acceptance:
+  - The banner starts hidden and reveals itself with an animation the first time it enters the viewport — the reveal is triggered by an IntersectionObserver, not a timer or scroll event listener.
+  - The reveal fires exactly once per page load: once the banner has entered view, further scroll events do not re-trigger the animation, and the observer is disconnected after first intersection.
+
+rubrics:
+  - wp-interactivity-api-best-practices

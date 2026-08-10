@@ -1,0 +1,7 @@
+# Design Doc Review
+
+## Verdict: approved
+
+## Summary
+
+The revised design doc resolves all three issues from the prior rejection. The Overview now correctly states one shared e2e helper (`addLockProbe`); all migration counts are consistently 9 migrate / 59 new / 68 total across every prose reference and the directory-mapping table; and the `scenarioDirOf()` algorithm description correctly identifies the third-to-last and second-to-last segments (group and scenario, skipping the filename). Beyond the three fixes, the design is complete and sound: all 14 spec requirements and all 10 acceptance criteria have corresponding decisions or components; every key decision is traced to specific requirements; credible alternatives are weighed and rejected with reasoning; the design is feasible against the existing codebase (confirmed against `verify-e2e.ts`, `playwright.config.ts` `testMatch: "**/e2e.spec.mjs"`, and existing e2e spec conventions); all internal and external dependencies are named; failure modes and observability channels are covered; scope is respected (no reference improvement, no CI automation, no Skillsmith source changes, no re-curation); and the document stays at the architecture-and-decisions level without bleeding into implementation steps. The 68-scenario directory mapping, the Skillsmith trunk SHA, the `verify-e2e.ts` patch, the harness extensions, the e2e conventions, the authoring approach, and the rubric edit are all described with sufficient fidelity for the plan phase.

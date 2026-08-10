@@ -1,0 +1,24 @@
+name: resilient-link-fallback
+description: Build a navigation link block that shows a friendly error panel when the target page cannot be fetched, instead of breaking silently.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a navigation block on my WordPress site that handles network
+  problems gracefully. When a visitor clicks a link and the page fetch
+  fails — for instance because of a temporary network error or a server
+  error — instead of showing a blank page or doing nothing, the block
+  should display a helpful "Something went wrong, please try again" message
+  in place of the usual page content.
+
+  The visitor should still be able to click the link normally (without
+  JavaScript) and get the target page in the usual browser way — the
+  error-handling is a progressive enhancement on top of a working link.
+
+acceptance:
+  - When the network request for a navigated page fails (e.g. fetch throws or returns a non-OK status), the block renders a visible fallback error panel instead of leaving the page content blank
+  - The fallback panel renders in the router region area where the new content would have appeared
+  - Navigation links remain real `<a>` anchors so navigation still works without JavaScript
+
+rubrics:
+  - wp-interactivity-api-best-practices

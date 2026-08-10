@@ -1,0 +1,22 @@
+name: product-quantity-stepper
+description: Renders a product card with quantity plus and minus buttons where each block instance tracks its own quantity independently.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like a product card block for WordPress that shows an item name,
+  a quantity number, and "+" and "−" buttons to increase or decrease
+  how many of that item you want. The quantity should start at 1 and
+  not go below 1.
+
+  When I put two of these cards on the same page, each card should
+  track its own quantity — adjusting the quantity on one card should
+  have no effect whatsoever on the other card.
+
+acceptance:
+  - Each block instance tracks its own quantity value independently; changing the quantity on one instance has no effect on any other instance on the same page.
+  - The quantity is stored in per-instance local context (not in a shared global state variable), so a global-state implementation would fail this check.
+  - The "+" button increments and the "−" button decrements quantity, with quantity floored at 1.
+
+rubrics:
+  - wp-interactivity-api-best-practices

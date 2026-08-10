@@ -1,0 +1,22 @@
+name: load-more-posts
+description: Build a block that shows an initial batch of posts and appends more to the list when the user clicks a "Load more" button.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that displays a short list of recent posts and lets
+  visitors load more without reloading the page. Here is how it should work:
+
+  When the page first loads, show the first few post titles in a list. Below
+  the list, show a "Load more" button. When the visitor clicks the button, the
+  next batch of post titles should be added to the bottom of the existing list
+  — the posts already shown must stay visible. The button should disappear once
+  there are no more posts to load.
+
+acceptance:
+  - Each click on "Load more" appends the next batch of items to the existing list — the items already rendered remain in the DOM and are not removed or replaced.
+  - The fetch for the next page of results is implemented as a generator action that yields during the network request.
+  - The "Load more" button is hidden or removed once the last batch has been loaded and no further pages are available.
+
+rubrics:
+  - wp-interactivity-api-best-practices

@@ -1,0 +1,23 @@
+name: live-scoreboard-polling
+description: Build a block that polls a live scores endpoint every few seconds and updates the displayed scores in place.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block that shows a live scoreboard for a sporting event.
+  The scores should refresh automatically every few seconds by checking a
+  remote endpoint — visitors should not have to reload the page to see the
+  latest numbers.
+
+  Display the current scores on the page and update them silently in the
+  background at a regular interval. When the block is removed from the page or
+  the visitor navigates away, the automatic updates should stop so the site
+  does not keep making unnecessary requests.
+
+acceptance:
+  - The block fetches fresh scores on a regular interval and updates the displayed values in place without a full page reload.
+  - The polling loop is implemented as a generator action that yields during each network request.
+  - When the block is torn down or the visitor leaves the page, the polling interval is cleared so no further requests are made.
+
+rubrics:
+  - wp-interactivity-api-best-practices

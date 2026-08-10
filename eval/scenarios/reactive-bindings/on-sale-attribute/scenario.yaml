@@ -1,0 +1,23 @@
+name: on-sale-attribute
+description: Displays a product badge whose sale-price link attribute is present only when the item is on sale and fully absent otherwise.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a product-badge block for WordPress that can show or hide a
+  special "On sale" indicator. When the product is on sale the badge
+  should include a tooltip attribute that shows the discounted price on
+  hover. When it is not on sale, that tooltip attribute must be completely
+  gone from the element — not just blank or hidden — so screen readers
+  and browser tooltips are not confused by an empty value.
+
+  A toggle button in the block should let me flip between "on sale" and
+  "not on sale" so I can preview both states.
+
+acceptance:
+  - When the sale state is off, the attribute (e.g. `title` or `aria-label` used as the tooltip) is entirely absent from the DOM element — `getAttribute` returns `null`, not an empty string.
+  - When the sale state is on, the attribute is present with a non-empty value.
+  - Toggling the sale state with the button switches the attribute between fully present and fully absent reactively.
+
+rubrics:
+  - wp-interactivity-api-best-practices

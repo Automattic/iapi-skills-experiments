@@ -1,0 +1,28 @@
+name: ts-typed-context-import
+description: Demonstrates a second plugin contributing typed actions to an existing plugin's store by importing its exported state and actions types, with the script module declared as a dependency.
+skills:
+  - wordpress-development
+
+prompt: |
+  I have a base WordPress plugin that already provides an interactive
+  counter block — it tracks a count and has an increment action. I'd
+  like a second, separate plugin that adds an extra "Reset" button to
+  that same counter without forking the first plugin's code. The Reset
+  button should set the count back to zero when clicked.
+
+  Please build both plugins in TypeScript with full type safety. The
+  second plugin should import the first plugin's TypeScript types
+  (its state and actions) directly, so that TypeScript enforces the
+  correct field names and types when the second plugin calls into the
+  first plugin's store. The second plugin's script module must also
+  declare the first plugin's script module as a dependency so the
+  browser loads them in the right order.
+
+acceptance:
+  - The second plugin imports the first plugin's exported `{ state, actions }` types in TypeScript so the type checker enforces the correct field names when the second plugin references the first plugin's store.
+  - The second plugin's script module is declared with the first plugin's view script as an explicit `wp_script_module` dependency so the browser guarantees load order.
+  - Clicking the "Reset" button (contributed by the second plugin) sets the count back to zero and the counter block reflects that change.
+  - The second plugin's contribution (the Reset button or its effect on the count) is visible at runtime without requiring a page reload.
+
+rubrics:
+  - wp-interactivity-api-best-practices

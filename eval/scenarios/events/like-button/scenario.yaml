@@ -1,0 +1,21 @@
+name: like-button
+description: Displays a heart button that toggles liked/unliked state and shows a running like count.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block with a heart button that people can click to
+  "like" something. When someone clicks the heart, it should toggle between
+  a liked state (filled heart) and an unliked state (empty heart). There
+  should also be a number next to the heart showing how many likes there
+  are — clicking to like increments it and clicking to unlike decrements it.
+
+  Everything should happen instantly, no page reload.
+
+acceptance:
+  - Clicking the heart button while in the unliked state switches it to the liked state and increments the displayed like count by 1.
+  - Clicking the heart button while in the liked state switches it back to the unliked state and decrements the displayed like count by 1.
+  - The button carries a visual or accessible indicator (e.g. a class, aria-pressed, or aria-label) that reflects the current liked/unliked state so the toggle is machine-readable.
+
+rubrics:
+  - wp-interactivity-api-best-practices

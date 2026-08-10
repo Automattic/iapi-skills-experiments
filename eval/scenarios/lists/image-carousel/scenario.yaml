@@ -1,0 +1,30 @@
+name: image-carousel
+description: Displays a gallery of images that can be navigated with the Left and Right arrow keys, cycling back to the start or end.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like a WordPress block that shows a simple image gallery where visitors
+  can browse pictures using the left and right arrow keys on their keyboard.
+
+  The block should display one image at a time. Pressing the right arrow key
+  should move to the next image, and pressing the left arrow key should move
+  to the previous one. When the user reaches the last image and presses right,
+  the gallery should wrap around and show the first image again. Similarly,
+  pressing left on the first image should jump to the last one.
+
+  A small indicator should show which image is currently displayed (e.g.
+  "2 of 5").
+
+acceptance:
+  - Pressing the Right arrow key advances to the next image; pressing the
+    Left arrow key moves to the previous image.
+  - Navigating past the last image with the Right arrow key wraps around and
+    displays the first image (index 0).
+  - Navigating before the first image with the Left arrow key wraps around
+    and displays the last image.
+  - The current-image indicator updates to reflect the active index after
+    each key press.
+
+rubrics:
+  - wp-interactivity-api-best-practices

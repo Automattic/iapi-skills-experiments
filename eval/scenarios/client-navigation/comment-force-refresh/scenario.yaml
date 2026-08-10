@@ -1,0 +1,26 @@
+name: comment-force-refresh
+description: Build a comment submission block that reloads the comment list with fresh content after a comment is successfully posted.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a block on my WordPress site that lets visitors post a comment and
+  then immediately see their new comment appear in the list — without
+  having to do a full page reload themselves. After the comment is submitted
+  successfully, the block should refresh the page content so the updated
+  comment list shows up right away, bypassing any cached version of the page.
+
+  The refresh must show the truly up-to-date content, not a stale cached
+  copy. If the site uses page caching, the post-submission refresh should
+  still get the latest data.
+
+  If JavaScript is disabled the comment form should fall back to a standard
+  HTML form submission.
+
+acceptance:
+  - After a comment is submitted successfully, the page content (including the comment list) is refreshed to show the new comment
+  - The refresh bypasses any page cache so the visitor sees the latest comment list, not a stale version
+  - The comment form degrades to a standard HTML form submission when JavaScript is unavailable
+
+rubrics:
+  - wp-interactivity-api-best-practices

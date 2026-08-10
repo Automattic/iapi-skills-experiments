@@ -1,0 +1,21 @@
+name: live-char-counter
+description: Shows a live character count as the user types into a text field, flagging when the limit is exceeded.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block with a text input and a live character counter
+  below it. As I type, the counter should update instantly to show how many
+  characters I've used out of a 280-character limit — like "42 / 280".
+
+  If I go over 280 characters, I want the counter to visually indicate that
+  I'm over the limit (change colour, show a warning, or something obvious).
+  When I delete characters to get back under 280, the warning should go away.
+
+acceptance:
+  - The displayed counter updates on every keystroke to reflect the current character count in "x / 280" format (or equivalent).
+  - When the character count exceeds 280, a visual over-limit indicator appears (e.g. a class, colour change, or warning message).
+  - The over-limit indicator is removed when the character count returns to 280 or below.
+
+rubrics:
+  - wp-interactivity-api-best-practices

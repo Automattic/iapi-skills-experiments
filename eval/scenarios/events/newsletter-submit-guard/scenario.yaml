@@ -1,0 +1,20 @@
+name: newsletter-submit-guard
+description: A newsletter sign-up form that shows an inline confirmation message on submit without reloading the page.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block with a simple newsletter sign-up form — an
+  email field and a "Subscribe" button. When someone submits the form,
+  instead of the page reloading or navigating away, I want an inline
+  confirmation message to appear right there (like "Thanks, you're
+  subscribed!"). The URL should stay the same and the page should not
+  scroll or flicker.
+
+acceptance:
+  - Submitting the form does not cause a page reload or navigation — the URL stays the same and the page does not reload.
+  - An inline confirmation message appears in the block after the form is submitted without any full-page refresh.
+  - The submit handler prevents the default form submission synchronously, so no network request to a form action is made.
+
+rubrics:
+  - wp-interactivity-api-best-practices

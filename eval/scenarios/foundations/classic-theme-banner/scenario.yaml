@@ -1,0 +1,23 @@
+name: classic-theme-banner
+description: Renders a dismissible site-wide announcement bar from a classic theme template, processed by the Interactivity API outside the block system.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'm running a classic WordPress theme (not a block theme) and I want to add
+  a dismissible announcement banner that appears at the top of every page —
+  not as a block in the editor, but injected by my plugin into the theme's
+  footer area.
+
+  The banner should show a short message and have a "Dismiss" button. When a
+  visitor clicks "Dismiss", the banner should disappear immediately without a
+  page reload. The banner should be fully rendered on the server so there's no
+  layout shift on load.
+
+acceptance:
+  - The plugin hooks into `wp_footer` (or an equivalent theme action) and outputs the banner HTML directly — not via a block — then calls the WordPress server helper that processes interactive directives on that raw HTML so the runtime can hydrate it.
+  - The e2e spec creates a plain post (no `wp-skill/testing-block` in content) and locates the banner by its `data-wp-interactive` attribute or a distinctive class, not by the standard testing-block wrapper — this is the approved exception to the fixed block-name convention for this scenario.
+  - Clicking the "Dismiss" button hides the banner without a page reload.
+
+rubrics:
+  - wp-interactivity-api-best-practices

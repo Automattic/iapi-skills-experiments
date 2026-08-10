@@ -1,0 +1,24 @@
+name: joke-fetch
+description: Build a block that fetches and displays a joke of the day when the user clicks a button.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like a fun interactive block for WordPress that shows a "Joke of the
+  Day" on demand. Here is how it should work:
+
+  When the page first loads, show a button labeled "Get joke" and a
+  paragraph below it that is empty. When the visitor clicks the button,
+  the block should reach out to a remote endpoint and display the joke
+  text in the paragraph once the response arrives.
+
+  The block should not reload the page or navigate away — the joke should
+  just appear in place, below the button, as soon as it is ready.
+
+acceptance:
+  - The fetch action is implemented as a generator function that yields for both the network request and the JSON parse steps, so the runtime can pause and resume the action without blocking the page.
+  - After the response resolves, the joke text from the response is stored in reactive state or context and the paragraph displays it via a reactive binding — the paragraph text is never written directly from JavaScript.
+  - The paragraph is empty on initial page load (before the button is clicked), and the joke text appears only after the button is clicked and the response arrives.
+
+rubrics:
+  - wp-interactivity-api-best-practices

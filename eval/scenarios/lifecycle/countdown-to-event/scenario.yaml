@@ -1,0 +1,21 @@
+name: countdown-to-event
+description: Renders a block that counts down to a fixed future date, updating every second, and replaces the countdown with a "it's here!" message when the time runs out.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that counts down to an upcoming event. It should show
+  the remaining days, hours, minutes, and seconds, ticking away every second.
+  When the countdown reaches zero it should switch to a friendly "The event has
+  started!" (or similar) message instead of showing negative numbers.
+
+  The timer must stop by itself when the event time arrives and must not keep
+  running in the background after it is no longer needed.
+
+acceptance:
+  - The countdown display updates every second and shows days, hours, minutes, and seconds remaining.
+  - When the countdown expires, the ticking stops and a distinct end message replaces the countdown display — no negative values are shown.
+  - The interval used to drive the countdown is wrapped in a scoped callback so the runtime can clean it up when the element is removed from the page.
+
+rubrics:
+  - wp-interactivity-api-best-practices

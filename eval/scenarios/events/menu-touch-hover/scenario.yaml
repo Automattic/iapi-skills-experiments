@@ -1,0 +1,21 @@
+name: menu-touch-hover
+description: A navigation menu whose submenu opens on mouse hover on desktop and on tap on touch devices.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block with a navigation menu item that has a submenu.
+  On desktop (mouse), the submenu should appear when the user hovers over
+  the parent item. On mobile (touch), it should appear when the user taps
+  the parent item instead.
+
+  The behaviour should branch automatically based on how the user is
+  interacting — no separate mobile/desktop versions of the block.
+
+acceptance:
+  - The submenu opens when a pointer hover event occurs from a mouse (pointer device type "mouse"), making the submenu visible.
+  - The submenu opens when a pointer event occurs from a touch device (pointer device type "touch"), making the submenu visible.
+  - The open/close decision branches on the pointer type reported by the event, so one handler covers both cases without two separate event bindings.
+
+rubrics:
+  - wp-interactivity-api-best-practices

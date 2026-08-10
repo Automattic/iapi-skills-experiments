@@ -1,0 +1,22 @@
+name: independent-counters
+description: Build a counter block where each instance maintains independent state via local context.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a tally-counter block for WordPress, built as an interactive
+  block. Each counter should start at 0 and have an "Increment" button
+  next to it that bumps the displayed number up by one when clicked.
+
+  The important part: I want to drop this block onto a page multiple
+  times, and each one needs to keep its own count. Clicking Increment on
+  one counter should only change that counter — the others on the same
+  page should be unaffected.
+
+acceptance:
+  - Each block instance maintains its own independent count: clicking "Increment" on one block changes only that block's displayed number, with no effect on any other block instance on the same page.
+  - The counter value is stored per instance, not in a page-wide shared location — so placing the block twice on the same page produces two fully independent counters.
+  - The displayed count is correct on first paint before any client-side script runs.
+
+rubrics:
+  - wp-interactivity-api-best-practices

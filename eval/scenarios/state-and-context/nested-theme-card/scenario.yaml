@@ -1,0 +1,22 @@
+name: nested-theme-card
+description: Renders a card with an inner panel where the inner panel inherits parent theme values and can override select ones.
+skills:
+  - wordpress-development
+
+prompt: |
+  I'd like an interactive WordPress block that shows a themed card. The
+  card has an outer section setting a color scheme (e.g. "light") and a
+  label. Inside it there's a highlighted panel that inherits the card's
+  color scheme but overrides the label with its own title.
+
+  When I view the page I should see the card's color scheme applied to
+  both the outer and inner areas, but each area should display its own
+  label. The inner panel's label should be different from the card's label.
+
+acceptance:
+  - The inner panel inherits the parent color-scheme value from outer context without re-declaring it.
+  - The inner panel overrides only its own label, leaving the inherited color-scheme unchanged.
+  - Nested context override is applied per-element (inner context merges with outer, not replaces it).
+
+rubrics:
+  - wp-interactivity-api-best-practices

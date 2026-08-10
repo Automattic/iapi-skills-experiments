@@ -1,0 +1,27 @@
+name: accessible-tabs
+description: Build a tab strip where only the active panel is visible, with keyboard arrow-key navigation and correct ARIA roles that screen readers can announce.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block with a tabbed content area. Here is how it
+  should work:
+
+  - There are three tabs labelled "Overview", "Details", and "Reviews".
+    Only one tab's content panel is visible at a time.
+  - Clicking a tab switches the visible panel to that tab's content and
+    marks that tab as selected.
+  - Using the Left and Right arrow keys while focused on a tab should
+    move to the previous or next tab and immediately show that tab's
+    content — users should not have to press Enter or Space to activate
+    the newly focused tab.
+  - Screen readers should be able to announce which tab is currently
+    selected and navigate the tab list correctly.
+
+acceptance:
+  - Only one panel is visible at a time: selecting a tab hides the previously active panel and shows the new one — single-active selection is enforced.
+  - Pressing the Right arrow key while focused on a tab moves focus to the next tab and activates it; the Left arrow key moves to the previous tab and activates it; navigation wraps around at the ends.
+  - Each tab element carries the ARIA tab role and an aria-selected attribute that is "true" on the active tab and "false" on all others; each panel carries the ARIA tabpanel role and is linked to its tab via aria-controls / aria-labelledby.
+
+rubrics:
+  - wp-interactivity-api-best-practices

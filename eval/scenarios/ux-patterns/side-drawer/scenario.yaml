@@ -1,0 +1,31 @@
+name: side-drawer
+description: Build an off-canvas navigation drawer that opens from a hamburger button, traps focus while open, and closes on Escape with focus returned to the trigger.
+skills:
+  - wordpress-development
+
+prompt: |
+  I need a WordPress block for an off-canvas side navigation drawer. Here
+  is how it should work:
+
+  - There is a hamburger button (labelled "Menu") that slides a drawer
+    panel open from the side. The drawer contains three navigation links:
+    Home, About, and Contact.
+  - When the drawer is closed, the links should not be reachable by
+    keyboard — the user should not be able to Tab into the hidden panel.
+  - When the drawer is open, pressing Tab should cycle focus through the
+    three links only, so focus cannot escape to the rest of the page
+    while the drawer is open.
+  - Pressing Escape while the drawer is open should close the drawer and
+    move focus back to the hamburger button automatically, so the user
+    does not lose their place.
+  - The hamburger button should announce its current open/closed state to
+    screen readers so assistive technology users know whether the drawer
+    is expanded.
+
+acceptance:
+  - When the drawer is open, Tab focus is trapped within the drawer links: tabbing past the last link wraps to the first, and Shift+Tab past the first wraps to the last — keyboard focus cannot reach elements outside the drawer while it is open.
+  - Pressing Escape closes the drawer and returns focus to the hamburger trigger button — the user's focus position is not lost.
+  - Focus is returned to the trigger using a reference scoped to the block instance (not a page-wide element search), so the focus restoration works correctly when multiple blocks appear on the same page.
+
+rubrics:
+  - wp-interactivity-api-best-practices

@@ -1,0 +1,22 @@
+name: greeting-rotator
+description: Displays a greeting that cycles through a list of phrases when a button is clicked.
+skills:
+  - wordpress-development
+
+prompt: |
+  I want a WordPress block that displays a friendly greeting and a button
+  labeled "Next greeting". Every time someone clicks the button, the
+  displayed greeting changes to the next one in a rotating list — for
+  example cycling through "Hello!", "Hi there!", "Hey!", "Greetings!",
+  and then wrapping back around to the first one.
+
+  The greeting text on screen should update instantly without any page
+  reload or visible flicker.
+
+acceptance:
+  - The displayed greeting text updates reactively on button click by advancing an index into a list of greeting strings — the text element is bound to the current greeting value from state, not written to the DOM manually.
+  - The index wraps around so clicking past the last greeting returns to the first (cycle behavior, not a dead end).
+  - The initial greeting is visible in the server-rendered HTML before any client-side interaction.
+
+rubrics:
+  - wp-interactivity-api-best-practices
